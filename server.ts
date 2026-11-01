@@ -444,48 +444,6 @@ app.get("/api/market/economy", async (req, res) => {
 });
 
 // ==========================================
-// API: Economic Calendar & Central Bank Decisions
-// ==========================================
-let serverCalendarCache: { timestamp: number; events: any[] } = { timestamp: 0, events: [] };
-
-app.get("/api/market/economic-calendar", async (req, res) => {
-  try {
-    const now = Date.now();
-    const { category, country, impact } = req.query;
-
-    if (!serverCalendarCache.events.length || now - serverCalendarCache.timestamp > 60000) {
-      const { generateDynamicEconomicCalendar } = await import("./src/services/economicCalendarService");
-      serverCalendarCache = {
-        timestamp: now,
-        events: generateDynamicEconomicCalendar(),
-      };
-    }
-
-    let events = [...serverCalendarCache.events];
-
-    if (category && category !== "all") {
-      events = events.filter((e) => e.category === category);
-    }
-    if (country && country !== "all") {
-      events = events.filter((e) => e.country === country);
-    }
-    if (impact) {
-      events = events.filter((e) => e.impact === impact);
-    }
-
-    res.json({
-      success: true,
-      count: events.length,
-      timestamp: new Date().toISOString(),
-      events,
-    });
-  } catch (error: any) {
-    console.error("[Server] Error in /api/market/economic-calendar:", error);
-    res.status(500).json({ success: false, error: "Falha ao obter calendário econômico." });
-  }
-});
-
-// ==========================================
 // Finnhub API Proxy Routes with Cache & Rate Limit Protection
 // ==========================================
 const finnhubServerQuoteCache = new Map<string, { data: any; timestamp: number }>();
