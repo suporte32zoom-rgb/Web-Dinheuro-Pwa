@@ -126,6 +126,8 @@ class QuotesService {
 
   private isFetching = false;
   private backgroundIntervalId: any = null;
+  private finnhubQuoteCache = new Map<string, { data: any; timestamp: number }>();
+  private finnhubCooldownUntil = 0;
 
   constructor() {
     this.startBackgroundPoller();
@@ -445,12 +447,26 @@ class QuotesService {
     change: number;
     changePercent: number;
   } | null> {
+    const cleanSym = symbol.trim().toUpperCase();
+    const now = Date.now();
+
+    // Check in-memory quote cache (valid 3 minutes to stay within API limits)
+    const cached = this.finnhubQuoteCache.get(cleanSym);
+    if (cached && now - cached.timestamp < 180000) {
+      return cached.data;
+    }
+
+    // If Finnhub rate limit cooldown active, return cached or null
+    if (now < this.finnhubCooldownUntil) {
+      return cached?.data || null;
+    }
+
     try {
       const apiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`;
+      const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(cleanSym)}&token=${apiKey}`;
       const res = await fetch(url, {
         signal: controller.signal,
         headers: { Accept: "application/json" },
@@ -458,11 +474,17 @@ class QuotesService {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) return null;
-      const data = await res.json();
-      if (!data || (data.c === 0 && data.pc === 0 && data.h === 0)) return null;
+      if (res.status === 429) {
+        this.finnhubCooldownUntil = now + 120000; // 2 minutes cooldown
+        console.warn(`[QuotesService] Finnhub rate limit (429) reached for ${cleanSym}. Cooldown activated.`);
+        return cached?.data || null;
+      }
 
-      return {
+      if (!res.ok) return cached?.data || null;
+      const data = await res.json();
+      if (!data || (data.c === 0 && data.pc === 0 && data.h === 0)) return cached?.data || null;
+
+      const result = {
         price: data.c,
         prevClose: data.pc || data.c,
         open: data.o || data.c,
@@ -471,8 +493,11 @@ class QuotesService {
         change: data.d,
         changePercent: data.dp,
       };
+
+      this.finnhubQuoteCache.set(cleanSym, { data: result, timestamp: now });
+      return result;
     } catch {
-      return null;
+      return cached?.data || null;
     }
   }
 
@@ -797,12 +822,12 @@ class QuotesService {
       console.warn("[QuotesService] Initial background quote fetch:", err?.message);
     });
 
-    // Run periodic updates every 20 seconds
+    // Run periodic updates every 60 seconds to avoid exceeding API provider rate limits
     this.backgroundIntervalId = setInterval(() => {
       this.updateAllQuotes(true).catch((err) => {
         console.warn("[QuotesService] Periodic background quote fetch:", err?.message);
       });
-    }, 20000);
+    }, 60000);
 
     // Keep process alive if needed
     if (this.backgroundIntervalId?.unref) {
@@ -811,9 +836,16 @@ class QuotesService {
   }
 
   /**
-   * Get cached quotes or fetch if empty
+   * Get cached quotes or fetch if empty (never blocks if cached data exists)
    */
   public async getQuotes(): Promise<Record<string, LiveQuote>> {
+    if (this.cache.data && Object.keys(this.cache.data).length > 0) {
+      // Trigger background refresh if stale (> 30s)
+      if (Date.now() - this.cache.timestamp > 30000 && !this.isFetching) {
+        this.updateAllQuotes(false).catch(() => {});
+      }
+      return this.cache.data;
+    }
     return this.updateAllQuotes(false);
   }
 
