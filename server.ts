@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -443,306 +444,49 @@ app.get("/api/market/economy", async (req, res) => {
   }
 });
 
-// ==========================================
-// Finnhub API Proxy Routes with Cache & Rate Limit Protection
-// ==========================================
-const finnhubServerQuoteCache = new Map<string, { data: any; timestamp: number }>();
-const finnhubServerRecCache = new Map<string, { data: any; timestamp: number }>();
-const finnhubServerProfileCache = new Map<string, { data: any; timestamp: number }>();
-let finnhubServerCooldownUntil = 0;
-
-function getFallbackFinnhubQuote(rawSymbol: string): any {
-  const sym = rawSymbol.trim().toUpperCase();
-  const idMap: Record<string, string> = {
-    SPY: "sp-500",
-    QQQ: "nasdaq",
-    DIA: "dow-jones",
-    IWM: "russell-2000",
-    EWG: "dax",
-    EWU: "ftse-100",
-    FEZ: "euro-stoxx-50",
-    EWJ: "nikkei-225",
-    MCHI: "sse-composite",
-    FXI: "hang-seng",
-    EWY: "kospi",
-    EWZ: "ibovespa",
-    GLD: "ouro-futuro",
-    USO: "petroleo-brent",
-    SOYB: "soja-futuro",
-    UNG: "gas-natural",
-    AAPL: "aapl",
-    NVDA: "nvda",
-    MSFT: "msft",
-    AMZN: "amzn",
-    GOOGL: "googl",
-    TSLA: "tsla",
-    META: "meta",
-  };
-
-  const id = idMap[sym] || sym.toLowerCase();
-  const reg = ASSET_REGISTRY[id];
-  const quotes = (quotesService as any).cache?.data || {};
-  const q = quotes[id];
-
-  const price = q?.price || reg?.basePrice || 150;
-  const change = q?.change || 0;
-  const changePercent = q?.changePercent || 0;
-  const high = q?.high || price * 1.01;
-  const low = q?.low || price * 0.99;
-  const open = q?.open || price;
-  const previousClose = price - change;
-
-  return {
-    simbolo: sym,
-    precoAtual: Number(price.toFixed(price < 10 ? 4 : 2)),
-    variacao: Number(change.toFixed(price < 10 ? 4 : 2)),
-    percentualVariacao: Number(changePercent.toFixed(2)),
-    maximaDia: Number(high.toFixed(price < 10 ? 4 : 2)),
-    minimaDia: Number(low.toFixed(price < 10 ? 4 : 2)),
-    abertura: Number(open.toFixed(price < 10 ? 4 : 2)),
-    fechamentoAnterior: Number(previousClose.toFixed(price < 10 ? 4 : 2)),
-  };
-}
-
-// API: Finnhub Real-Time Quote Proxy (Secures API key server-side, caches & handles 429 gracefully)
+// API: Finnhub Real-Time Quote Proxy (Secures API key server-side & solves CORS)
 app.get("/api/finnhub/quote", async (req, res) => {
   try {
     const rawSymbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const now = Date.now();
-
-    // 1. Check server cache (valid for 60 seconds)
-    const cached = finnhubServerQuoteCache.get(rawSymbol);
-    if (cached && now - cached.timestamp < 60000) {
-      return res.json(cached.data);
-    }
-
-    // 2. If on rate limit cooldown, use cached or fallback immediately
-    if (now < finnhubServerCooldownUntil) {
-      if (cached) return res.json(cached.data);
-      const fallback = getFallbackFinnhubQuote(rawSymbol);
-      return res.json(fallback);
-    }
-
     const apiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
 
     let symbol = rawSymbol;
     if (symbol === "S&P 500" || symbol === "SP500") symbol = "SPY";
     if (symbol === "NASDAQ") symbol = "QQQ";
     if (symbol === "DOW JONES" || symbol === "DOW") symbol = "DIA";
-    if (symbol === "RUSSELL 2000" || symbol === "RUSSELL") symbol = "IWM";
-    if (symbol === "IBOVESPA" || symbol === "IBOV") symbol = "EWZ";
-    if (symbol === "OURO" || symbol === "GOLD") symbol = "GLD";
-    if (symbol === "PETRÓLEO" || symbol === "BRENT") symbol = "USO";
 
     const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-
     const response = await fetch(url, {
-      signal: controller.signal,
       headers: {
         Accept: "application/json",
       },
     });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      finnhubServerCooldownUntil = now + 120000; // 2 minutes cooldown
-      console.warn(`[Server] Finnhub rate limit (429) reached for ${symbol}. Cooldown active.`);
-      if (cached) return res.json(cached.data);
-      const fallback = getFallbackFinnhubQuote(rawSymbol);
-      return res.json(fallback);
-    }
 
     if (!response.ok) {
-      if (cached) return res.json(cached.data);
-      const fallback = getFallbackFinnhubQuote(rawSymbol);
-      return res.json(fallback);
+      return res.status(response.status).json({
+        success: false,
+        error: `Erro HTTP Finnhub: status ${response.status}`,
+      });
     }
 
     const data = await response.json();
 
-    if (data.c === 0 && data.pc === 0 && data.h === 0) {
-      if (cached) return res.json(cached.data);
-      const fallback = getFallbackFinnhubQuote(rawSymbol);
-      return res.json(fallback);
-    }
-
+    // Formatação dos dados retornados pela Finnhub
     const resultado = {
       simbolo: rawSymbol,
-      precoAtual: data.c,
-      variacao: data.d,
-      percentualVariacao: data.dp,
-      maximaDia: data.h,
-      minimaDia: data.l,
-      abertura: data.o,
-      fechamentoAnterior: data.pc,
+      precoAtual: data.c,           // Current price
+      variacao: data.d,             // Change
+      percentualVariacao: data.dp,  // Percent change
+      maximaDia: data.h,            // High price of the day
+      minimaDia: data.l,            // Low price of the day
+      abertura: data.o,             // Open price of the day
+      fechamentoAnterior: data.pc,  // Previous close price
     };
 
-    finnhubServerQuoteCache.set(rawSymbol, { data: resultado, timestamp: now });
     res.json(resultado);
   } catch (error: any) {
-    console.warn("[Server] Handled fallback in /api/finnhub/quote:", error?.message || error);
-    const rawSymbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const cached = finnhubServerQuoteCache.get(rawSymbol);
-    if (cached) return res.json(cached.data);
-    const fallback = getFallbackFinnhubQuote(rawSymbol);
-    res.json(fallback);
-  }
-});
-
-// API: Finnhub Stock Thermometer & Analyst Recommendations
-app.get("/api/finnhub/recommendation", async (req, res) => {
-  try {
-    const rawSymbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const now = Date.now();
-
-    const cached = finnhubServerRecCache.get(rawSymbol);
-    if (cached && now - cached.timestamp < 300000) {
-      return res.json(cached.data);
-    }
-
-    if (now < finnhubServerCooldownUntil) {
-      if (cached) return res.json(cached.data);
-      return res.json({
-        symbol: rawSymbol,
-        period: new Date().toISOString().slice(0, 7),
-        strongBuy: 18,
-        buy: 22,
-        hold: 8,
-        sell: 2,
-        strongSell: 1,
-        score: 72,
-        sentimentText: "Compra",
-      });
-    }
-
-    const apiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
-
-    let symbol = rawSymbol;
-    if (symbol === "S&P 500" || symbol === "SP500") symbol = "SPY";
-    if (symbol === "NASDAQ") symbol = "QQQ";
-    if (symbol === "DOW JONES" || symbol === "DOW") symbol = "DIA";
-
-    const url = `https://finnhub.io/api/v1/stock/recommendation?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      finnhubServerCooldownUntil = now + 120000;
-      console.warn(`[Server] Finnhub rate limit (429) reached for recommendation ${symbol}.`);
-      return res.json(cached?.data || {
-        symbol: rawSymbol,
-        period: new Date().toISOString().slice(0, 7),
-        strongBuy: 18,
-        buy: 22,
-        hold: 8,
-        sell: 2,
-        strongSell: 1,
-        score: 72,
-        sentimentText: "Compra",
-      });
-    }
-
-    if (!response.ok) return res.json(cached?.data || null);
-    const list = await response.json();
-    if (!Array.isArray(list) || list.length === 0) return res.json(cached?.data || null);
-
-    const latest = list[0];
-    const total = (latest.strongBuy || 0) + (latest.buy || 0) + (latest.hold || 0) + (latest.sell || 0) + (latest.strongSell || 0);
-    const positive = (latest.strongBuy || 0) * 2 + (latest.buy || 0);
-    const negative = (latest.sell || 0) + (latest.strongSell || 0) * 2;
-    const score = total > 0 ? Math.round((positive / (positive + negative + (latest.hold || 0) * 0.5)) * 100) : 50;
-
-    let sentimentText = "Neutro";
-    if (score >= 75) sentimentText = "Forte Compra";
-    else if (score >= 60) sentimentText = "Compra";
-    else if (score <= 30) sentimentText = "Forte Venda";
-    else if (score <= 45) sentimentText = "Venda";
-
-    const recData = {
-      symbol: rawSymbol,
-      period: latest.period,
-      strongBuy: latest.strongBuy || 0,
-      buy: latest.buy || 0,
-      hold: latest.hold || 0,
-      sell: latest.sell || 0,
-      strongSell: latest.strongSell || 0,
-      score,
-      sentimentText,
-    };
-
-    finnhubServerRecCache.set(rawSymbol, { data: recData, timestamp: now });
-    res.json(recData);
-  } catch (error: any) {
-    console.warn("[Server] Error in /api/finnhub/recommendation:", error?.message || error);
-    const rawSymbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    res.json(finnhubServerRecCache.get(rawSymbol)?.data || null);
-  }
-});
-
-// API: Finnhub Company Profile (stock/profile2)
-app.get("/api/finnhub/profile", async (req, res) => {
-  try {
-    const rawSymbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const now = Date.now();
-
-    const cached = finnhubServerProfileCache.get(rawSymbol);
-    if (cached && now - cached.timestamp < 300000) {
-      return res.json(cached.data);
-    }
-
-    if (now < finnhubServerCooldownUntil) {
-      if (cached) return res.json(cached.data);
-      return res.json(null);
-    }
-
-    const apiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
-
-    let symbol = rawSymbol;
-    if (symbol === "S&P 500" || symbol === "SP500") symbol = "SPY";
-    if (symbol === "NASDAQ") symbol = "QQQ";
-    if (symbol === "DOW JONES" || symbol === "DOW") symbol = "DIA";
-
-    const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      finnhubServerCooldownUntil = now + 120000;
-      console.warn(`[Server] Finnhub rate limit (429) reached for profile ${symbol}.`);
-      return res.json(cached?.data || null);
-    }
-
-    if (!response.ok) return res.json(cached?.data || null);
-    const data = await response.json();
-    if (!data || !data.name) return res.json(cached?.data || null);
-
-    const profileData = {
-      symbol: rawSymbol,
-      companyName: data.name,
-      country: data.country || "EUA",
-      currency: data.currency || "USD",
-      exchange: data.exchange || "NYSE / NASDAQ",
-      industry: data.finnhubIndustry || "Tecnologia / Finanças",
-      ipo: data.ipo,
-      marketCap: data.marketCapitalization ? data.marketCapitalization * 1000000 : undefined,
-      logo: data.logo,
-      weburl: data.weburl,
-    };
-
-    finnhubServerProfileCache.set(rawSymbol, { data: profileData, timestamp: now });
-    res.json(profileData);
-  } catch (error: any) {
-    console.warn("[Server] Error in /api/finnhub/profile:", error?.message || error);
-    const rawSymbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    res.json(finnhubServerProfileCache.get(rawSymbol)?.data || null);
+    console.error("[Server] Error in /api/finnhub/quote:", error);
+    res.status(500).json({ success: false, error: "Falha ao obter cotação Finnhub" });
   }
 });
 
@@ -792,124 +536,25 @@ app.post("/api/webhook/finnhub", (req, res) => {
 });
 
 // ==========================================
-// ==========================================
 // Financial Modeling Prep (FMP) Proxy Routes
 // ==========================================
 const FMP_KEY = process.env.FMP_API_KEY || "GJaGtHdggEtpz6erXjYrSNchdFk8FJwm";
 const FMP_URL = "https://financialmodelingprep.com/stable";
 
-const fmpServerQuoteCache = new Map<string, { data: any; timestamp: number }>();
-const fmpServerProfileCache = new Map<string, { data: any; timestamp: number }>();
-const fmpServerFinancialsCache = new Map<string, { data: any; timestamp: number }>();
-let fmpServerCooldownUntil = 0;
-
-function getFallbackFmpQuote(rawSymbol: string): any {
-  const sym = rawSymbol.trim().toUpperCase();
-  const symbolMap: Record<string, string> = {
-    SPY: "sp-500",
-    QQQ: "nasdaq",
-    DIA: "dow-jones",
-    EURUSD: "usd-eur",
-    GCUSD: "ouro-futuro",
-    AAPL: "aapl",
-    NVDA: "nvda",
-    MSFT: "msft",
-    AMZN: "amzn",
-    GOOGL: "googl",
-    TSLA: "tsla",
-    META: "meta",
-  };
-
-  const id = symbolMap[sym] || sym.toLowerCase();
-  const quotes = (quotesService as any).cache?.data || {};
-  const q = quotes[id];
-  const reg = ASSET_REGISTRY[id];
-
-  const price = q?.price || reg?.basePrice || 100;
-  const change = q?.change || 0;
-  const changePercentage = q?.changePercent || 0;
-  const open = q?.open || price;
-  const high = q?.high || price * 1.01;
-  const low = q?.low || price * 0.99;
-  const previousClose = q?.price ? q.price - change : price;
-
-  return {
-    symbol: sym,
-    name: q?.name || reg?.name || sym,
-    price: Number(price.toFixed(price < 10 ? 4 : 2)),
-    changePercentage: Number(changePercentage.toFixed(2)),
-    change: Number(change.toFixed(price < 10 ? 4 : 2)),
-    dayLow: Number(low.toFixed(price < 10 ? 4 : 2)),
-    dayHigh: Number(high.toFixed(price < 10 ? 4 : 2)),
-    yearHigh: Number((price * 1.25).toFixed(2)),
-    yearLow: Number((price * 0.8).toFixed(2)),
-    marketCap: 2500000000000,
-    priceAvg50: price,
-    priceAvg200: price,
-    exchange: reg?.exchange || "NYSE / NASDAQ",
-    volume: 85000000,
-    open: Number(open.toFixed(price < 10 ? 4 : 2)),
-    previousClose: Number(previousClose.toFixed(price < 10 ? 4 : 2)),
-    timestamp: Math.floor(Date.now() / 1000),
-  };
-}
-
 // 1. Real-time Quote Proxy
 app.get("/api/fmp/quote", async (req, res) => {
   try {
     const symbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const now = Date.now();
-
-    // Check server cache (valid for 60 seconds)
-    const cached = fmpServerQuoteCache.get(symbol);
-    if (cached && now - cached.timestamp < 60000) {
-      return res.json(cached.data);
-    }
-
-    // If currently in rate limit cooldown, use cached or resilient fallback
-    if (now < fmpServerCooldownUntil) {
-      if (cached) return res.json(cached.data);
-      const fallbackQuote = getFallbackFmpQuote(symbol);
-      return res.json(fallbackQuote);
-    }
-
     const url = `${FMP_URL}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      fmpServerCooldownUntil = now + 120000; // 2 minutes cooldown
-      console.warn(`[Server] FMP rate limit hit (429) for ${symbol}. Cooldown activated.`);
-      if (cached) return res.json(cached.data);
-      const fallbackQuote = getFallbackFmpQuote(symbol);
-      return res.json(fallbackQuote);
-    }
-
+    const response = await fetch(url);
     if (!response.ok) {
-      if (cached) return res.json(cached.data);
-      const fallbackQuote = getFallbackFmpQuote(symbol);
-      return res.json(fallbackQuote);
+      return res.status(response.status).json({ success: false, error: `FMP HTTP ${response.status}` });
     }
-
     const data = await response.json();
-    const quote = Array.isArray(data) && data.length > 0 ? data[0] : null;
-    if (quote) {
-      fmpServerQuoteCache.set(symbol, { data: quote, timestamp: now });
-      return res.json(quote);
-    }
-
-    const fallbackQuote = getFallbackFmpQuote(symbol);
-    res.json(fallbackQuote);
+    res.json(Array.isArray(data) && data.length > 0 ? data[0] : null);
   } catch (error: any) {
-    console.warn(`[Server] Fallback in /api/fmp/quote for ${req.query.symbol}:`, error?.message || error);
-    const symbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const cached = fmpServerQuoteCache.get(symbol);
-    if (cached) return res.json(cached.data);
-    const fallbackQuote = getFallbackFmpQuote(symbol);
-    res.json(fallbackQuote);
+    console.error("[Server] Error in /api/fmp/quote:", error);
+    res.status(500).json({ success: false, error: "Erro ao consultar cotação FMP" });
   }
 });
 
@@ -917,45 +562,16 @@ app.get("/api/fmp/quote", async (req, res) => {
 app.get("/api/fmp/profile", async (req, res) => {
   try {
     const symbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const now = Date.now();
-
-    const cached = fmpServerProfileCache.get(symbol);
-    if (cached && now - cached.timestamp < 300000) {
-      return res.json(cached.data);
-    }
-
-    if (now < fmpServerCooldownUntil) {
-      if (cached) return res.json(cached.data);
-      return res.json(null);
-    }
-
     const url = `${FMP_URL}/profile?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      fmpServerCooldownUntil = now + 120000;
-      console.warn(`[Server] FMP rate limit hit (429) for profile ${symbol}.`);
-      return res.json(cached?.data || null);
-    }
-
+    const response = await fetch(url);
     if (!response.ok) {
-      return res.json(cached?.data || null);
+      return res.status(response.status).json({ success: false, error: `FMP HTTP ${response.status}` });
     }
-
     const data = await response.json();
-    const profile = Array.isArray(data) && data.length > 0 ? data[0] : null;
-    if (profile) {
-      fmpServerProfileCache.set(symbol, { data: profile, timestamp: now });
-    }
-    res.json(profile);
+    res.json(Array.isArray(data) && data.length > 0 ? data[0] : null);
   } catch (error: any) {
-    console.warn("[Server] Handled error in /api/fmp/profile:", error?.message || error);
-    const symbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    res.json(fmpServerProfileCache.get(symbol)?.data || null);
+    console.error("[Server] Error in /api/fmp/profile:", error);
+    res.status(500).json({ success: false, error: "Erro ao consultar perfil corporativo FMP" });
   }
 });
 
@@ -963,45 +579,16 @@ app.get("/api/fmp/profile", async (req, res) => {
 app.get("/api/fmp/financials", async (req, res) => {
   try {
     const symbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    const now = Date.now();
-
-    const cached = fmpServerFinancialsCache.get(symbol);
-    if (cached && now - cached.timestamp < 300000) {
-      return res.json(cached.data);
-    }
-
-    if (now < fmpServerCooldownUntil) {
-      if (cached) return res.json(cached.data);
-      return res.json([]);
-    }
-
     const url = `${FMP_URL}/income-statement?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      fmpServerCooldownUntil = now + 120000;
-      console.warn(`[Server] FMP rate limit hit (429) for financials ${symbol}.`);
-      return res.json(cached?.data || []);
-    }
-
+    const response = await fetch(url);
     if (!response.ok) {
-      return res.json(cached?.data || []);
+      return res.status(response.status).json({ success: false, error: `FMP HTTP ${response.status}` });
     }
-
     const data = await response.json();
-    const financials = Array.isArray(data) ? data : [];
-    if (financials.length > 0) {
-      fmpServerFinancialsCache.set(symbol, { data: financials, timestamp: now });
-    }
-    res.json(financials);
+    res.json(Array.isArray(data) ? data : []);
   } catch (error: any) {
-    console.warn("[Server] Handled error in /api/fmp/financials:", error?.message || error);
-    const symbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
-    res.json(fmpServerFinancialsCache.get(symbol)?.data || []);
+    console.error("[Server] Error in /api/fmp/financials:", error);
+    res.status(500).json({ success: false, error: "Erro ao consultar DRE FMP" });
   }
 });
 
@@ -1010,28 +597,16 @@ app.get("/api/fmp/search", async (req, res) => {
   try {
     const query = String(req.query.query || "").trim();
     if (!query) return res.json([]);
-
-    const now = Date.now();
-    if (now < fmpServerCooldownUntil) {
-      return res.json([]);
-    }
-
     const url = `${FMP_URL}/search-symbol?query=${encodeURIComponent(query)}&apikey=${FMP_KEY}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
-
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
-
+    const response = await fetch(url);
     if (!response.ok) {
-      return res.json([]);
+      return res.status(response.status).json({ success: false, error: `FMP HTTP ${response.status}` });
     }
-
     const data = await response.json();
     res.json(Array.isArray(data) ? data : []);
   } catch (error: any) {
-    console.warn("[Server] Handled error in /api/fmp/search:", error?.message || error);
-    res.json([]);
+    console.error("[Server] Error in /api/fmp/search:", error);
+    res.status(500).json({ success: false, error: "Erro na pesquisa FMP" });
   }
 });
 
@@ -1194,42 +769,6 @@ app.get("/api/market/news", async (req, res) => {
       return res.json({ success: true, count: newsCache.items.length, news: newsCache.items });
     }
 
-    const allNews: any[] = [];
-    let idCounter = 1;
-
-    // 1. Finnhub News API: Notícias financeiras globais e corporativas em tempo real
-    const finnhubApiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
-    try {
-      const finnhubRes = await fetch(`https://finnhub.io/api/v1/news?category=general&token=${finnhubApiKey}`, {
-        headers: { Accept: "application/json" },
-      });
-      if (finnhubRes.ok) {
-        const finnhubList = await finnhubRes.json();
-        if (Array.isArray(finnhubList) && finnhubList.length > 0) {
-          for (const item of finnhubList.slice(0, 10)) {
-            const dt = item.datetime ? new Date(item.datetime * 1000) : new Date();
-            const diffMin = Math.floor((now - dt.getTime()) / 60000);
-            const timeAgo = diffMin < 60 ? `Há ${Math.max(1, diffMin)} min` : `Há ${Math.floor(diffMin / 60)}h`;
-            const upper = (item.headline || "").toUpperCase();
-            allNews.push({
-              id: `finnhub-${item.id || idCounter++}`,
-              title: item.headline || "Notícia dos Mercados Globais",
-              source: item.source || "Finnhub Financial",
-              timeAgo,
-              url: item.url || "https://dinheuro.com",
-              category: "Bolsas & Economia Global",
-              relatedTickers: item.related ? [item.related] : ["MERCADO"],
-              sentiment: upper.includes("ALTA") || upper.includes("SURGE") || upper.includes("GAIN") || upper.includes("RALLY") || upper.includes("BEAT") ? "positive" : upper.includes("QUEDA") || upper.includes("DROP") || upper.includes("FALL") || upper.includes("SLUMP") ? "negative" : "neutral",
-              image: item.image,
-              summary: item.summary,
-            });
-          }
-        }
-      }
-    } catch (e: any) {
-      console.warn("[Server] Finnhub news fetch error:", e?.message);
-    }
-
     const rssUrls = [
       { url: "https://news.google.com/rss/search?q=mercado+financeiro+ibovespa+dolar+acoes&hl=pt-BR&gl=BR&ceid=BR:pt-419", category: "Mercados B3" },
       { url: "https://news.google.com/rss/search?q=wall+street+sp500+fed+nasdaq&hl=pt-BR&gl=BR&ceid=BR:pt-419", category: "Wall Street" },
@@ -1237,6 +776,9 @@ app.get("/api/market/news", async (req, res) => {
       { url: "https://news.google.com/rss/search?q=bitcoin+criptomoedas+etf+ethereum&hl=pt-BR&gl=BR&ceid=BR:pt-419", category: "Criptoativos" },
       { url: "https://news.google.com/rss/search?q=petroleo+brent+ouro+commodities+soja&hl=pt-BR&gl=BR&ceid=BR:pt-419", category: "Commodities" },
     ];
+
+    const allNews: any[] = [];
+    let idCounter = 1;
 
     await Promise.all(
       rssUrls.map(async (rss) => {
@@ -1512,7 +1054,7 @@ Mantenha o tom profissional, direto e sem jargões desnecessários, com 2 a 3 pa
 
     const aiText = await generateContentSafely({
       contents: prompt,
-      preferredModel: "gemini-3.8-flash",
+      preferredModel: "gemini-3.7-flash",
     });
 
     const finalAnalysis =
@@ -1555,7 +1097,7 @@ Estruture a resposta em Markdown limpo com:
 
     const aiText = await generateContentSafely({
       contents: prompt,
-      preferredModel: "gemini-3.8-flash",
+      preferredModel: "gemini-3.7-flash",
     });
 
     const fallbackContent = `### Análise Aprofundada DinhEuro: ${topicTitle || "Dinâmica de Mercado"}\n\n**Resumo Executivo:**\nO segmento de ${region || "Mercados"} apresenta correlações estratégicas ativas com as curvas de juros globais, fluxos cambiais e precificação de risco soberano.\n\n**Mecanismo de Ação no Mercado:**\n- **Câmbio e Juros:** Oscilações de liquidez internacional impactam diretamente as taxas futuras e a paridade de moedas fortes e emergentes.\n- **Ações e Índices:** Rotação setorial perceptível entre papéis cíclicos e defensivos nos pregões recentes.\n\n**Cenário Base vs. Cenário de Risco:**\n- *Cenário Base:* Consolidação em níveis técnicos de suporte com volatilidade contida.\n- *Cenário de Risco:* Picos de aversão ao risco decorrentes de dados de inflação acima do consenso.\n\n**O que observar nos indicadores:**\nMonitore o volume financeiro acumulado, cruzamento de médias móveis de 20/50 dias e os spreads de crédito corporativo.`;
@@ -1602,7 +1144,7 @@ Forneça um JSON com a seguinte estrutura:
       config: {
         responseMimeType: "application/json",
       },
-      preferredModel: "gemini-3.8-flash",
+      preferredModel: "gemini-3.7-flash",
     });
 
     let jsonOutput = null;
@@ -1650,14 +1192,63 @@ Forneça um JSON com a seguinte estrutura:
   }
 });
 
-// Google AdSense ads.txt verification endpoint
-app.get("/ads.txt", (_req, res) => {
-  const adsTxtPath = path.join(process.cwd(), "public", "ads.txt");
-  if (fs.existsSync(adsTxtPath)) {
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    return res.sendFile(adsTxtPath);
+// Interactive AI Chat / Copilot for DinhEuro
+app.post("/api/market-ai/chat", async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    const formattedHistory = Array.isArray(history)
+      ? history
+          .slice(-6)
+          .map((h: any) => `${h.role === "user" ? "Usuário" : "DinhEuro AI"}: ${h.content}`)
+          .join("\n")
+      : "";
+
+    const prompt = `Você é a inteligência artificial oficial do DinhEuro.com, especialista global em finanças, economia e mercado financeiro.
+Sua missão é responder com máxima precisão, clareza e autoridade a qualquer dúvida ou cálculo sobre finanças pessoais, mercado nacional e internacional.
+
+Suas Especialidades Fundamentais:
+1. Especialista Máxima em Corredores Financeiros:
+   - Domínio absoluto do corredor União Europeia ⇄ Mercosul (EUR ⇄ BRL, EUR ⇄ ARS, etc.).
+   - Domínio de todos os corredores de remessas e transferências com países parceiros do Brasil (EUA, Reino Unido, Japão, Suíça, etc.).
+2. Mercado Global e Nacional:
+   - Cobertura completa sobre cotações, taxa de câmbio, spread, impostos (IOF), tarifas bancárias, SEPA, PIX internacional e transferências internacionais.
+   - Conhecimento aprofundado sobre o mercado financeiro brasileiro (B3, CDI, Selic, Tesouro Direto, FIIs) e internacional (Wall Street, S&P 500, Nasdaq, BCE, Fed).
+3. Capacidade Técnica:
+   - Realizar cálculos financeiros complexos, simulações de conversão de moedas e comparações de custos de remessa (Wise, Remessa Online, bancos tradicionais, cripto).
+   - Responder prontamente a 100% das perguntas sobre dinheiro, investimentos, inflação e regulamentação financeira.
+
+Diretrizes de Resposta:
+- Mantenha um tom profissional, seguro, direto e prestativo.
+- Use formatação clara em Markdown (negrito, listas, tabelas quando apropriado).
+
+Histórico recente:
+${formattedHistory}
+
+Mensagem do usuário: "${message || "Olá"}"`;
+
+    const aiText = await generateContentSafely({
+      contents: prompt,
+      preferredModel: "gemini-3.7-flash",
+    });
+
+    const fallbackReply = `Sou o **DinhEuro AI Copilot**! Em relação à sua consulta sobre **"${message || "mercados"}"**:
+- **Cenário Atual:** Os mercados globais e o mercado brasileiro (Ibovespa) operam com foco nas decisões de política monetária (BCE, Fed e Copom) e no fluxo de capital estrangeiro.
+- **Dica Prática:** Você pode consultar cotações em tempo real, gráficos interativos de 1D a 5A, métricas de Valuation e notícias atualizadas diretamente nas abas do portal DinhEuro.
+
+Como posso ajudar você a analisar um ativo específico (ações, FIIs, moedas, índices ou criptos) hoje?`;
+
+    res.json({
+      success: true,
+      reply: aiText || fallbackReply,
+    });
+  } catch (error: any) {
+    console.error("Error in AI chat endpoint:", error);
+    res.json({
+      success: true,
+      reply:
+        "O DinhEuro AI Copilot está pronto para ajudar! Você pode explorar cotações, gráficos interativos e notícias em tempo real nas abas de Ações, Câmbio, Cripto e Commodities.",
+    });
   }
-  res.type("text/plain").send("google.com, pub-7845011898892939, DIRECT, f08c47fec0942fa0\n");
 });
 
 async function startServer() {
