@@ -21,6 +21,7 @@ import { SectorFilterBar } from "./components/SectorFilterBar";
 import { DynamicIndicesCarousel } from "./components/DynamicIndicesCarousel";
 import { GlobalEconomyWidget } from "./components/GlobalEconomyWidget";
 import { EconomicCalendarWidget } from "./components/EconomicCalendarWidget";
+import { SectorMarketHeatmap } from "./components/SectorMarketHeatmap";
 import { DEFAULT_UNIFIED_CURRENCIES, economyItemToAsset } from "./services/unifiedCurrencyService";
 import { AIMarketSummaryAccordion } from "./components/AIMarketSummaryAccordion";
 import { MarketMoversGrid } from "./components/MarketMoversGrid";
