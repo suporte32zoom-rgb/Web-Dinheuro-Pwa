@@ -5,6 +5,7 @@ import {
   Search,
   Menu,
   Bookmark,
+  Briefcase,
   TrendingUp,
   TrendingDown,
   RefreshCw,
@@ -16,8 +17,9 @@ import {
 interface HeaderProps {
   onOpenSearch: () => void;
   onOpenSidebar: () => void;
-  onOpenPortfolio?: () => void;
+  onOpenPortfolio: () => void;
   onOpenWatchlist: () => void;
+  onOpenCopilot?: () => void;
   onOpenGoogleChat?: () => void;
   onOpenNotifications?: () => void;
   onOpenPwaModal?: () => void;
@@ -28,7 +30,7 @@ interface HeaderProps {
   onSelectAsset: (asset: Asset) => void;
   onGoHome: () => void;
   watchlistCount: number;
-  portfolioCount?: number;
+  portfolioCount: number;
   // Live Data Props
   liveAssets?: Asset[];
   lastUpdatedTime?: string;
@@ -39,8 +41,9 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   onOpenSidebar,
-  onOpenPortfolio: _onOpenPortfolio,
+  onOpenPortfolio,
   onOpenWatchlist,
+  onOpenCopilot,
   onOpenGoogleChat,
   onOpenNotifications,
   onOpenPwaModal,
@@ -51,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectAsset,
   onGoHome,
   watchlistCount,
-  portfolioCount: _portfolioCount,
+  portfolioCount,
   liveAssets = [],
   lastUpdatedTime,
   isRefreshing = false,
@@ -321,6 +324,23 @@ export const Header: React.FC<HeaderProps> = ({
             {watchlistCount > 0 && (
               <span className="px-1.5 py-0.2 bg-[#e3b341]/20 text-[#e3b341] rounded-full text-[10px] font-bold shrink-0">
                 {watchlistCount}
+              </span>
+            )}
+          </button>
+
+          {/* Portfolio Quick Button */}
+          <button
+            type="button"
+            id="btn-header-portfolio"
+            onClick={onOpenPortfolio}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-[#1f6feb] to-[#238636] hover:brightness-110 border border-transparent shadow-sm transition-all cursor-pointer shrink-0"
+            title="Meu Portfólio em Tempo Real"
+          >
+            <Briefcase className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">Portfólio</span>
+            {portfolioCount > 0 && (
+              <span className="px-1.5 py-0.2 bg-white/20 text-white rounded-full text-[10px] font-bold shrink-0">
+                {portfolioCount}
               </span>
             )}
           </button>

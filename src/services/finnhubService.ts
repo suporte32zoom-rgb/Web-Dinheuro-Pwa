@@ -71,7 +71,6 @@ const quoteCache = new Map<string, { data: FinnhubQuoteResult; timestamp: number
 const thermometerCache = new Map<string, { data: FinnhubThermometerResult; timestamp: number }>();
 const profileCache = new Map<string, { data: FinnhubCompanyProfileResult; timestamp: number }>();
 let newsCache: { data: FinnhubNewsItem[]; timestamp: number } | null = null;
-let finnhubClientCooldownUntil = 0;
 
 // Map de símbolos globais para equivalentes Finnhub
 export const FINNHUB_SYMBOL_MAP: Record<string, string> = {
@@ -107,13 +106,8 @@ export async function obterCotacaoFinnhub(symbol: string): Promise<FinnhubQuoteR
   const now = Date.now();
 
   const cached = quoteCache.get(finnhubSym);
-  if (cached && now - cached.timestamp < 60000) {
+  if (cached && now - cached.timestamp < 30000) {
     return cached.data;
-  }
-
-  // Se estiver em cooldown por 429 anterior, retorna cache se houver e não sobrecarrega a rede
-  if (now < finnhubClientCooldownUntil) {
-    return cached?.data || null;
   }
 
   // No navegador, tenta primeiro a rota segura de proxy backend
@@ -123,10 +117,6 @@ export async function obterCotacaoFinnhub(symbol: string): Promise<FinnhubQuoteR
       const proxyRes = await fetch(proxyUrl, {
         headers: { Accept: "application/json" },
       });
-      if (proxyRes.status === 429) {
-        finnhubClientCooldownUntil = now + 90000;
-        return cached?.data || null;
-      }
       if (proxyRes.ok) {
         const proxyData = await proxyRes.json();
         if (proxyData && proxyData.precoAtual !== undefined) {
@@ -135,28 +125,22 @@ export async function obterCotacaoFinnhub(symbol: string): Promise<FinnhubQuoteR
         }
       }
     } catch {
-      // Continua para fallback silencioso
+      // Continua para chamada direta com chave pública
     }
   }
 
-  // Se o proxy não respondeu ou em ambiente sem backend, tenta chamada direta com tratamento seguro
   const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(finnhubSym)}&token=${FINNHUB_API_KEY}`;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 4000);
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeout);
 
-    if (response.status === 429) {
-      finnhubClientCooldownUntil = now + 90000;
-      return cached?.data || null;
-    }
-
-    if (!response.ok) return cached?.data || null;
+    if (!response.ok) return null;
     const data = await response.json();
 
-    if (!data || (data.c === 0 && data.pc === 0 && data.h === 0)) {
-      return cached?.data || null;
+    if (data.c === 0 && data.pc === 0 && data.h === 0) {
+      return null;
     }
 
     const resultado: FinnhubQuoteResult = {
@@ -172,8 +156,9 @@ export async function obterCotacaoFinnhub(symbol: string): Promise<FinnhubQuoteR
 
     quoteCache.set(finnhubSym, { data: resultado, timestamp: now });
     return resultado;
-  } catch {
-    return cached?.data || null;
+  } catch (error: any) {
+    console.warn(`[Finnhub] Falha na cotação para ${cleanSymbol}:`, error?.message || error);
+    return null;
   }
 }
 
@@ -190,17 +175,9 @@ export async function obterTermometroAcoes(symbol: string): Promise<FinnhubTherm
     return cached.data;
   }
 
-  if (now < finnhubClientCooldownUntil) {
-    return cached?.data || null;
-  }
-
   if (typeof window !== "undefined") {
     try {
       const proxyRes = await fetch(`/api/finnhub/recommendation?symbol=${encodeURIComponent(finnhubSym)}`);
-      if (proxyRes.status === 429) {
-        finnhubClientCooldownUntil = now + 90000;
-        return cached?.data || null;
-      }
       if (proxyRes.ok) {
         const data = await proxyRes.json();
         if (data && data.strongBuy !== undefined) {
@@ -216,18 +193,13 @@ export async function obterTermometroAcoes(symbol: string): Promise<FinnhubTherm
   const url = `${FINNHUB_BASE_URL}/stock/recommendation?symbol=${encodeURIComponent(finnhubSym)}&token=${FINNHUB_API_KEY}`;
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3500);
+    const timer = setTimeout(() => controller.abort(), 4000);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timer);
 
-    if (res.status === 429) {
-      finnhubClientCooldownUntil = now + 90000;
-      return cached?.data || null;
-    }
-
-    if (!res.ok) return cached?.data || null;
+    if (!res.ok) return null;
     const list = await res.json();
-    if (!Array.isArray(list) || list.length === 0) return cached?.data || null;
+    if (!Array.isArray(list) || list.length === 0) return null;
 
     const latest = list[0];
     const total = (latest.strongBuy || 0) + (latest.buy || 0) + (latest.hold || 0) + (latest.sell || 0) + (latest.strongSell || 0);
@@ -255,8 +227,9 @@ export async function obterTermometroAcoes(symbol: string): Promise<FinnhubTherm
 
     thermometerCache.set(finnhubSym, { data: result, timestamp: now });
     return result;
-  } catch {
-    return cached?.data || null;
+  } catch (error: any) {
+    console.warn(`[Finnhub] Falha no termômetro para ${cleanSymbol}:`, error?.message || error);
+    return null;
   }
 }
 
@@ -344,17 +317,9 @@ export async function obterPerfilEmpresaFinnhub(symbol: string): Promise<Finnhub
     return cached.data;
   }
 
-  if (now < finnhubClientCooldownUntil) {
-    return cached?.data || null;
-  }
-
   if (typeof window !== "undefined") {
     try {
       const proxyRes = await fetch(`/api/finnhub/profile?symbol=${encodeURIComponent(finnhubSym)}`);
-      if (proxyRes.status === 429) {
-        finnhubClientCooldownUntil = now + 90000;
-        return cached?.data || null;
-      }
       if (proxyRes.ok) {
         const data = await proxyRes.json();
         if (data && data.companyName) {
@@ -370,18 +335,13 @@ export async function obterPerfilEmpresaFinnhub(symbol: string): Promise<Finnhub
   const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(finnhubSym)}&token=${FINNHUB_API_KEY}`;
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3500);
+    const timer = setTimeout(() => controller.abort(), 4000);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timer);
 
-    if (res.status === 429) {
-      finnhubClientCooldownUntil = now + 90000;
-      return cached?.data || null;
-    }
-
-    if (!res.ok) return cached?.data || null;
+    if (!res.ok) return null;
     const data = await res.json();
-    if (!data || !data.name) return cached?.data || null;
+    if (!data || !data.name) return null;
 
     const result: FinnhubCompanyProfileResult = {
       symbol: cleanSymbol,
@@ -399,7 +359,7 @@ export async function obterPerfilEmpresaFinnhub(symbol: string): Promise<Finnhub
     profileCache.set(finnhubSym, { data: result, timestamp: now });
     return result;
   } catch {
-    return cached?.data || null;
+    return null;
   }
 }
 

@@ -20,8 +20,6 @@ import { NavigationTabs } from "./components/NavigationTabs";
 import { SectorFilterBar } from "./components/SectorFilterBar";
 import { DynamicIndicesCarousel } from "./components/DynamicIndicesCarousel";
 import { GlobalEconomyWidget } from "./components/GlobalEconomyWidget";
-import { EconomicCalendarWidget } from "./components/EconomicCalendarWidget";
-import { SectorMarketHeatmap } from "./components/SectorMarketHeatmap";
 import { DEFAULT_UNIFIED_CURRENCIES, economyItemToAsset } from "./services/unifiedCurrencyService";
 import { AIMarketSummaryAccordion } from "./components/AIMarketSummaryAccordion";
 import { MarketMoversGrid } from "./components/MarketMoversGrid";
@@ -35,6 +33,7 @@ import { AIDeepDiveModal } from "./components/AIDeepDiveModal";
 import { PWAInstallModal } from "./components/PWAInstallModal";
 import { PWANotificationBar } from "./components/PWANotificationBar";
 import { PWASplashIntro } from "./components/PWASplashIntro";
+import { DinhEuroAICopilot } from "./components/DinhEuroAICopilot";
 import { GoogleChatModal } from "./components/GoogleChatModal";
 import { NotificationSettingsModal } from "./components/NotificationSettingsModal";
 import { notificationService, NotificationSettings } from "./services/notificationService";
@@ -42,7 +41,6 @@ import { InstitutionalModal } from "./components/InstitutionalModal";
 import { LGPDConsentBanner } from "./components/LGPDConsentBanner";
 import { LegalDocId } from "./types/legal";
 import { Footer } from "./components/Footer";
-import { BinanceBanner } from "./components/BinanceBanner";
 import { usePWA } from "./hooks/usePWA";
 
 export default function App() {
@@ -105,6 +103,7 @@ export default function App() {
   const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [watchlistOpen, setWatchlistOpen] = useState(false);
   const [pwaModalOpen, setPwaModalOpen] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
   const [googleChatOpen, setGoogleChatOpen] = useState(false);
   const [chatShareText, setChatShareText] = useState("");
   const [deepDiveTopic, setDeepDiveTopic] = useState<AIAccordionTopic | null>(null);
@@ -549,6 +548,7 @@ export default function App() {
         onOpenSidebar={() => setSidebarOpen(true)}
         onOpenPortfolio={() => setPortfolioOpen(true)}
         onOpenWatchlist={() => setWatchlistOpen(true)}
+        onOpenCopilot={() => setCopilotOpen(true)}
         onOpenGoogleChat={() => {
           setChatShareText("");
           setGoogleChatOpen(true);
@@ -641,15 +641,6 @@ export default function App() {
               />
             </div>
 
-            {/* Calendário Econômico & Decisões de Juros (Copom, Fed, BCE, IPCA, Payroll) */}
-            <EconomicCalendarWidget
-              onSelectTicker={handleSelectTicker}
-              onOpenNotifications={() => {
-                setAlertTargetAsset(null);
-                setNotificationsOpen(true);
-              }}
-            />
-
             {/* AI Market Summary Accordion */}
             <AIMarketSummaryAccordion
               activeTab={activeTab}
@@ -682,8 +673,8 @@ export default function App() {
           if (selectedAsset) setSelectedAsset(null);
         }}
         onOpenPortfolio={() => setPortfolioOpen(true)}
-        portfolioCount={portfolioPositions.length}
         onOpenWatchlist={() => setWatchlistOpen(true)}
+        onOpenCopilot={() => setCopilotOpen(true)}
         onOpenGoogleChat={() => {
           setChatShareText("");
           setGoogleChatOpen(true);
@@ -730,6 +721,12 @@ export default function App() {
         onClose={() => setDeepDiveTopic(null)}
       />
 
+      {/* DinhEuro Official AI Copilot Modal */}
+      <DinhEuroAICopilot
+        isOpen={copilotOpen}
+        onClose={() => setCopilotOpen(false)}
+      />
+
       {/* Google Chat Workspace Integration Modal */}
       <GoogleChatModal
         isOpen={googleChatOpen}
@@ -769,11 +766,6 @@ export default function App() {
         isInstallable={isInstallable}
         isInstalled={isInstalled}
       />
-
-      {/* Binance Official Partner Banner */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full my-4">
-        <BinanceBanner />
-      </div>
 
       {/* Global Footer with Legal & Compliance Navigation */}
       <Footer onOpenLegalDoc={handleOpenLegalDoc} />

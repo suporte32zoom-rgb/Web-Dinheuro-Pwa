@@ -54,7 +54,7 @@ const SECTOR_ICON_MAP: Record<string, React.ReactNode> = {
 // Tags populares traduzidas para filtro rápido
 const POPULAR_TAGS = [
   "Inteligência Artificial",
-  "Mega Capitalização",
+  "MegaCap",
   "Global",
   "Dividendos",
   "B3",

@@ -53,7 +53,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   const [isTesting, setIsTesting] = useState(false);
 
   // New alert form state
-  const [selectedTicker, setSelectedTicker] = useState<string>(initialAsset?.ticker || "");
+  const [selectedTicker, setSelectedTicker] = useState<string>("PETR4");
   const [threshold, setThreshold] = useState<number>(2.0);
   const [direction, setDirection] = useState<"any" | "above" | "below">("any");
   const [customTicker, setCustomTicker] = useState<string>("");
@@ -100,11 +100,6 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   const handleAddAlert = (e: React.FormEvent) => {
     e.preventDefault();
     const ticker = (customTicker.trim() || selectedTicker).toUpperCase();
-    if (!ticker) {
-      setTestResult("Por favor, selecione ou digite o código de um ativo (ex: PETR4, VALE3, USD/BRL, BTC).");
-      setTimeout(() => setTestResult(null), 3500);
-      return;
-    }
     const assetFound = liveAssets.find((a) => a.ticker.toUpperCase() === ticker);
 
     const basePrice = assetFound?.price || 100;
@@ -122,7 +117,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
     });
 
     setCustomTicker("");
-    setTestResult(`Alerta criado para ${ticker} (${direction === "above" ? "+" : direction === "below" ? "-" : "±"}${threshold}%).`);
+    setTestResult(`Alerta criado para ${ticker} (±${threshold}%).`);
     setTimeout(() => setTestResult(null), 3000);
   };
 
@@ -434,26 +429,18 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
                   {/* Summary & Submit */}
                   <div className="pt-2 flex items-center justify-between border-t border-[#21262d]">
                     <div className="text-xs text-[#8b949e]">
-                      {customTicker || selectedTicker ? (
-                        <>
-                          Disparar quando{" "}
-                          <span className="font-bold text-[#e6edf3]">
-                            {customTicker || selectedTicker}
-                          </span>{" "}
-                          oscilar{" "}
-                          <span className="font-mono font-bold text-[#58a6ff]">
-                            {direction === "above"
-                              ? `+${threshold}%`
-                              : direction === "below"
-                              ? `-${threshold}%`
-                              : `±${threshold}%`}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-[#8b949e]">
-                          Selecione um ativo acima ou digite o código para salvar
-                        </span>
-                      )}
+                      Disparar quando{" "}
+                      <span className="font-bold text-[#e6edf3]">
+                        {customTicker || selectedTicker}
+                      </span>{" "}
+                      oscilar{" "}
+                      <span className="font-mono font-bold text-[#58a6ff]">
+                        {direction === "above"
+                          ? `+${threshold}%`
+                          : direction === "below"
+                          ? `-${threshold}%`
+                          : `±${threshold}%`}
+                      </span>
                     </div>
 
                     <button
@@ -477,16 +464,8 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
                 </div>
 
                 {settings.assetAlerts.length === 0 ? (
-                  <div className="py-10 px-4 text-center bg-[#161b22] border border-[#30363d] rounded-2xl space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-[#58a6ff]/10 text-[#58a6ff] mx-auto flex items-center justify-center border border-[#58a6ff]/20">
-                      <BellOff className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-[#e6edf3]">Sua lista de alertas está zerada</p>
-                      <p className="text-xs text-[#8b949e] max-w-sm mx-auto mt-1 leading-relaxed">
-                        Nenhum ativo foi pré-selecionado. Escolha uma ação da B3, índice, moeda ou criptomoeda acima para ativar o monitoramento em tempo real com notificações push.
-                      </p>
-                    </div>
+                  <div className="p-8 text-center bg-[#161b22] border border-[#30363d] rounded-xl text-[#8b949e] text-xs">
+                    Nenhum alerta de ativo configurado. Crie seu primeiro alerta acima para receber notificações em tempo real.
                   </div>
                 ) : (
                   settings.assetAlerts.map((alert) => {

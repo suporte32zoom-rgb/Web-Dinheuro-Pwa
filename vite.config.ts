@@ -1,44 +1,18 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { defineConfig } from 'vite';
+import {defineConfig} from 'vite';
 
-// Configuração de Produção DinhEuro para Hostinger & AI Studio
 export default defineConfig(() => {
   return {
-    // Caminho relativo universal: garante carregamento correto na Hostinger (seja em /public_html ou subpastas)
-    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
-        '@src': path.resolve(__dirname, './src'),
+        '@': path.resolve(__dirname, '.'),
       },
     },
     build: {
-      outDir: 'dist',
-      assetsDir: 'assets',
       target: 'es2022',
-      emptyOutDir: true,
-      sourcemap: false,
-      chunkSizeWarningLimit: 1600,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom')) {
-                return 'vendor-react';
-              }
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons';
-              }
-              if (id.includes('d3')) {
-                return 'vendor-d3';
-              }
-            }
-          },
-        },
-      },
     },
     esbuild: {
       target: 'es2022',
@@ -50,10 +24,10 @@ export default defineConfig(() => {
       },
     },
     server: {
-      port: 3000,
-      host: '0.0.0.0',
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

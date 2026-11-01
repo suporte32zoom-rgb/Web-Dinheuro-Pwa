@@ -53,12 +53,8 @@ export function usePWA() {
   useEffect(() => {
     if ("serviceWorker" in navigator && process.env.NODE_ENV !== "test") {
       window.addEventListener("load", () => {
-        const metaEnv = (import.meta as any)?.env;
-        const swPath = metaEnv?.BASE_URL && metaEnv.BASE_URL !== "./"
-          ? `${metaEnv.BASE_URL}sw.js`
-          : "./sw.js";
         navigator.serviceWorker
-          .register(swPath)
+          .register("/sw.js")
           .then((registration) => {
             console.log("[PWA] Service Worker registered with scope:", registration.scope);
             setSwRegistration(registration);

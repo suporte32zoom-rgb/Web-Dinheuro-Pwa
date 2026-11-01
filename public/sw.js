@@ -1,6 +1,6 @@
 // DinhEuro Finanças - Progressive Web App Service Worker
 // Versão do Cache Forçada para Produção (Hostinger / dinheuro.com)
-const CACHE_NAME = "dinheuro-pwa-v16-prod";
+const CACHE_NAME = "dinheuro-pwa-v15-fresh";
 const OFFLINE_URL = "/";
 
 // Recursos estáticos essenciais do App Shell
@@ -91,12 +91,8 @@ self.addEventListener("fetch", (event) => {
   }
 
   // B. RECURSOS ESTÁTICOS, SCRIPTS, ESTILOS E NAVEGAÇÃO: NETWORK-FIRST
-  const fetchOptions = (request.mode === "navigate" || url.pathname.endsWith("index.html"))
-    ? { cache: "no-cache" }
-    : undefined;
-
   event.respondWith(
-    fetch(request, fetchOptions)
+    fetch(request)
       .then((networkResponse) => {
         if (
           networkResponse &&

@@ -457,7 +457,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({
                 </div>
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-[#e6edf3] tracking-tight">
-                    Termômetro de Ações • Consenso de Mercado
+                    Termômetro de Ações • Consenso Finnhub
                   </h3>
                   <p className="text-xs text-[#8b949e]">
                     Classificação quantitativa de analistas de mercado e bancos globais em tempo real
@@ -476,7 +476,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({
                   {finnhubThermometer.sentimentText || "Neutro"} ({finnhubThermometer.score || 50}/100)
                 </span>
                 <span className="text-[11px] px-2.5 py-0.5 rounded-full font-mono bg-[#58a6ff]/10 text-[#58a6ff] border border-[#58a6ff]/20 font-semibold">
-                  Consenso Global
+                  Finnhub API
                 </span>
               </div>
             </div>
@@ -515,14 +515,9 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-bold text-[#e6edf3] tracking-tight">
-                    Diagnóstico do Ativo com Inteligência Artificial
-                  </h3>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#238636]/20 text-[#00c853] border border-[#238636]/40 font-semibold">
-                    Gemini 3.8 Flash
-                  </span>
-                </div>
+                <h3 className="text-base font-bold text-[#e6edf3] tracking-tight">
+                  Diagnóstico do Ativo com Inteligência Artificial
+                </h3>
                 <p className="text-xs text-[#8b949e]">
                   Síntese automatizada de fundamentos, momentum e posicionamento técnico em tempo real
                 </p>
@@ -540,7 +535,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({
           {aiLoading ? (
             <div className="py-8 flex flex-col items-center justify-center text-center space-y-2">
               <Loader2 className="w-8 h-8 text-[#58a6ff] animate-spin" />
-              <p className="text-xs text-[#8b949e]">Gerando síntese diagnóstica com Gemini 3.8 Flash...</p>
+              <p className="text-xs text-[#8b949e]">Gerando síntese diagnóstica com Gemini 3.7...</p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <!-- 1. PÁGINA INICIAL -->
+    <url>
+        <loc>https://dinheuro.com/</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>1.0</priority>
+    </url>
+
+    <!-- 2. REGIONALIZADOS E MERCADOS GLOBAIS -->
+    <url>
+        <loc>https://dinheuro.com/eua</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/europa</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/asia</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/america-latina</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- 3. CÂMBIO E CRIPTOMOEDAS -->
+    <url>
+        <loc>https://dinheuro.com/moedas</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/criptomoedas</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/contratos-futuros</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- 4. AÇÕES, MERCADO B3 E WALL STREET -->
+    <url>
+        <loc>https://dinheuro.com/acoes</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/mais-ativas</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/maiores-altas</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/maiores-quedas</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>hourly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
+    <!-- 5. PARES DE MOEDAS ESPECÍFICOS -->
+    <url>
+        <loc>https://dinheuro.com/usd-brl</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/eur-brl</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/gbp-brl</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/jpy-brl</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/cad-brl</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/chf-brl</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/aud-brl</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>always</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- 6. INSTITUCIONAL E LEGAL (RODAPÉ) -->
+    <url>
+        <loc>https://dinheuro.com/termos-de-uso</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/politica-de-privacidade</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/politica-de-cookies</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/sobre</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+    <url>
+        <loc>https://dinheuro.com/aviso-legal</loc>
+        <lastmod>2026-10-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+
+</urlset>

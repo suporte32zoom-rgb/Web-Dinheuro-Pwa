@@ -135,9 +135,9 @@ export const DynamicIndicesCarousel: React.FC<DynamicIndicesCarouselProps> = ({
                   color: secDef?.color || "#58a6ff",
                   border: `1px solid ${secDef?.borderColor || "rgba(88, 166, 255, 0.3)"}`,
                 }}
-                title={`Setor: ${secDef?.name || sector}`}
+                title={`Setor: ${sector}`}
               >
-                {secDef?.name || sector}
+                {sector}
               </span>
 
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#0e1117] text-[#8b949e] border border-[#30363d] font-medium">
@@ -227,7 +227,7 @@ export const DynamicIndicesCarousel: React.FC<DynamicIndicesCarouselProps> = ({
             </h2>
             {selectedSector !== "all" && (
               <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-[#1f6feb]/20 text-[#58a6ff] border border-[#58a6ff]/40">
-                Setor: {SECTOR_DEFINITIONS[selectedSector]?.name || selectedSector}
+                Setor: {selectedSector}
               </span>
             )}
             {activeTag && (

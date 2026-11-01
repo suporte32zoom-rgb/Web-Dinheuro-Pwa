@@ -144,35 +144,3 @@ export interface WatchlistGroup {
   name: string;
   assetIds: string[];
 }
-
-export type EventImpact = "high" | "medium" | "low";
-export type EconomicEventCategory =
-  | "interest_rate"
-  | "inflation"
-  | "employment"
-  | "gdp"
-  | "central_bank"
-  | "pmi";
-
-export interface EconomicEvent {
-  id: string;
-  title: string;
-  country: "BR" | "US" | "EU" | "GB" | "JP" | "CN";
-  countryName: string;
-  flag: string;
-  category: EconomicEventCategory;
-  categoryLabel: string;
-  date: string; // ISO Date YYYY-MM-DD
-  time: string; // HH:mm (horário de Brasília)
-  datetime: string; // ISO full timestamp
-  impact: EventImpact;
-  forecast?: string;
-  previous?: string;
-  actual?: string;
-  unit?: string;
-  status: "scheduled" | "released" | "in_progress";
-  description: string;
-  consensus: string;
-  importanceReason: string;
-  affectedTickers?: string[];
-}

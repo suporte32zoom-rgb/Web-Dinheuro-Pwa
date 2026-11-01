@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Asset } from "../types/finance";
 import { formatAssetDisplayPrice } from "../utils/formatters";
-import { SECTOR_DEFINITIONS } from "../utils/assetTaxonomy";
 import { Search, X, TrendingUp, TrendingDown, ArrowRight, CornerDownLeft } from "lucide-react";
 
 interface GlobalSearchModalProps {
@@ -124,7 +123,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                         </span>
                         {asset.sector && (
                           <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#58a6ff]/10 text-[#58a6ff] border border-[#58a6ff]/30 shrink-0 font-semibold">
-                            {SECTOR_DEFINITIONS[asset.sector]?.name || asset.sector}
+                            {asset.sector}
                           </span>
                         )}
                       </div>

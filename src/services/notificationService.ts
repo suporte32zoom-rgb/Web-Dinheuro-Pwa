@@ -32,7 +32,7 @@ export interface NotificationSettings {
   assetAlerts: AssetPriceAlert[];
 }
 
-const STORAGE_KEY = "dinheuro_notification_settings_v2";
+const STORAGE_KEY = "dinheuro_notification_settings_v1";
 
 const DEFAULT_SETTINGS: NotificationSettings = {
   enabled: false,
@@ -45,7 +45,52 @@ const DEFAULT_SETTINGS: NotificationSettings = {
     ecb: true,
     circuitBreaker: true,
   },
-  assetAlerts: [],
+  assetAlerts: [
+    {
+      id: "alert-petr4",
+      ticker: "PETR4",
+      name: "Petrobras PN",
+      category: "América Latina",
+      basePrice: 47.99,
+      thresholdPercent: 2.0,
+      direction: "any",
+      enabled: true,
+      createdAt: Date.now() - 3600000,
+    },
+    {
+      id: "alert-usdBrl",
+      ticker: "USD/BRL",
+      name: "Dólar Comercial",
+      category: "Câmbio",
+      basePrice: 5.18,
+      thresholdPercent: 1.0,
+      direction: "any",
+      enabled: true,
+      createdAt: Date.now() - 7200000,
+    },
+    {
+      id: "alert-ibov",
+      ticker: "IBOV",
+      name: "Índice Bovespa",
+      category: "América Latina",
+      basePrice: 183477,
+      thresholdPercent: 1.5,
+      direction: "any",
+      enabled: true,
+      createdAt: Date.now() - 10800000,
+    },
+    {
+      id: "alert-btc",
+      ticker: "BTC",
+      name: "Bitcoin",
+      category: "Criptoativos",
+      basePrice: 83430,
+      thresholdPercent: 3.0,
+      direction: "any",
+      enabled: true,
+      createdAt: Date.now() - 14400000,
+    },
+  ],
 };
 
 class NotificationService {
@@ -133,14 +178,11 @@ class NotificationService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        const parsedAlerts = (parsed.assetAlerts || []).filter(
-          (a: any) => !["alert-petr4", "alert-usdBrl", "alert-ibov", "alert-btc"].includes(a.id)
-        );
         return {
           ...DEFAULT_SETTINGS,
           ...parsed,
           marketEvents: { ...DEFAULT_SETTINGS.marketEvents, ...parsed.marketEvents },
-          assetAlerts: parsedAlerts,
+          assetAlerts: parsed.assetAlerts || DEFAULT_SETTINGS.assetAlerts,
         };
       }
     } catch (e) {

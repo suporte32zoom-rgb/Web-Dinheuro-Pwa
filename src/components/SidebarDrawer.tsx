@@ -36,7 +36,7 @@ const CURRENCY_INFO: Record<
   { label: string; symbol: string; prefix: string; icon: string }
 > = {
   BRL: { label: "Real (BRL)", symbol: "R$", prefix: "R$", icon: "🇧🇷" },
-  USD: { label: "Dólar (USD)", symbol: "US$", prefix: "US$", icon: "🇺🇸" },
+  USD: { label: "Dólar (USD)", symbol: "$", prefix: "US$", icon: "🇺🇸" },
   EUR: { label: "Euro (EUR)", symbol: "€", prefix: "€", icon: "🇪🇺" },
   GBP: { label: "Libra (GBP)", symbol: "£", prefix: "£", icon: "🇬🇧" },
   JPY: { label: "Iene (JPY)", symbol: "¥", prefix: "¥", icon: "🇯🇵" },
@@ -51,8 +51,8 @@ interface SidebarDrawerProps {
   activeTab: RegionalTab;
   onSelectTab: (tab: RegionalTab) => void;
   onOpenPortfolio: () => void;
-  portfolioCount?: number;
   onOpenWatchlist: () => void;
+  onOpenCopilot?: () => void;
   onOpenGoogleChat?: () => void;
   onOpenNotifications?: () => void;
   onOpenPwaModal?: () => void;
@@ -69,8 +69,8 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   activeTab,
   onSelectTab,
   onOpenPortfolio,
-  portfolioCount = 0,
   onOpenWatchlist,
+  onOpenCopilot,
   onOpenGoogleChat,
   onOpenNotifications,
   onOpenPwaModal,
@@ -196,6 +196,29 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
 
         {/* Action Shortcuts */}
         <div className="p-4 border-b border-[#21262d] space-y-2">
+          {/* DinhEuro AI Copilot Button */}
+          {onOpenCopilot && (
+            <button
+              id="sidebar-btn-copilot"
+              onClick={() => {
+                onClose();
+                onOpenCopilot();
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-[#8957e5]/20 via-[#1f6feb]/20 to-[#f0883e]/20 hover:from-[#8957e5]/30 hover:to-[#f0883e]/30 border border-purple-500/40 text-xs font-bold text-white transition-all cursor-pointer shadow-xs"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-1 rounded-lg bg-gradient-to-br from-[#8957e5] to-[#1f6feb] text-white">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <span>IA Oficial DinhEuro Copilot</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-[#00c853]/20 text-[#00c853] text-[10px] font-mono">
+                ONLINE
+              </span>
+            </button>
+          )}
+
+
           {/* PWA App Install Button */}
           {onOpenPwaModal && (
             <button
@@ -262,15 +285,13 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               onClose();
               onOpenPortfolio();
             }}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-[#1f6feb]/20 to-[#238636]/20 hover:from-[#1f6feb]/30 hover:to-[#238636]/30 border border-[#1f6feb]/40 text-xs font-semibold text-[#e6edf3] transition-all cursor-pointer shadow-xs"
+            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-[#1f6feb]/20 to-[#238636]/20 hover:from-[#1f6feb]/30 hover:to-[#238636]/30 border border-[#1f6feb]/40 text-xs font-semibold text-[#e6edf3] transition-all cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
               <Briefcase className="w-4 h-4 text-[#58a6ff]" />
               <span>Criar / Gerenciar Portfólio</span>
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-[#1f6feb]/25 text-[#58a6ff] text-[10px] font-mono font-bold">
-              {portfolioCount > 0 ? `${portfolioCount} ${portfolioCount === 1 ? 'ativo' : 'ativos'}` : 'ABRIR'}
-            </span>
+            <span className="text-[10px] text-[#58a6ff]">Novo</span>
           </button>
         </div>
 

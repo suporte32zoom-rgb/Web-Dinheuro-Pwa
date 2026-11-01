@@ -1,12 +1,8 @@
 node_modules/
 build/
+dist/
 coverage/
 .DS_Store
 *.log
 .env*
 !.env.example
-
-# Para deploy na Hostinger via Git / GitHub:
-# A pasta dist/ é mantida versionada para que a Hostinger receba o build compilado mais recente do Vite/React.
-# Se preferir compilar via GitHub Actions ou localmente sem versionar dist/, descomente a linha abaixo:
-# dist/

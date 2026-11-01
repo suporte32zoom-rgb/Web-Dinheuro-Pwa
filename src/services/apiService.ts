@@ -244,33 +244,26 @@ export function persistQuotes(quotes: Record<string, LiveQuotePayload>): void {
   apiClient.saveToStorage(CACHE_KEY_QUOTES, quotes);
 }
 
-let inFlightQuotesPromise: Promise<Record<string, LiveQuotePayload>> | null = null;
-
 /**
  * 4. Pipeline Mestre de Cotações Resilientes:
  * Consulta primeiro o servidor `/api/market/quotes`. Se falhar (ex: Hostinger estático),
  * consulta AwesomeAPI e BRAPI diretamente do navegador, mesclando com o estado local.
  */
 export async function getResilientMarketQuotes(): Promise<Record<string, LiveQuotePayload>> {
-  if (inFlightQuotesPromise) {
-    return inFlightQuotesPromise;
+  let quotes: Record<string, LiveQuotePayload> = {};
+
+  // A. Tenta primeiro a API do backend local (/api/market/quotes)
+  const serverData = await safeFetch<{ success: boolean; quotes: Record<string, LiveQuotePayload> }>(
+    `/api/market/quotes?t=${Date.now()}`,
+    { method: "GET" },
+    6000
+  );
+
+  if (serverData?.success && serverData.quotes && Object.keys(serverData.quotes).length > 0) {
+    quotes = serverData.quotes;
+    persistQuotes(quotes);
+    return quotes;
   }
-
-  inFlightQuotesPromise = (async () => {
-    let quotes: Record<string, LiveQuotePayload> = {};
-
-    // A. Tenta primeiro a API do backend local (/api/market/quotes)
-    const serverData = await safeFetch<{ success: boolean; quotes: Record<string, LiveQuotePayload> }>(
-      `/api/market/quotes?t=${Date.now()}`,
-      { method: "GET" },
-      6000
-    );
-
-    if (serverData?.success && serverData.quotes && Object.keys(serverData.quotes).length > 0) {
-      quotes = serverData.quotes;
-      persistQuotes(quotes);
-      return quotes;
-    }
 
   // B. Se o backend não responder (ex: Deploy estático Hostinger), faz fallback para AwesomeAPI e BRAPI direto no cliente
   const [awesomeQuotes, brapiQuotes] = await Promise.all([
@@ -376,42 +369,28 @@ export async function getResilientMarketQuotes(): Promise<Record<string, LiveQuo
     "sp-500-futuros": "SPY",
   };
 
-  // 2. Finnhub API: Responsável por todo o restante da economia global e ativos
-  // Processamento em lotes controlados para evitar rajadas e erro HTTP 429
-  const finnhubEntries = Object.entries(finnhubAssetMappings);
-  for (let i = 0; i < finnhubEntries.length; i += 3) {
-    const batch = finnhubEntries.slice(i, i + 3);
-    await Promise.all(
-      batch.map(async ([id, finnhubSymbol]) => {
-        try {
-          const finnhubQuote = await obterCotacaoFinnhub(finnhubSymbol);
-          if (finnhubQuote && finnhubQuote.precoAtual > 0 && quotes[id]) {
-            quotes[id] = {
-              ...quotes[id],
-              price: finnhubQuote.precoAtual,
-              change: Number(finnhubQuote.variacao.toFixed(2)),
-              changePercent: Number(finnhubQuote.percentualVariacao.toFixed(2)),
-              open: finnhubQuote.abertura || finnhubQuote.precoAtual,
-              high: finnhubQuote.maximaDia || finnhubQuote.precoAtual,
-              low: finnhubQuote.minimaDia || finnhubQuote.precoAtual,
-              lastUpdated: new Date().toISOString(),
-            };
-          }
-        } catch {
-          // Silenciosamente ignora falhas pontuais
+  await Promise.all(
+    Object.entries(finnhubAssetMappings).map(async ([id, finnhubSymbol]) => {
+      try {
+        const finnhubQuote = await obterCotacaoFinnhub(finnhubSymbol);
+        if (finnhubQuote && finnhubQuote.precoAtual > 0 && quotes[id]) {
+          quotes[id] = {
+            ...quotes[id],
+            price: finnhubQuote.precoAtual,
+            change: Number(finnhubQuote.variacao.toFixed(2)),
+            changePercent: Number(finnhubQuote.percentualVariacao.toFixed(2)),
+            open: finnhubQuote.abertura || finnhubQuote.precoAtual,
+            high: finnhubQuote.maximaDia || finnhubQuote.precoAtual,
+            low: finnhubQuote.minimaDia || finnhubQuote.precoAtual,
+            lastUpdated: new Date().toISOString(),
+          };
         }
-      })
-    );
-    if (i + 3 < finnhubEntries.length) {
-      await new Promise((resolve) => setTimeout(resolve, 80));
-    }
-  }
+      } catch {
+        // Silenciosamente ignora falhas pontuais
+      }
+    })
+  );
 
   persistQuotes(quotes);
   return quotes;
-})().finally(() => {
-  inFlightQuotesPromise = null;
-});
-
-  return inFlightQuotesPromise;
 }
