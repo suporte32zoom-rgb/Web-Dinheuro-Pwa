@@ -1,0 +1,6 @@
+{
+  "name": "DinhEuro - Portal Financeiro & Mercados Globais",
+  "description": "Plataforma financeira PWA completa inspirada no Google Finanças com cotações em tempo real, resumos de mercado com IA DinhEuro, gráficos interativos e gestão de portfólios.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

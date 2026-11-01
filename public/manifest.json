@@ -1,0 +1,89 @@
+{
+  "name": "DinhEuro Finanças • Mercados Globais & IA",
+  "short_name": "DinhEuro",
+  "description": "Portal financeiro com cotações em tempo real do Ibovespa, S&P 500, Dólar, Euro, Bitcoin, gráficos interativos e inteligência com IA.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#0e1117",
+  "orientation": "portrait-primary",
+  "id": "com.dinheuro.app",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": [
+    "finance",
+    "business",
+    "productivity",
+    "news"
+  ],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/logo-original.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ações & B3",
+      "short_name": "Ações",
+      "description": "Acompanhar mercado de ações e Ibovespa",
+      "url": "/?tab=stocks",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Câmbio & Dólar / Euro",
+      "short_name": "Câmbio",
+      "description": "Cotações de moedas em tempo real",
+      "url": "/?tab=currencies",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Criptomoedas",
+      "short_name": "Cripto",
+      "description": "Bitcoin, Ethereum e altcoins",
+      "url": "/?tab=crypto",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Conversor de Moedas",
+      "short_name": "Conversor",
+      "description": "Converter BRL, USD e BTC",
+      "url": "/?tool=converter",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

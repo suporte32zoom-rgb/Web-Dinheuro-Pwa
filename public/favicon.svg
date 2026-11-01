@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Circular Border Gradient -->
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f6feb" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#00c853" />
+    </linearGradient>
+
+    <!-- Euro Symbol Navy Blue Gradient -->
+    <linearGradient id="euroNavy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f2b5c" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+
+    <!-- Real Symbol Emerald Green Gradient -->
+    <linearGradient id="realGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00875a" />
+      <stop offset="100%" stop-color="#00c853" />
+    </linearGradient>
+
+    <!-- Exchange Gold Flow Arrows Gradient -->
+    <linearGradient id="arrowGold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fbbf24" />
+    </linearGradient>
+  </defs>
+
+  <!-- Pure White Circular Background Base -->
+  <circle cx="256" cy="256" r="250" fill="#FFFFFF" />
+
+  <!-- Outer Gradient Ring -->
+  <circle
+    cx="256"
+    cy="256"
+    r="238"
+    fill="none"
+    stroke="url(#ringGrad)"
+    stroke-width="18"
+  />
+
+  <!-- 1. Euro Symbol (€) in Navy Blue on Left -->
+  <g transform="translate(40, 20)">
+    <!-- Main C Arc of Euro -->
+    <path
+      d="M 230 145 C 195 125 155 130 130 160 C 95 200 95 310 130 350 C 155 380 195 385 230 365"
+      fill="none"
+      stroke="url(#euroNavy)"
+      stroke-width="38"
+      stroke-linecap="round"
+    />
+    <!-- Upper Euro Bar -->
+    <rect x="75" y="222" width="125" height="24" rx="12" fill="url(#euroNavy)" />
+    <!-- Lower Euro Bar -->
+    <rect x="75" y="266" width="125" height="24" rx="12" fill="url(#euroNavy)" />
+  </g>
+
+  <!-- 2. Exchange Center Arrows (Golden Yellow Flow ⇄) -->
+  <g fill="url(#arrowGold)" stroke="url(#arrowGold)">
+    <!-- Upper Arrow (Left to Right Flow) -->
+    <path
+      d="M 215 190 Q 256 168 295 190"
+      fill="none"
+      stroke-width="14"
+      stroke-linecap="round"
+    />
+    <polygon points="305,190 285,178 288,198" fill="url(#arrowGold)" stroke="none" />
+
+    <!-- Lower Arrow (Right to Left Flow) -->
+    <path
+      d="M 295 320 Q 256 342 215 320"
+      fill="none"
+      stroke-width="14"
+      stroke-linecap="round"
+    />
+    <polygon points="205,320 225,332 222,312" fill="url(#arrowGold)" stroke="none" />
+  </g>
+
+  <!-- 3. Brazilian Real Symbol (R$) in Emerald Green on Right -->
+  <g transform="translate(230, 80)">
+    <!-- R Letter Pillar -->
+    <rect x="50" y="80" width="34" height="200" rx="14" fill="url(#realGreen)" />
+    
+    <!-- R Letter Loop -->
+    <path
+      d="M 75 80 L 125 80 C 160 80 180 102 180 135 C 180 168 160 190 125 190 L 75 190"
+      fill="none"
+      stroke="url(#realGreen)"
+      stroke-width="34"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    
+    <!-- R Letter Diagonal Leg -->
+    <path
+      d="M 120 185 L 175 280"
+      fill="none"
+      stroke="url(#realGreen)"
+      stroke-width="34"
+      stroke-linecap="round"
+    />
+
+    <!-- $ Sign (S with vertical stroke) -->
+    <g transform="translate(160, 50)">
+      <!-- Vertical Strike -->
+      <rect x="42" y="55" width="12" height="150" rx="6" fill="url(#realGreen)" />
+      <!-- S Curve -->
+      <path
+        d="M 72 85 C 65 72 48 70 38 76 C 24 84 26 102 42 110 L 52 115 C 72 125 74 148 58 160 C 44 170 24 165 18 150"
+        fill="none"
+        stroke="url(#realGreen)"
+        stroke-width="18"
+        stroke-linecap="round"
+      />
+    </g>
+  </g>
+</svg>
