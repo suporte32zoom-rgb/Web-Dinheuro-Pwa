@@ -138,89 +138,89 @@ export const SECTOR_DEFINITIONS: Record<string, SectorDefinition> = {
  * Mapeamento determinístico de setores para cada ticker conhecido
  */
 const TICKER_SECTOR_MAP: Record<string, { sector: AssetSector; tags: string[] }> = {
-  // Tech
-  AAPL: { sector: "Tech", tags: ["Hardware", "MegaCap", "AI", "Mobile", "Global"] },
-  NVDA: { sector: "Tech", tags: ["Semiconductors", "AI", "Chips", "MegaCap", "Global"] },
-  MSFT: { sector: "Tech", tags: ["Software", "Cloud", "AI", "MegaCap", "Global"] },
-  AMZN: { sector: "Tech", tags: ["Cloud", "E-Commerce", "AI", "Global"] },
-  GOOGL: { sector: "Tech", tags: ["Search", "Cloud", "AI", "Advertising", "Global"] },
-  TSLA: { sector: "Tech", tags: ["EV", "Automotive", "CleanEnergy", "Autonomous", "Global"] },
-  META: { sector: "Tech", tags: ["SocialMedia", "AI", "Metaverse", "Global"] },
-  TOTS3: { sector: "Tech", tags: ["ERP", "SaaS", "Software", "B3"] },
-  NASDAQ: { sector: "Tech", tags: ["Benchmark", "TechIndex", "WallStreet"] },
-  ".IXIC": { sector: "Tech", tags: ["Benchmark", "TechIndex"] },
+  // Tecnologia
+  AAPL: { sector: "Tech", tags: ["Hardware", "Mega Capitalização", "Inteligência Artificial", "Mobile", "Global"] },
+  NVDA: { sector: "Tech", tags: ["Semicondutores", "Inteligência Artificial", "Microchips", "Mega Capitalização", "Global"] },
+  MSFT: { sector: "Tech", tags: ["Software & Sistemas", "Computação em Nuvem", "Inteligência Artificial", "Mega Capitalização", "Global"] },
+  AMZN: { sector: "Tech", tags: ["Computação em Nuvem", "Comércio Eletrônico", "Inteligência Artificial", "Global"] },
+  GOOGL: { sector: "Tech", tags: ["Busca & Dados", "Computação em Nuvem", "Inteligência Artificial", "Publicidade Digital", "Global"] },
+  TSLA: { sector: "Tech", tags: ["Veículos Elétricos", "Automotivo", "Energia Limpa", "Condução Autônoma", "Global"] },
+  META: { sector: "Tech", tags: ["Redes Sociais", "Inteligência Artificial", "Metaverso", "Global"] },
+  TOTS3: { sector: "Tech", tags: ["ERP Corporativo", "SaaS", "Software", "B3"] },
+  NASDAQ: { sector: "Tech", tags: ["Índice de Referência", "Tecnologia Global", "Wall Street"] },
+  ".IXIC": { sector: "Tech", tags: ["Índice de Referência", "Tecnologia Global"] },
 
-  // Energy
-  PETR4: { sector: "Energy", tags: ["Petróleo", "Estatal", "Dividendos", "B3"] },
-  PRIO3: { sector: "Energy", tags: ["Petróleo", "JuniorOil", "B3"] },
-  BRENT: { sector: "Energy", tags: ["Petróleo", "Futuros", "ICE"] },
-  "GÁS NAT": { sector: "Energy", tags: ["GásNatural", "Commodities", "NYMEX"] },
+  // Energia
+  PETR4: { sector: "Energy", tags: ["Petróleo & Gás", "Empresa Estatal", "Dividendos", "B3"] },
+  PRIO3: { sector: "Energy", tags: ["Petróleo Independente", "Exploração", "B3"] },
+  BRENT: { sector: "Energy", tags: ["Petróleo Internacional", "Contratos Futuros", "ICE"] },
+  "GÁS NAT": { sector: "Energy", tags: ["Gás Natural", "Commodities Energéticas", "NYMEX"] },
 
-  // Crypto
-  "BTC/BRL": { sector: "Crypto", tags: ["Bitcoin", "Halving", "StoreOfValue", "24/7"] },
-  "ETH/BRL": { sector: "Crypto", tags: ["Ethereum", "SmartContracts", "DeFi", "24/7"] },
-  "SOL/BRL": { sector: "Crypto", tags: ["Solana", "HighSpeed", "DeFi", "24/7"] },
-  "XRP/BRL": { sector: "Crypto", tags: ["Ripple", "Payments", "Liquidity", "24/7"] },
-  "DOGE/BRL": { sector: "Crypto", tags: ["MemeCoin", "Community", "Payment", "24/7"] },
-  BTC: { sector: "Crypto", tags: ["Bitcoin", "Global", "DigitalGold"] },
-  ETH: { sector: "Crypto", tags: ["Ethereum", "Global", "EVM"] },
-  SOL: { sector: "Crypto", tags: ["Solana", "Global"] },
-  XRP: { sector: "Crypto", tags: ["Ripple", "Global"] },
-  DOGE: { sector: "Crypto", tags: ["Dogecoin", "Global"] },
+  // Criptoativos
+  "BTC/BRL": { sector: "Crypto", tags: ["Bitcoin", "Reserva de Valor", "Ouro Digital", "24/7"] },
+  "ETH/BRL": { sector: "Crypto", tags: ["Ethereum", "Contratos Inteligentes", "Finanças Descentralizadas", "24/7"] },
+  "SOL/BRL": { sector: "Crypto", tags: ["Solana", "Alta Velocidade", "Web3", "24/7"] },
+  "XRP/BRL": { sector: "Crypto", tags: ["Ripple", "Pagamentos Globais", "Liquidez", "24/7"] },
+  "DOGE/BRL": { sector: "Crypto", tags: ["Cripto Meme", "Comunidade", "Pagamentos", "24/7"] },
+  BTC: { sector: "Crypto", tags: ["Bitcoin", "Global", "Ouro Digital"] },
+  ETH: { sector: "Crypto", tags: ["Ethereum", "Global", "Ecossistema EVM"] },
+  SOL: { sector: "Crypto", tags: ["Solana", "Global", "Infraestrutura"] },
+  XRP: { sector: "Crypto", tags: ["Ripple", "Global", "Liquidez Transfronteiriça"] },
+  DOGE: { sector: "Crypto", tags: ["Dogecoin", "Global", "Comunidade"] },
 
-  // Finance
-  ITUB4: { sector: "Finance", tags: ["Bancos", "Privado", "Dividendos", "B3"] },
-  BBAS3: { sector: "Finance", tags: ["Bancos", "Estatal", "Agronegócio", "B3"] },
-  B3SA3: { sector: "Finance", tags: ["Bolsa", "Infraestrutura", "Dividendos", "B3"] },
-  ".DJI": { sector: "Finance", tags: ["DowJones", "BlueChips", "NYSE"] },
+  // Setor Financeiro
+  ITUB4: { sector: "Finance", tags: ["Bancos Múltiplos", "Setor Privado", "Dividendos", "B3"] },
+  BBAS3: { sector: "Finance", tags: ["Bancos Múltiplos", "Agronegócio", "Empresa Pública", "B3"] },
+  B3SA3: { sector: "Finance", tags: ["Infraestrutura de Mercado", "Bolsa de Valores", "Dividendos", "B3"] },
+  ".DJI": { sector: "Finance", tags: ["Dow Jones", "Grandes Empresas", "NYSE"] },
 
-  // Materials
-  VALE3: { sector: "Materials", tags: ["Mineração", "Exportação", "Dividendos", "B3"] },
-  CMIN3: { sector: "Materials", tags: ["Mineração", "CSN", "B3"] },
-  CSNA3: { sector: "Materials", tags: ["Siderurgia", "Aço", "B3"] },
-  OURO: { sector: "Materials", tags: ["Ouro", "ReservaDeValor", "COMEX"] },
+  // Materiais Básicos
+  VALE3: { sector: "Materials", tags: ["Mineração Global", "Minério de Ferro", "Dividendos", "B3"] },
+  CMIN3: { sector: "Materials", tags: ["Mineração", "Exportação", "B3"] },
+  CSNA3: { sector: "Materials", tags: ["Siderurgia & Aço", "Indústria de Base", "B3"] },
+  OURO: { sector: "Materials", tags: ["Ouro Metálico", "Reserva de Valor", "COMEX"] },
 
-  // Industry
-  WEGE3: { sector: "Industry", tags: ["Motores", "Automação", "Multinacional", "B3"] },
-  EMBR3: { sector: "Industry", tags: ["Aeronáutica", "Defesa", "Exportação", "B3"] },
-  AZUL4: { sector: "Industry", tags: ["Aviação", "Transporte", "B3"] },
+  // Indústria & Bens de Capital
+  WEGE3: { sector: "Industry", tags: ["Motores Elétricos", "Automação Industrial", "Multinacional", "B3"] },
+  EMBR3: { sector: "Industry", tags: ["Aeronáutica", "Defesa Nacional", "Exportação", "B3"] },
+  AZUL4: { sector: "Industry", tags: ["Aviação Comercial", "Transporte Aéreo", "B3"] },
 
-  // Consumer
-  MGLU3: { sector: "Consumer", tags: ["Varejo", "E-Commerce", "B3"] },
-  CRFB3: { sector: "Consumer", tags: ["Supermercados", "VarejoAlimentar", "B3"] },
+  // Consumo & Varejo
+  MGLU3: { sector: "Consumer", tags: ["Varejo Multicanal", "Comércio Eletrônico", "B3"] },
+  CRFB3: { sector: "Consumer", tags: ["Supermercados", "Varejo Alimentar", "B3"] },
 
-  // Utilities
-  EQTL3: { sector: "Utilities", tags: ["EnergiaElétrica", "Defensivo", "Concessões", "B3"] },
+  // Utilidades Públicas
+  EQTL3: { sector: "Utilities", tags: ["Energia Elétrica", "Setor Defensivo", "Concessões", "B3"] },
 
-  // Commodities
-  SOJA: { sector: "Commodities", tags: ["Agro", "Grãos", "Chicago", "CBOT"] },
+  // Commodities & Agronegócio
+  SOJA: { sector: "Commodities", tags: ["Agronegócio", "Complexo Soja", "Bolsa de Chicago", "CBOT"] },
 
-  // Forex
-  "USD/BRL": { sector: "Forex", tags: ["Dólar", "Câmbio", "PTAX"] },
-  "EUR/BRL": { sector: "Forex", tags: ["Euro", "Câmbio", "PTAX"] },
-  "GBP/BRL": { sector: "Forex", tags: ["Libra", "Câmbio", "PTAX"] },
-  "JPY/BRL": { sector: "Forex", tags: ["Iene", "Câmbio", "PTAX"] },
-  "EUR/USD": { sector: "Forex", tags: ["MajorPair", "ForexGlobal"] },
+  // Mercado de Câmbio (Forex)
+  "USD/BRL": { sector: "Forex", tags: ["Dólar Comercial", "Câmbio Oficial", "PTAX"] },
+  "EUR/BRL": { sector: "Forex", tags: ["Euro Comercial", "Câmbio Oficial", "PTAX"] },
+  "GBP/BRL": { sector: "Forex", tags: ["Libra Esterlina", "Câmbio Oficial", "PTAX"] },
+  "JPY/BRL": { sector: "Forex", tags: ["Iene Japonês", "Câmbio Oficial", "PTAX"] },
+  "EUR/USD": { sector: "Forex", tags: ["Par Cambial Principal", "Câmbio Global"] },
 
-  // Indices
-  IBOV: { sector: "Indices", tags: ["Brasil", "B3", "Benchmark"] },
-  "S&P 500": { sector: "Indices", tags: ["EUA", "WallStreet", "MegaCap"] },
-  "DAX 40": { sector: "Indices", tags: ["Alemanha", "Europa", "Frankfurt"] },
-  "FTSE 100": { sector: "Indices", tags: ["ReinoUnido", "Londres", "Europa"] },
-  "CAC 40": { sector: "Indices", tags: ["França", "Paris", "Europa"] },
-  "IBEX 35": { sector: "Indices", tags: ["Espanha", "Madri", "Europa"] },
-  "STOXX 50": { sector: "Indices", tags: ["ZonaDoEuro", "Europa"] },
-  "NIKKEI 225": { sector: "Indices", tags: ["Japão", "Tóquio", "Ásia"] },
-  "SSE COMP": { sector: "Indices", tags: ["China", "Xangai", "Ásia"] },
-  "HANG SENG": { sector: "Indices", tags: ["HongKong", "Ásia"] },
-  SENSEX: { sector: "Indices", tags: ["Índia", "Mumbai", "Ásia"] },
-  KOSPI: { sector: "Indices", tags: ["CoreiadoSul", "Seul", "Ásia"] },
-  "S&P LATAM": { sector: "Indices", tags: ["AméricaLatina", "MercadosEmergentes"] },
-  IGCX: { sector: "Indices", tags: ["GovernançaCorporativa", "B3"] },
-  IBRA: { sector: "Indices", tags: ["BrasilAmplo", "B3"] },
-  "S&P FUT": { sector: "Indices", tags: ["Derivativos", "CME"] },
-  RUSSELL: { sector: "Indices", tags: ["SmallCaps", "EUA"] },
-  VIX: { sector: "Indices", tags: ["Volatilidade", "ÍndiceDoMedo"] },
+  // Índices & Benchmarks
+  IBOV: { sector: "Indices", tags: ["Brasil", "B3", "Índice de Referência"] },
+  "S&P 500": { sector: "Indices", tags: ["Estados Unidos", "Wall Street", "Mega Capitalização"] },
+  "DAX 40": { sector: "Indices", tags: ["Alemanha", "Europa", "Bolsa de Frankfurt"] },
+  "FTSE 100": { sector: "Indices", tags: ["Reino Unido", "Londres", "Mercado Europeu"] },
+  "CAC 40": { sector: "Indices", tags: ["França", "Paris", "Mercado Europeu"] },
+  "IBEX 35": { sector: "Indices", tags: ["Espanha", "Madri", "Mercado Europeu"] },
+  "STOXX 50": { sector: "Indices", tags: ["Zona do Euro", "Consolidação Europeia"] },
+  "NIKKEI 225": { sector: "Indices", tags: ["Japão", "Tóquio", "Mercado Asiático"] },
+  "SSE COMP": { sector: "Indices", tags: ["China", "Xangai", "Mercado Asiático"] },
+  "HANG SENG": { sector: "Indices", tags: ["Hong Kong", "Mercado Asiático"] },
+  SENSEX: { sector: "Indices", tags: ["Índia", "Mumbai", "Mercado Asiático"] },
+  KOSPI: { sector: "Indices", tags: ["Coreia do Sul", "Seul", "Mercado Asiático"] },
+  "S&P LATAM": { sector: "Indices", tags: ["América Latina", "Mercados Emergentes"] },
+  IGCX: { sector: "Indices", tags: ["Governança Corporativa", "B3"] },
+  IBRA: { sector: "Indices", tags: ["Brasil Amplo", "B3"] },
+  "S&P FUT": { sector: "Indices", tags: ["Derivativos Futuros", "CME"] },
+  RUSSELL: { sector: "Indices", tags: ["Pequenas Empresas", "Estados Unidos"] },
+  VIX: { sector: "Indices", tags: ["Volatilidade", "Índice de Incerteza"] },
 };
 
 /**

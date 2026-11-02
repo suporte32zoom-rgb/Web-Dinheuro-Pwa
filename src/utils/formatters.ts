@@ -99,17 +99,21 @@ export function formatAssetDisplayPrice(price: number, currency: string = "BRL")
       ? "JPY"
       : raw;
 
+  // Precisão dinâmica: até 4 casas decimais para taxas cambiais e ativos abaixo de 10 unidades com frações relevantes
+  const hasExtraDecimals = price < 10 && price > 0 && Math.abs(price - Math.round(price * 100) / 100) > 0.0001;
+  const decimals = hasExtraDecimals ? 4 : 2;
+
   if (curr === "BRL") {
-    return `R$ ${price.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `R$ ${price.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
   }
   if (curr === "USD") {
-    return `US$ ${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `US$ ${price.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
   }
   if (curr === "EUR") {
-    return `€ ${price.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `€ ${price.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
   }
   if (curr === "GBP") {
-    return `£ ${price.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `£ ${price.toLocaleString("en-GB", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
   }
   if (curr === "JPY") {
     return `¥ ${price.toLocaleString("ja-JP", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;

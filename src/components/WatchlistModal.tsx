@@ -2,6 +2,7 @@ import React from "react";
 import { Asset } from "../types/finance";
 import { Sparkline } from "./Sparkline";
 import { formatAssetDisplayPrice } from "../utils/formatters";
+import { DualPriceDisplay } from "../utils/currencyConversion";
 import { X, Bookmark, Trash2, ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
 
 interface WatchlistModalProps {
@@ -110,9 +111,12 @@ export const WatchlistModal: React.FC<WatchlistModalProps> = ({
                     </div>
 
                     <div className="text-right">
-                      <div className="text-xs font-mono font-bold text-white">
-                        {formatAssetDisplayPrice(asset.price, asset.currency)}
-                      </div>
+                      <DualPriceDisplay
+                        price={asset.price}
+                        currency={asset.currency}
+                        size="xs"
+                        align="right"
+                      />
                       <div
                         className={`text-[11px] font-mono font-semibold flex items-center justify-end gap-0.5 ${
                           isPositive ? "text-[#00c853]" : "text-[#ff5252]"

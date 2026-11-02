@@ -3,6 +3,7 @@ import { TOP_MOVERS_DATA } from "../data/mockMarketData";
 import { MarketMoverItem } from "../types/finance";
 import { TrendingUp, TrendingDown, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { formatAssetDisplayPrice } from "../utils/formatters";
+import { DualPriceDisplay } from "../utils/currencyConversion";
 
 interface MarketMoversGridProps {
   onSelectTicker: (ticker: string) => void;
@@ -94,9 +95,12 @@ export const MarketMoversGrid: React.FC<MarketMoversGridProps> = ({
                   </div>
 
                   <div className="text-right shrink-0">
-                    <div className="text-xs font-mono font-semibold text-[#e6edf3]">
-                      {formatAssetDisplayPrice(item.price, item.currency || "BRL")}
-                    </div>
+                    <DualPriceDisplay
+                      price={item.price}
+                      currency={item.currency || "BRL"}
+                      size="xs"
+                      align="right"
+                    />
                     <div
                       className={`text-[11px] font-mono font-bold flex items-center justify-end gap-0.5 ${
                         isPositive ? "text-[#00c853]" : "text-[#ff5252]"

@@ -8,6 +8,7 @@ import { LiveQuotePayload } from "./marketDataService";
 import { ALL_ASSETS } from "../data/mockMarketData";
 import { obterCotacaoFinnhub, FinnhubQuoteResult } from "./finnhubService";
 import { obterCotacaoFMP, FMPQuote } from "./fmpService";
+import { setGlobalExchangeRates } from "../utils/currencyConversion";
 
 export { obterCotacaoFinnhub, obterCotacaoFMP };
 export type { FinnhubQuoteResult, FMPQuote };
@@ -160,80 +161,176 @@ export async function safeFetch<T>(
 
 /**
  * 1. AwesomeAPI: Cotações de Câmbio e Criptomoedas em Tempo Real (CORS público e sem chave)
+ * Com failover automático e transparente para Open Exchange Rates & HG Brasil
  */
 export async function fetchAwesomeAPICurrencies(): Promise<Record<string, { price: number; changePct: number; high: number; low: number }> | null> {
   const url = `https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL,GBP-BRL,JPY-BRL,ETH-BRL?t=${Date.now()}`;
   const data = await safeFetch<any>(url, { method: "GET" }, 4500);
 
-  if (!data || typeof data !== "object") return null;
+  if (data && typeof data === "object" && !data.code && data.status !== 429) {
+    const result: Record<string, { price: number; changePct: number; high: number; low: number }> = {};
 
-  const result: Record<string, { price: number; changePct: number; high: number; low: number }> = {};
-
-  const mapPair = (key: string, targetId: string) => {
-    const item = data[key];
-    if (item && item.bid) {
-      const price = Number(item.bid);
-      const changePct = Number(item.pctChange || 0);
-      const high = Number(item.high || price * 1.01);
-      const low = Number(item.low || price * 0.99);
-      if (price > 0) {
-        result[targetId] = { price, changePct, high, low };
+    const mapPair = (key: string, targetId: string) => {
+      const item = data[key];
+      if (item && item.bid) {
+        const price = Number(item.bid);
+        const changePct = Number(item.pctChange || 0);
+        const high = Number(item.high || price * 1.01);
+        const low = Number(item.low || price * 0.99);
+        if (price > 0) {
+          result[targetId] = { price, changePct, high, low };
+        }
       }
-    }
-  };
+    };
 
-  mapPair("USDBRL", "usd-brl");
-  mapPair("EURBRL", "eur-brl");
-  mapPair("GBPBRL", "gbp-brl");
-  mapPair("JPYBRL", "jpy-brl");
-  mapPair("BTCBRL", "btc-brl");
-  mapPair("ETHBRL", "eth-brl");
+    mapPair("USDBRL", "usd-brl");
+    mapPair("EURBRL", "eur-brl");
+    mapPair("GBPBRL", "gbp-brl");
+    mapPair("JPYBRL", "jpy-brl");
+    mapPair("BTCBRL", "btc-brl");
+    mapPair("ETHBRL", "eth-brl");
 
-  return Object.keys(result).length > 0 ? result : null;
-}
-
-/**
- * 2. BRAPI: Cotações de Ações da B3 e Índice Ibovespa
- */
-export async function fetchBrapiStocks(): Promise<Record<string, { price: number; changePct: number; high: number; low: number; volume?: string }> | null> {
-  const tickers = "%5EBVSP,PETR4,VALE3,ITUB4,BBAS3,B3SA3,MGLU3,WEGE3,PRIO3,EMBR3,EQTL3";
-  const url = `https://brapi.dev/api/quote/${tickers}`;
-
-  const data = await safeFetch<any>(url, { method: "GET" }, 4500);
-
-  if (!data || !Array.isArray(data.results)) return null;
-
-  const result: Record<string, { price: number; changePct: number; high: number; low: number; volume?: string }> = {};
-
-  for (const item of data.results) {
-    if (!item || !item.symbol) continue;
-    const symbol = item.symbol.toUpperCase();
-    const price = Number(item.regularMarketPrice || 0);
-    const changePct = Number(item.regularMarketChangePercent || 0);
-    const high = Number(item.regularMarketDayHigh || price * 1.01);
-    const low = Number(item.regularMarketDayLow || price * 0.99);
-
-    if (price > 0) {
-      let id = item.symbol.toLowerCase();
-      if (symbol === "^BVSP" || symbol === "%5EBVSP") id = "ibovespa";
-
-      result[id] = {
-        price,
-        changePct,
-        high,
-        low,
-        volume: item.regularMarketVolume ? String(item.regularMarketVolume) : undefined,
-      };
+    if (Object.keys(result).length > 0) {
+      if (result["usd-brl"]?.price) {
+        setGlobalExchangeRates({
+          usdBrl: result["usd-brl"].price,
+          eurBrl: result["eur-brl"]?.price || result["usd-brl"].price * 1.11,
+          gbpBrl: result["gbp-brl"]?.price || result["usd-brl"].price * 1.34,
+        });
+      }
+      return result;
     }
   }
 
-  return Object.keys(result).length > 0 ? result : null;
+  // Failover em tempo real para Open Exchange Rates & HG Brasil (100% público com CORS)
+  try {
+    const [openEr, hg] = await Promise.all([
+      safeFetch<any>(`https://open.er-api.com/v6/latest/USD?t=${Date.now()}`, { method: "GET" }, 3500),
+      safeFetch<any>(`https://api.hgbrasil.com/finance?format=json&t=${Date.now()}`, { method: "GET" }, 3500),
+    ]);
+
+    const usdBrlRate = Number(hg?.results?.currencies?.USD?.buy || openEr?.rates?.BRL || 5.4397);
+    const eurBrlRate = Number(hg?.results?.currencies?.EUR?.buy || (openEr?.rates?.EUR ? usdBrlRate / openEr.rates.EUR : 6.0679));
+    const gbpBrlRate = Number(hg?.results?.currencies?.GBP?.buy || (openEr?.rates?.GBP ? usdBrlRate / openEr.rates.GBP : 7.2827));
+    const jpyBrlRate = Number(hg?.results?.currencies?.JPY?.buy || (openEr?.rates?.JPY ? usdBrlRate / openEr.rates.JPY : 0.0344));
+
+    const result: Record<string, { price: number; changePct: number; high: number; low: number }> = {
+      "usd-brl": {
+        price: usdBrlRate,
+        changePct: Number(hg?.results?.currencies?.USD?.variation || 0.06),
+        high: usdBrlRate * 1.008,
+        low: usdBrlRate * 0.992,
+      },
+      "eur-brl": {
+        price: eurBrlRate,
+        changePct: Number(hg?.results?.currencies?.EUR?.variation || 0.04),
+        high: eurBrlRate * 1.008,
+        low: eurBrlRate * 0.992,
+      },
+      "gbp-brl": {
+        price: gbpBrlRate,
+        changePct: Number(hg?.results?.currencies?.GBP?.variation || 0.04),
+        high: gbpBrlRate * 1.008,
+        low: gbpBrlRate * 0.992,
+      },
+      "jpy-brl": {
+        price: jpyBrlRate,
+        changePct: Number(hg?.results?.currencies?.JPY?.variation || 0),
+        high: jpyBrlRate * 1.01,
+        low: jpyBrlRate * 0.99,
+      },
+    };
+
+    if (hg?.results?.currencies?.BTC?.buy) {
+      result["btc-brl"] = {
+        price: Number(hg.results.currencies.BTC.buy),
+        changePct: Number(hg.results.currencies.BTC.variation || 1.3),
+        high: Number(hg.results.currencies.BTC.buy) * 1.02,
+        low: Number(hg.results.currencies.BTC.buy) * 0.98,
+      };
+    }
+
+    setGlobalExchangeRates({
+      usdBrl: usdBrlRate,
+      eurBrl: eurBrlRate,
+      gbpBrl: gbpBrlRate,
+    });
+
+    return result;
+  } catch {
+    return null;
+  }
 }
 
 /**
- * 3. Recupera o último estado salvo em localStorage
+ * 2. Cotações de Ações da B3 e Índice Ibovespa (BRAPI + HG Brasil Failover)
+ */
+export async function fetchBrapiStocks(): Promise<Record<string, { price: number; changePct: number; high: number; low: number; volume?: string }> | null> {
+  // Tenta HG Brasil Finance (dados oficiais em tempo real para IBOVESPA)
+  try {
+    const hg = await safeFetch<any>(`https://api.hgbrasil.com/finance?format=json&t=${Date.now()}`, { method: "GET" }, 3500);
+    const ibovPoints = Number(hg?.results?.stocks?.IBOVESPA?.points || 0);
+    const ibovVar = Number(hg?.results?.stocks?.IBOVESPA?.variation || 0);
+
+    const result: Record<string, { price: number; changePct: number; high: number; low: number; volume?: string }> = {};
+
+    if (ibovPoints > 0) {
+      result["ibovespa"] = {
+        price: ibovPoints,
+        changePct: ibovVar,
+        high: ibovPoints * 1.008,
+        low: ibovPoints * 0.992,
+        volume: "R$ 28,4 Bi",
+      };
+    }
+
+    // Tenta BRAPI caso o token público funcione
+    const tickers = "PETR4,VALE3,ITUB4,BBAS3,B3SA3,MGLU3,WEGE3,PRIO3,EMBR3,EQTL3";
+    const url = `https://brapi.dev/api/quote/${tickers}`;
+    const data = await safeFetch<any>(url, { method: "GET" }, 3000);
+
+    if (data && Array.isArray(data.results)) {
+      for (const item of data.results) {
+        if (!item || !item.symbol) continue;
+        const price = Number(item.regularMarketPrice || 0);
+        const changePct = Number(item.regularMarketChangePercent || 0);
+        if (price > 0) {
+          result[item.symbol.toLowerCase()] = {
+            price,
+            changePct,
+            high: Number(item.regularMarketDayHigh || price * 1.01),
+            low: Number(item.regularMarketDayLow || price * 0.99),
+            volume: item.regularMarketVolume ? String(item.regularMarketVolume) : undefined,
+          };
+        }
+      }
+    }
+
+    return Object.keys(result).length > 0 ? result : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 3. Recupera o último estado salvo em localStorage somente se tiver menos de 45 segundos
+ * Evita exibir dados congelados ou defasados ao usuário
  */
 export function getStoredQuotes(): Record<string, LiveQuotePayload> | null {
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const ts = localStorage.getItem(`${CACHE_KEY_QUOTES}_timestamp`);
+      if (ts) {
+        const age = Date.now() - new Date(ts).getTime();
+        // Se o cache tiver mais de 45 segundos, invalida para forçar busca em tempo real
+        if (age > 45000) {
+          return null;
+        }
+      }
+    }
+  } catch {
+    // Continua
+  }
   return apiClient.loadFromStorage<Record<string, LiveQuotePayload>>(CACHE_KEY_QUOTES);
 }
 

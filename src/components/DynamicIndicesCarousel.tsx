@@ -26,6 +26,7 @@ import {
   SECTOR_DEFINITIONS,
 } from "../utils/assetTaxonomy";
 import { formatAssetDisplayPrice } from "../utils/formatters";
+import { DualPriceDisplay } from "../utils/currencyConversion";
 
 interface DynamicIndicesCarouselProps {
   assets: Asset[];
@@ -150,12 +151,15 @@ export const DynamicIndicesCarousel: React.FC<DynamicIndicesCarouselProps> = ({
           </h3>
         </div>
 
-        {/* Mid: Price & Sparkline */}
+        {/* Mid: Dual-Currency Price (USD & BRL) & Sparkline */}
         <div className="flex items-end justify-between gap-2 my-2.5">
-          <div>
-            <div className="text-base sm:text-lg font-bold text-[#e6edf3] font-mono tracking-tight">
-              {formatPrice(asset.price, asset.currency)}
-            </div>
+          <div className="min-w-0 pr-1">
+            <DualPriceDisplay
+              price={asset.price}
+              currency={asset.currency}
+              size="md"
+              align="left"
+            />
           </div>
           <div className="shrink-0">
             <Sparkline

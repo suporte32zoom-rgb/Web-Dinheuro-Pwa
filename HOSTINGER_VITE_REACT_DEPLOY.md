@@ -143,6 +143,39 @@ O `index.html` fica na raiz e aponta para o script em `/src/main.tsx`:
 
 ---
 
+## 🔐 4. Variáveis de Ambiente no hPanel / Hostinger (.env)
+
+No menu de gerenciamento da sua aplicação na Hostinger (ou arquivo `.env`), configure as variáveis de ambiente:
+
+```bash
+# URL Base da API de Câmbio em Tempo Real (AwesomeAPI)
+VITE_AWESOME_ECONOMY_URL="https://economia.awesomeapi.com.br"
+
+# Finnhub API Key para Ações dos EUA, ETFs e Criptoativos
+FINNHUB_API_KEY="dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g"
+
+# Finnhub Webhook Secret para endpoints de eventos (/api/webhook/finnhub)
+FINNHUB_WEBHOOK_SECRET="dbfsnl9r01qiahublh4g"
+
+# Financial Modeling Prep (FMP) API Key para cotações e análises fundamentalistas
+FMP_API_KEY="GJaGtHdggEtpz6erXjYrSNchdFk8FJwm"
+
+# Chave do Google Gemini (se utilizar resumos de mercado com IA)
+GEMINI_API_KEY="SUA_CHAVE_GEMINI"
+```
+
+---
+
+## 💱 5. Padronização Multimoeda (USD e BRL)
+
+O DinhEuro conta com um motor reativo de conversão multimoeda (`src/utils/currencyConversion.tsx`):
+- **Ativos Americanos / Internacionais (S&P 500, Nasdaq, AAPL, NVDA, etc.):** Exibem a cotação oficial em **USD** e o valor convertido em tempo real para **BRL** (`≈ R$ ...`).
+- **Criptoativos (Bitcoin, Ethereum, Solana, etc.):** Exibem a cotação global de referência em **USD** e o valor equivalente em **BRL** (`≈ R$ ...`).
+- **Ações B3 e Ativos Nacionais (PETR4, VALE3, IBOV, etc.):** Exibem o valor oficial em **BRL** (ou pontos) e o valor convertido correspondente em **USD** (`≈ US$ ...`).
+
+---
+
 ## ⚠️ Dica Crucial para Evitar Erros de Compactação (.ZIP)
 
 > **Importante:** Ao criar o arquivo `.zip` manualmente, entre na pasta do projeto, selecione **todos os arquivos e pastas** (`package.json`, `vite.config.js`, `index.html`, `src/`, etc.) e clique em **Compactar**. **Não** compacte a pasta-mãe por fora, pois isso criaria uma subpasta aninhada dentro do zip e a Hostinger não reconheceria o `package.json` na raiz!
+

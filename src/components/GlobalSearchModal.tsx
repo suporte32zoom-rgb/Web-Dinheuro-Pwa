@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Asset } from "../types/finance";
 import { formatAssetDisplayPrice } from "../utils/formatters";
+import { DualPriceDisplay } from "../utils/currencyConversion";
 import { Search, X, TrendingUp, TrendingDown, ArrowRight, CornerDownLeft } from "lucide-react";
 
 interface GlobalSearchModalProps {
@@ -135,9 +136,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
                   <div className="text-right shrink-0 flex items-center gap-4">
                     <div>
-                      <div className="text-xs sm:text-sm font-mono font-bold text-[#e6edf3]">
-                        {formatAssetDisplayPrice(asset.price, asset.currency)}
-                      </div>
+                      <DualPriceDisplay
+                        price={asset.price}
+                        currency={asset.currency}
+                        size="xs"
+                        align="right"
+                      />
                       <div
                         className={`text-xs font-mono font-semibold flex items-center justify-end gap-0.5 ${
                           isPositive ? "text-[#00c853]" : "text-[#ff5252]"

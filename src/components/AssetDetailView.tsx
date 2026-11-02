@@ -28,6 +28,7 @@ import {
   PieChart,
 } from "lucide-react";
 import { formatAssetDisplayPrice } from "../utils/formatters";
+import { computeDualCurrency, DualPriceDisplay } from "../utils/currencyConversion";
 import { getAssetSector, getAssetTags, SECTOR_DEFINITIONS } from "../utils/assetTaxonomy";
 import {
   obterPerfilFMP,
@@ -333,34 +334,53 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({
             </p>
           </div>
 
-          {/* Large Live Price & Variation Banner */}
-          <div className="text-left md:text-right shrink-0 bg-[#0e1117]/80 p-4 rounded-xl border border-[#30363d]/80">
-            <div className="text-2xl sm:text-4xl font-extrabold font-mono text-[#e6edf3] tracking-tight">
-              {formatPrice(asset.price, asset.currency)}
-            </div>
-            <div
-              className={`flex items-center md:justify-end gap-1.5 font-mono text-sm sm:text-base font-bold mt-1 ${
-                isPositive ? "text-[#00c853]" : "text-[#ff5252]"
-              }`}
-            >
-              {isPositive ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-              <span>
-                {isPositive ? "+" : ""}
-                {formatPrice(asset.change, asset.currency)}
-              </span>
-              <span>
-                ({isPositive ? "+" : ""}
-                {asset.changePercent.toFixed(2)}%)
-              </span>
-            </div>
-            <div className="text-[11px] text-[#8b949e] mt-1 font-mono">
-              Moeda: {asset.currency} • Cotação em tempo real
-            </div>
-          </div>
+          {/* Large Live Price & Dual-Currency (USD & BRL) Variation Banner */}
+          {(() => {
+            const dual = computeDualCurrency(asset.price, asset.currency);
+            return (
+              <div className="text-left md:text-right shrink-0 bg-[#0e1117]/80 p-4 rounded-xl border border-[#30363d]/80 min-w-[240px]">
+                {/* Official Currency Price */}
+                <div className="text-2xl sm:text-4xl font-extrabold font-mono text-[#e6edf3] tracking-tight">
+                  {dual.originalFormatted}
+                </div>
+
+                {/* Real-time Converted Currency Equivalent (USD <-> BRL) */}
+                <div className="mt-1 flex items-center md:justify-end gap-1.5 font-mono text-sm sm:text-base font-semibold text-[#58a6ff]">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#1f6feb]/25 text-[#58a6ff] border border-[#58a6ff]/40 font-sans uppercase font-bold">
+                    {dual.convertedCurrency}
+                  </span>
+                  <span>≈ {dual.convertedFormatted}</span>
+                </div>
+
+                {/* Variation Badge */}
+                <div
+                  className={`flex items-center md:justify-end gap-1.5 font-mono text-xs sm:text-sm font-bold mt-2 ${
+                    isPositive ? "text-[#00c853]" : "text-[#ff5252]"
+                  }`}
+                >
+                  {isPositive ? (
+                    <TrendingUp className="w-4 h-4 shrink-0" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 shrink-0" />
+                  )}
+                  <span>
+                    {isPositive ? "+" : ""}
+                    {formatPrice(asset.change, asset.currency)}
+                  </span>
+                  <span>
+                    ({isPositive ? "+" : ""}
+                    {asset.changePercent.toFixed(2)}%)
+                  </span>
+                </div>
+
+                <div className="text-[10px] text-[#8b949e] mt-1.5 font-mono flex items-center md:justify-end gap-1 flex-wrap">
+                  <span>Moeda Original: {dual.originalCurrency}</span>
+                  <span>•</span>
+                  <span>{dual.rateLabel}</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* 2. Interactive SVG Chart Component with Live Data & Dual-Ticker Comparison */}

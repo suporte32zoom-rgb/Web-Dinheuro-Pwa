@@ -743,12 +743,12 @@ const RAW_ASSETS: Asset[] = [
     name: "Índice Bovespa (Ibovespa)",
     category: "América Latina",
     currency: "BRL",
-    price: 136420.5,
-    change: 620.5,
-    changePercent: 0.46,
+    price: 167921.8,
+    change: -1270.2,
+    changePercent: -0.75,
     exchange: "B3 - Brasil, Bolsa, Balcão",
-    sparkline: getSparkline(136420.5, true),
-    historical: buildAssetHistory(136420.5, 0.46),
+    sparkline: getSparkline(167921.8, false),
+    historical: buildAssetHistory(167921.8, -0.75),
     annotations: {
       "1D": [
         { time: "10:00", label: "Abertura B3", type: "open", price: 135800.0 },

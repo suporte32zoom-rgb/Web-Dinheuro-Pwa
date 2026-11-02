@@ -16,6 +16,7 @@ import {
 } from "../services/unifiedCurrencyService";
 import { AwesomeEconomyQuote, AwesomeEconomyResponse } from "../services/awesomeApi";
 import { Asset } from "../types/finance";
+import { getCurrentUsdBrlRate } from "../utils/currencyConversion";
 
 interface GlobalEconomyWidgetProps {
   onSelectAsset?: (asset: Asset) => void;
@@ -308,12 +309,35 @@ export const GlobalEconomyWidget: React.FC<GlobalEconomyWidgetProps> = ({
                     {item.name}
                   </h4>
 
-                  {/* Preço Principal (Compra) */}
-                  <div className="flex items-baseline justify-between mb-2 pb-2 border-b border-[#21262d]">
-                    <span className="text-[11px] text-[#8b949e]">Compra:</span>
-                    <span className="text-base font-extrabold font-mono text-white group-hover:text-[#58a6ff] transition-colors">
-                      {prefix}{formatNum(item.bidNum)}
-                    </span>
+                  {/* Preço Principal (Compra) com Dual-Currency USD e BRL */}
+                  <div className="mb-2 pb-2 border-b border-[#21262d]">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[11px] text-[#8b949e]">Compra:</span>
+                      <span className="text-base font-extrabold font-mono text-white group-hover:text-[#58a6ff] transition-colors">
+                        {prefix}{formatNum(item.bidNum)}
+                      </span>
+                    </div>
+
+                    {/* Conversão em Tempo Real (USD <-> BRL) */}
+                    {(() => {
+                      const usdBrlRate = getCurrentUsdBrlRate();
+                      let convertedLabel = "";
+                      if (item.codein === "BRL" && item.code !== "USD") {
+                        const usdVal = usdBrlRate > 0 ? item.bidNum / usdBrlRate : 0;
+                        convertedLabel = `≈ US$ ${usdVal >= 1000 ? usdVal.toLocaleString("en-US", { maximumFractionDigits: 2 }) : usdVal >= 1 ? usdVal.toFixed(2) : usdVal.toFixed(4)}`;
+                      } else if (item.codein === "USD") {
+                        const brlVal = item.bidNum * usdBrlRate;
+                        convertedLabel = `≈ R$ ${brlVal >= 1000 ? brlVal.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) : brlVal.toFixed(2)}`;
+                      } else if (item.code === "USD") {
+                        convertedLabel = "1.00 USD";
+                      }
+                      if (!convertedLabel) return null;
+                      return (
+                        <div className="flex items-center justify-end text-[11px] font-mono text-[#58a6ff] font-semibold mt-0.5">
+                          <span>{convertedLabel}</span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 

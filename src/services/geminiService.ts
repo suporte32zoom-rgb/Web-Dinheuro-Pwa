@@ -63,46 +63,6 @@ export async function fetchGroundedMarketIndicators(forceRefresh: boolean = fals
 }
 
 /**
- * Envia uma mensagem para o assistente de inteligência artificial DinhEuro Copilot
- * especializado em mercados financeiros, câmbio, impostos (IOF) e corredores de remessas.
- */
-export async function sendMessageToAI(
-  message: string,
-  history: Array<{ role: string; content: string }> = []
-): Promise<string> {
-  try {
-    const response = await fetch("/api/market-ai/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message,
-        history,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erro na requisição da IA Gemini (${response.status})`);
-    }
-
-    const data = await response.json();
-    if (data && data.reply) {
-      return data.reply;
-    }
-
-    throw new Error("Resposta em formato inesperado");
-  } catch (error: any) {
-    console.warn("[GeminiService] Fallback acionado para chat:", error?.message);
-    return (
-      "A inteligência financeira **DinhEuro.com** está processando as cotações em tempo real. " +
-      "Para consultas imediatas de câmbio (EUR/BRL, USD/BRL), simulação de IOF ou cotações de ativos da B3 e Wall Street, " +
-      "você pode explorar o painel interativo e os gráficos disponíveis no portal."
-    );
-  }
-}
-
-/**
  * Obtém resumo macroeconômico e setorial com IA por região
  */
 export async function fetchMarketAISummary(

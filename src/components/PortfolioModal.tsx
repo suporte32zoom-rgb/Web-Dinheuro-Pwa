@@ -156,6 +156,9 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({
             <div className="text-xl font-bold font-mono text-white mt-1">
               {formatCurrencyBRL(totalPortfolioValue)}
             </div>
+            <div className="text-xs font-mono font-semibold text-[#58a6ff] mt-0.5">
+              ≈ US$ {(totalPortfolioValue / (usdBrlRate || 5.4397)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
           </div>
 
           <div className="p-3 rounded-xl bg-[#161b22] border border-[#30363d]">
@@ -333,6 +336,11 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({
                     <div>
                       <div className="text-xs sm:text-sm font-mono font-bold text-[#e6edf3]">
                         {formatAssetDisplayPrice(pos.currentValue, posCurrency)}
+                      </div>
+                      <div className="text-[10px] font-mono font-semibold text-[#58a6ff]">
+                        {posCurrency === "USD"
+                          ? `≈ R$ ${(pos.currentValue * (usdBrlRate || 5.4397)).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : `≈ US$ ${(pos.currentValue / (usdBrlRate || 5.4397)).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </div>
                       <div
                         className={`text-xs font-mono font-semibold flex items-center justify-end gap-1 ${

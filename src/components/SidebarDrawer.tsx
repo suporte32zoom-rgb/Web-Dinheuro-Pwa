@@ -482,15 +482,15 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                 </div>
                 <div className="flex justify-between font-mono">
                   <span>1 USD =</span>
-                  <span className="text-[#e6edf3]">R$ {(liveRatesToBRL.USD || 5.20).toFixed(4)}</span>
+                  <span className="text-[#e6edf3]">R$ {(liveRatesToBRL.USD || 5.4397).toFixed(4)}</span>
                 </div>
                 <div className="flex justify-between font-mono">
                   <span>1 EUR =</span>
-                  <span className="text-[#e6edf3]">R$ {(liveRatesToBRL.EUR || 5.90).toFixed(4)}</span>
+                  <span className="text-[#e6edf3]">R$ {(liveRatesToBRL.EUR || 6.0679).toFixed(4)}</span>
                 </div>
                 <div className="flex justify-between font-mono">
                   <span>1 BTC =</span>
-                  <span className="text-[#e6edf3]">R$ {(liveRatesToBRL.BTC || 500000).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}</span>
+                  <span className="text-[#e6edf3]">R$ {(liveRatesToBRL.BTC || 448550).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}</span>
                 </div>
               </div>
             </div>

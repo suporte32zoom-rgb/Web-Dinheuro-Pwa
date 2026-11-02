@@ -116,11 +116,14 @@ export const AIDeepDiveModal: React.FC<AIDeepDiveModalProps> = ({ topic, onClose
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm sm:text-base font-bold text-[#e6edf3]">
                   IA DinhEuro • Análise de Mercado
                 </h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#238636]/20 text-[#00c853] border border-[#238636]/40 font-semibold">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#238636]/20 text-[#00c853] border border-[#238636]/40 font-mono font-semibold">
+                  Gemini 3.8 Flash
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#58a6ff]/20 text-[#58a6ff] border border-[#58a6ff]/40 font-semibold">
                   {topic.region}
                 </span>
               </div>

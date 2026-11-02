@@ -104,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <span className="text-[#8b949e] font-semibold text-[11px]">IBOV</span>
               <span className="text-[#e6edf3] font-mono text-[11px]">
-                {ibov ? ibov.price.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : "183.477"} pts
+                {ibov ? ibov.price.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : "167.922"} pts
               </span>
               <span
                 className={`font-mono text-[11px] font-semibold ${
@@ -124,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <span className="text-[#8b949e] font-semibold text-[11px]">S&P 500</span>
               <span className="text-[#e6edf3] font-mono text-[11px]">
-                {sp500 ? sp500.price.toLocaleString("en-US", { maximumFractionDigits: 1 }) : "7.743"}
+                {sp500 ? sp500.price.toLocaleString("en-US", { maximumFractionDigits: 1 }) : "5.860,5"}
               </span>
               <span
                 className={`font-mono text-[11px] font-semibold ${
@@ -144,7 +144,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <span className="text-[#8b949e] font-semibold text-[11px]">USD/BRL</span>
               <span className="text-[#e6edf3] font-mono text-[11px]">
-                R$ {usdBrl ? usdBrl.price.toLocaleString("pt-BR", { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : "5,1866"}
+                R$ {usdBrl ? usdBrl.price.toLocaleString("pt-BR", { minimumFractionDigits: 4, maximumFractionDigits: 4 }) : "5,4397"}
               </span>
               <span
                 className={`font-mono text-[11px] font-semibold ${
@@ -156,15 +156,18 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
 
-            {/* BTC */}
+            {/* BTC - Dual Currency (USD and BRL) */}
             <div
               onClick={() => btc && onSelectAsset(btc)}
               className="hidden sm:flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity shrink-0"
-              title="Bitcoin em tempo real"
+              title="Bitcoin em tempo real (USD & BRL)"
             >
               <span className="text-[#8b949e] font-semibold text-[11px]">BTC</span>
               <span className="text-[#e6edf3] font-mono text-[11px]">
-                US$ {btc ? btc.price.toLocaleString("en-US", { maximumFractionDigits: 0 }) : "83,430"}
+                US$ {btc ? btc.price.toLocaleString("en-US", { maximumFractionDigits: 0 }) : "77.891"}
+              </span>
+              <span className="text-[#58a6ff] font-mono text-[10px] font-semibold">
+                (R$ {btc ? (btc.price * (usdBrl?.price || 5.4397)).toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : "423.706"})
               </span>
               <span
                 className={`font-mono text-[11px] font-semibold ${
@@ -176,15 +179,18 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
 
-            {/* PETR4 */}
+            {/* PETR4 - Dual Currency (BRL and USD) */}
             <div
               onClick={() => petr && onSelectAsset(petr)}
               className="hidden md:flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity shrink-0"
-              title="Petrobras PN em tempo real"
+              title="Petrobras PN em tempo real (BRL & USD)"
             >
               <span className="text-[#8b949e] font-semibold text-[11px]">PETR4</span>
               <span className="text-[#e6edf3] font-mono text-[11px]">
-                R$ {petr ? petr.price.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "47,99"}
+                R$ {petr ? petr.price.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "52,71"}
+              </span>
+              <span className="text-[#58a6ff] font-mono text-[10px] font-semibold">
+                (US$ {petr ? (petr.price / (usdBrl?.price || 5.4397)).toFixed(2) : "9,69"})
               </span>
               <span
                 className={`font-mono text-[11px] font-semibold ${

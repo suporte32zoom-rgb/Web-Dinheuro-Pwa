@@ -73,7 +73,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
       ticker: "IBOV",
       name: "Índice Bovespa",
       category: "América Latina",
-      basePrice: 183477,
+      basePrice: 167921.8,
       thresholdPercent: 1.5,
       direction: "any",
       enabled: true,

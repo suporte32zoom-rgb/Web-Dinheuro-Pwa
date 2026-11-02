@@ -108,8 +108,11 @@ export const AIMarketSummaryAccordion: React.FC<AIMarketSummaryAccordionProps> =
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base font-bold text-[#e6edf3] tracking-tight">
-                    Resumo do Mercado com IA DinhEuro
+                    IA DinhEuro • Análise de Mercado
                   </h2>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#238636]/20 text-[#00c853] border border-[#238636]/40">
+                    Gemini 3.8 Flash
+                  </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#58a6ff]/15 text-[#58a6ff] border border-[#58a6ff]/30">
                     {activeTab}
                   </span>

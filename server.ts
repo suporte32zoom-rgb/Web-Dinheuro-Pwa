@@ -131,12 +131,12 @@ app.get("/api/market/grounded-indicators", async (req, res) => {
         source: "Quotes Engine Fallback",
         timestamp: new Date().toISOString(),
         indicators: {
-          usdBrl: { name: "Dólar Comercial", ticker: "USD/BRL", price: quotes["usd-brl"]?.price || 5.18, changePercent: quotes["usd-brl"]?.changePercent || 0.15 },
-          eurBrl: { name: "Euro Comercial", ticker: "EUR/BRL", price: quotes["eur-brl"]?.price || 5.91, changePercent: quotes["eur-brl"]?.changePercent || 0.22 },
-          ibov: { name: "Ibovespa", ticker: "IBOV", price: quotes["ibovespa"]?.price || 183477, changePercent: quotes["ibovespa"]?.changePercent || 0.45 },
+          usdBrl: { name: "Dólar Comercial", ticker: "USD/BRL", price: quotes["usd-brl"]?.price || 5.4397, changePercent: quotes["usd-brl"]?.changePercent || 0.06 },
+          eurBrl: { name: "Euro Comercial", ticker: "EUR/BRL", price: quotes["eur-brl"]?.price || 6.0679, changePercent: quotes["eur-brl"]?.changePercent || 0.04 },
+          ibov: { name: "Ibovespa", ticker: "IBOV", price: quotes["ibovespa"]?.price || 167921.8, changePercent: quotes["ibovespa"]?.changePercent || -0.75 },
           selic: { name: "Taxa Selic", ticker: "SELIC", price: 10.75, unit: "% a.a." },
-          btcBrl: { name: "Bitcoin", ticker: "BTC/BRL", price: quotes["btc-brl"]?.price || quotes["bitcoin"]?.price || 542000, changePercent: 1.2 },
-          sp500: { name: "S&P 500", ticker: "S&P 500", price: quotes["sp-500"]?.price || 5860, changePercent: 0.35 },
+          btcBrl: { name: "Bitcoin", ticker: "BTC/BRL", price: quotes["btc-brl"]?.price || (quotes["bitcoin"]?.price ? quotes["bitcoin"].price * 5.4397 : 448550), changePercent: quotes["bitcoin"]?.changePercent || 1.3 },
+          sp500: { name: "S&P 500", ticker: "S&P 500", price: quotes["sp-500"]?.price || 5860.5, changePercent: quotes["sp-500"]?.changePercent || 0.35 },
         },
       });
     }
@@ -151,12 +151,12 @@ app.get("/api/market/grounded-indicators", async (req, res) => {
 
 Retorne estritamente um objeto JSON válido (sem texto antes ou depois) no formato:
 {
-  "usdBrl": { "price": 5.18, "changePercent": 0.15 },
-  "eurBrl": { "price": 5.91, "changePercent": 0.22 },
-  "ibov": { "price": 183477, "changePercent": 0.45 },
+  "usdBrl": { "price": 5.4397, "changePercent": 0.06 },
+  "eurBrl": { "price": 6.0679, "changePercent": 0.04 },
+  "ibov": { "price": 167921.8, "changePercent": -0.75 },
   "selic": { "price": 10.75, "unit": "% a.a." },
-  "btcBrl": { "price": 542000, "changePercent": 1.2 },
-  "sp500": { "price": 5860, "changePercent": 0.35 }
+  "btcBrl": { "price": 448550, "changePercent": 1.3 },
+  "sp500": { "price": 5860.5, "changePercent": 0.35 }
 }`;
 
     const response = await ai.models.generateContent({
@@ -203,12 +203,12 @@ Retorne estritamente um objeto JSON válido (sem texto antes ou depois) no forma
       source: "Quotes Service Fallback",
       timestamp: new Date().toISOString(),
       indicators: {
-        usdBrl: { price: quotes["usd-brl"]?.price || 5.18, changePercent: quotes["usd-brl"]?.changePercent || 0.15 },
-        eurBrl: { price: quotes["eur-brl"]?.price || 5.91, changePercent: quotes["eur-brl"]?.changePercent || 0.22 },
-        ibov: { price: quotes["ibovespa"]?.price || 183477, changePercent: quotes["ibovespa"]?.changePercent || 0.45 },
+        usdBrl: { price: quotes["usd-brl"]?.price || 5.4397, changePercent: quotes["usd-brl"]?.changePercent || 0.06 },
+        eurBrl: { price: quotes["eur-brl"]?.price || 6.0679, changePercent: quotes["eur-brl"]?.changePercent || 0.04 },
+        ibov: { price: quotes["ibovespa"]?.price || 167921.8, changePercent: quotes["ibovespa"]?.changePercent || -0.75 },
         selic: { price: 10.75, unit: "% a.a." },
-        btcBrl: { price: quotes["btc-brl"]?.price || quotes["bitcoin"]?.price || 542000, changePercent: 1.2 },
-        sp500: { price: quotes["sp-500"]?.price || 5860, changePercent: 0.35 },
+        btcBrl: { price: quotes["btc-brl"]?.price || (quotes["bitcoin"]?.price ? quotes["bitcoin"].price * 5.4397 : 448550), changePercent: 1.3 },
+        sp500: { price: quotes["sp-500"]?.price || 5860.5, changePercent: 0.35 },
       },
     });
   } catch (error: any) {
@@ -219,12 +219,12 @@ Retorne estritamente um objeto JSON válido (sem texto antes ou depois) no forma
       source: "Safe Local Fallback",
       timestamp: new Date().toISOString(),
       indicators: {
-        usdBrl: { price: quotes["usd-brl"]?.price || 5.18, changePercent: 0.1 },
-        eurBrl: { price: quotes["eur-brl"]?.price || 5.91, changePercent: 0.2 },
-        ibov: { price: quotes["ibovespa"]?.price || 183477, changePercent: 0.3 },
+        usdBrl: { price: quotes["usd-brl"]?.price || 5.4397, changePercent: 0.06 },
+        eurBrl: { price: quotes["eur-brl"]?.price || 6.0679, changePercent: 0.04 },
+        ibov: { price: quotes["ibovespa"]?.price || 167921.8, changePercent: -0.75 },
         selic: { price: 10.75, unit: "% a.a." },
-        btcBrl: { price: 542000, changePercent: 1.0 },
-        sp500: { price: 5860, changePercent: 0.2 },
+        btcBrl: { price: 448550, changePercent: 1.0 },
+        sp500: { price: 5860.5, changePercent: 0.2 },
       },
     });
   }
