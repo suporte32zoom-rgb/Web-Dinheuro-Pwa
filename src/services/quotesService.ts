@@ -45,18 +45,23 @@ export interface AssetRegistryItem {
 
 export const ASSET_REGISTRY: Record<string, AssetRegistryItem> = {
   // América Latina (B3 & Latam)
-  ibovespa: { ticker: "IBOV", name: "Ibovespa Brasil", symbol: "^BVSP", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 167921.8 },
-  petr4: { ticker: "PETR4", name: "Petrobras PN", symbol: "PETR4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 52.71 },
-  vale3: { ticker: "VALE3", name: "Vale ON", symbol: "VALE3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 61.20 },
-  itub4: { ticker: "ITUB4", name: "Itaú Unibanco PN", symbol: "ITUB4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 38.45 },
-  bbdc4: { ticker: "BBDC4", name: "Banco Bradesco PN", symbol: "BBDC4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 14.85 },
-  bbas3: { ticker: "BBAS3", name: "Banco do Brasil ON", symbol: "BBAS3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 28.5 },
-  wege3: { ticker: "WEGE3", name: "WEG S.A. ON", symbol: "WEGE3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 54.12 },
-  b3sa3: { ticker: "B3SA3", name: "B3 S.A. ON", symbol: "B3SA3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 11.28 },
-  prio3: { ticker: "PRIO3", name: "PRIO S.A. ON", symbol: "PRIO3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 44.8 },
-  embra3: { ticker: "EMBR3", name: "Embraer ON", symbol: "EMBR3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 56.7 },
+  ibovespa: { ticker: "IBOV", name: "Ibovespa Brasil", symbol: "^BVSP", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 167445.8 },
+  petr4: { ticker: "PETR4", name: "Petrobras PN", symbol: "PETR4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 47.28 },
+  vale3: { ticker: "VALE3", name: "Vale ON", symbol: "VALE3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 62.43 },
+  itub4: { ticker: "ITUB4", name: "Itaú Unibanco PN", symbol: "ITUB4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 39.71 },
+  bbdc4: { ticker: "BBDC4", name: "Banco Bradesco PN", symbol: "BBDC4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 15.20 },
+  bbas3: { ticker: "BBAS3", name: "Banco do Brasil ON", symbol: "BBAS3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 28.90 },
+  wege3: { ticker: "WEGE3", name: "WEG S.A. ON", symbol: "WEGE3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 49.77 },
+  b3sa3: { ticker: "B3SA3", name: "B3 S.A. ON", symbol: "B3SA3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 11.45 },
+  prio3: { ticker: "PRIO3", name: "PRIO S.A. ON", symbol: "PRIO3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 45.30 },
+  embra3: { ticker: "EMBR3", name: "Embraer ON", symbol: "EMBR3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 57.20 },
+  mglu3: { ticker: "MGLU3", name: "Magazine Luiza ON", symbol: "MGLU3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 9.85 },
+  rent3: { ticker: "RENT3", name: "Localiza Rent a Car ON", symbol: "RENT3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 42.10 },
+  abev3: { ticker: "ABEV3", name: "Ambev S.A. ON", symbol: "ABEV3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 12.30 },
+  suzb3: { ticker: "SUZB3", name: "Suzano ON", symbol: "SUZB3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 58.40 },
+  jbss3: { ticker: "JBSS3", name: "JBS S.A. ON", symbol: "JBSS3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 36.20 },
   totv3: { ticker: "TOTS3", name: "Totvs ON", symbol: "TOTS3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 32.15 },
-  sula11: { ticker: "EQTL3", name: "Equatorial Energia ON", symbol: "EQTL3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 34.9 },
+  sula11: { ticker: "EQTL3", name: "Equatorial Energia ON", symbol: "EQTL3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 34.90 },
   azulp4: { ticker: "AZUL4", name: "Azul Linhas Aéreas PN", symbol: "AZUL4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 4.12 },
   cmin3: { ticker: "CMIN3", name: "CSN Mineração ON", symbol: "CMIN3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 5.48 },
   csna3: { ticker: "CSNA3", name: "Siderúrgica Nacional ON", symbol: "CSNA3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 10.35 },
@@ -65,60 +70,76 @@ export const ASSET_REGISTRY: Record<string, AssetRegistryItem> = {
   igovernanca: { ticker: "IGCX", name: "Índice de Governança Corporativa", symbol: "^BVSP", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 14210 },
   "ibrx-brasil": { ticker: "IBRA", name: "Índice Brasil Amplo", symbol: "^BVSP", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 5240 },
 
-  // EUA
-  "sp-500": { ticker: "S&P 500", name: "S&P 500 Index", symbol: "^GSPC", category: "EUA", currency: "USD", exchange: "NYSE / NASDAQ", type: "yf", basePrice: 5860.5 },
-  nasdaq: { ticker: "NASDAQ", name: "Nasdaq Composite", symbol: "^IXIC", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 18780.2 },
-  "dow-jones": { ticker: "DOW JONES", name: "Dow Jones Industrial Average", symbol: "^DJI", category: "EUA", currency: "USD", exchange: "NYSE", type: "yf", basePrice: 43910.2 },
-  "russell-2000": { ticker: "RUSSELL", name: "Russell 2000 Small Cap", symbol: "^RUT", category: "EUA", currency: "USD", exchange: "Russell", type: "yf", basePrice: 2360 },
-  vix: { ticker: "VIX", name: "CBOE Volatility Index", symbol: "^VIX", category: "EUA", currency: "USD", exchange: "CBOE", type: "yf", basePrice: 16.2 },
-  aapl: { ticker: "AAPL", name: "Apple Inc.", symbol: "AAPL", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 344.63 },
-  nvda: { ticker: "NVDA", name: "NVIDIA Corporation", symbol: "NVDA", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 204.64 },
-  msft: { ticker: "MSFT", name: "Microsoft Corporation", symbol: "MSFT", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 428.5 },
-  amzn: { ticker: "AMZN", name: "Amazon.com Inc.", symbol: "AMZN", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 212.4 },
-  googl: { ticker: "GOOGL", name: "Alphabet Inc.", symbol: "GOOGL", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 194.8 },
-  tsla: { ticker: "TSLA", name: "Tesla Inc.", symbol: "TSLA", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 254.2 },
-  meta: { ticker: "META", name: "Meta Platforms Inc.", symbol: "META", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 618.3 },
+  // EUA (Wall Street & Big Tech)
+  "sp-500": { ticker: "S&P 500", name: "S&P 500 Index", symbol: "^GSPC", category: "EUA", currency: "USD", exchange: "NYSE / NASDAQ", type: "yf", basePrice: 7688.62 },
+  nasdaq: { ticker: "NASDAQ", name: "Nasdaq Composite", symbol: "^IXIC", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 25736.51 },
+  "dow-jones": { ticker: "DOW JONES", name: "Dow Jones Industrial Average", symbol: "^DJI", category: "EUA", currency: "USD", exchange: "NYSE", type: "yf", basePrice: 53356.12 },
+  "russell-2000": { ticker: "RUSSELL", name: "Russell 2000 Small Cap", symbol: "^RUT", category: "EUA", currency: "USD", exchange: "Russell", type: "yf", basePrice: 2854.98 },
+  vix: { ticker: "VIX", name: "CBOE Volatility Index", symbol: "^VIX", category: "EUA", currency: "USD", exchange: "CBOE", type: "yf", basePrice: 16.20 },
+  aapl: { ticker: "AAPL", name: "Apple Inc.", symbol: "AAPL", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 349.51 },
+  nvda: { ticker: "NVDA", name: "NVIDIA Corporation", symbol: "NVDA", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 200.24 },
+  msft: { ticker: "MSFT", name: "Microsoft Corporation", symbol: "MSFT", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 555.80 },
+  amzn: { ticker: "AMZN", name: "Amazon.com Inc.", symbol: "AMZN", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 266.03 },
+  googl: { ticker: "GOOGL", name: "Alphabet Inc.", symbol: "GOOGL", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 288.93 },
+  tsla: { ticker: "TSLA", name: "Tesla Inc.", symbol: "TSLA", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 385.19 },
+  meta: { ticker: "META", name: "Meta Platforms Inc.", symbol: "META", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 630.00 },
+  nflx: { ticker: "NFLX", name: "Netflix Inc.", symbol: "NFLX", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 785.40 },
+  amd: { ticker: "AMD", name: "Advanced Micro Devices", symbol: "AMD", category: "EUA", currency: "USD", exchange: "NASDAQ", type: "yf", basePrice: 156.20 },
+  baba: { ticker: "BABA", name: "Alibaba Group Holding", symbol: "BABA", category: "EUA", currency: "USD", exchange: "NYSE", type: "yf", basePrice: 98.40 },
+  dis: { ticker: "DIS", name: "The Walt Disney Company", symbol: "DIS", category: "EUA", currency: "USD", exchange: "NYSE", type: "yf", basePrice: 114.80 },
+  jpm: { ticker: "JPM", name: "JPMorgan Chase & Co.", symbol: "JPM", category: "EUA", currency: "USD", exchange: "NYSE", type: "yf", basePrice: 224.50 },
+  wmt: { ticker: "WMT", name: "Walmart Inc.", symbol: "WMT", category: "EUA", currency: "USD", exchange: "NYSE", type: "yf", basePrice: 84.10 },
 
   // Europa
-  dax: { ticker: "DAX 40", name: "DAX Performance Index", symbol: "^GDAXI", category: "Europa", currency: "EUR", exchange: "XETRA (Frankfurt)", type: "yf", basePrice: 19540.6 },
-  "ftse-100": { ticker: "FTSE 100", name: "FTSE 100 Index", symbol: "^FTSE", category: "Europa", currency: "GBP", exchange: "LSE (Londres)", type: "yf", basePrice: 8250.2 },
-  "cac-40": { ticker: "CAC 40", name: "CAC 40 Index", symbol: "^FCHI", category: "Europa", currency: "EUR", exchange: "Euronext Paris", type: "yf", basePrice: 7969.4 },
-  "ibex-35": { ticker: "IBEX 35", name: "IBEX 35 Index", symbol: "^IBEX", category: "Europa", currency: "EUR", exchange: "BME (Madri)", type: "yf", basePrice: 11840 },
-  "euro-stoxx-50": { ticker: "STOXX 50", name: "Euro Stoxx 50", symbol: "^STOXX50E", category: "Europa", currency: "EUR", exchange: "Euronext", type: "yf", basePrice: 4940 },
+  dax: { ticker: "DAX 40", name: "DAX Performance Index", symbol: "^GDAXI", category: "Europa", currency: "EUR", exchange: "XETRA (Frankfurt)", type: "yf", basePrice: 26437.67 },
+  "ftse-100": { ticker: "FTSE 100", name: "FTSE 100 Index", symbol: "^FTSE", category: "Europa", currency: "GBP", exchange: "LSE (Londres)", type: "yf", basePrice: 10829.21 },
+  "cac-40": { ticker: "CAC 40", name: "CAC 40 Index", symbol: "^FCHI", category: "Europa", currency: "EUR", exchange: "Euronext Paris", type: "yf", basePrice: 7969.40 },
+  "ibex-35": { ticker: "IBEX 35", name: "IBEX 35 Index", symbol: "^IBEX", category: "Europa", currency: "EUR", exchange: "BME (Madri)", type: "yf", basePrice: 11840.00 },
+  "euro-stoxx-50": { ticker: "STOXX 50", name: "Euro Stoxx 50", symbol: "^STOXX50E", category: "Europa", currency: "EUR", exchange: "Euronext", type: "yf", basePrice: 4940.00 },
 
   // Ásia
-  "nikkei-225": { ticker: "NIKKEI 225", name: "Nikkei 225 Index", symbol: "^N225", category: "Ásia", currency: "JPY", exchange: "TSE (Tóquio)", type: "yf", basePrice: 38650.5 },
-  "sse-composite": { ticker: "SSE COMP", name: "Shanghai Composite Index", symbol: "000001.SS", category: "Ásia", currency: "CNY", exchange: "SSE (Xangai)", type: "yf", basePrice: 3340 },
-  "hang-seng": { ticker: "HANG SENG", name: "Hang Seng Index", symbol: "^HSI", category: "Ásia", currency: "HKD", exchange: "HKEX (Hong Kong)", type: "yf", basePrice: 20850 },
-  "bse-sensex": { ticker: "SENSEX", name: "BSE Sensex 30", symbol: "^BSESN", category: "Ásia", currency: "INR", exchange: "BSE (Índia)", type: "yf", basePrice: 79400 },
-  "nifty-50": { ticker: "NIFTY 50", name: "Nifty 50 Index", symbol: "^NSEI", category: "Ásia", currency: "INR", exchange: "NSE (Índia)", type: "yf", basePrice: 24150 },
-  kospi: { ticker: "KOSPI", name: "Korea Composite Stock Price Index", symbol: "^KS11", category: "Ásia", currency: "KRW", exchange: "KRX (Seul)", type: "yf", basePrice: 2580 },
+  "nikkei-225": { ticker: "NIKKEI 225", name: "Nikkei 225 Index", symbol: "^N225", category: "Ásia", currency: "JPY", exchange: "TSE (Tóquio)", type: "yf", basePrice: 62188.63 },
+  "sse-composite": { ticker: "SSE COMP", name: "Shanghai Composite Index", symbol: "000001.SS", category: "Ásia", currency: "CNY", exchange: "SSE (Xangai)", type: "yf", basePrice: 3340.00 },
+  "hang-seng": { ticker: "HANG SENG", name: "Hang Seng Index", symbol: "^HSI", category: "Ásia", currency: "HKD", exchange: "HKEX (Hong Kong)", type: "yf", basePrice: 20850.00 },
+  "bse-sensex": { ticker: "SENSEX", name: "BSE Sensex 30", symbol: "^BSESN", category: "Ásia", currency: "INR", exchange: "BSE (Índia)", type: "yf", basePrice: 79400.00 },
+  "nifty-50": { ticker: "NIFTY 50", name: "Nifty 50 Index", symbol: "^NSEI", category: "Ásia", currency: "INR", exchange: "NSE (Índia)", type: "yf", basePrice: 24150.00 },
+  kospi: { ticker: "KOSPI", name: "Korea Composite Stock Price Index", symbol: "^KS11", category: "Ásia", currency: "KRW", exchange: "KRX (Seul)", type: "yf", basePrice: 2580.00 },
 
-  // Moedas
-  "usd-brl": { ticker: "USD / BRL", name: "Dólar Comercial", symbol: "BRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 5.4397 },
-  "eur-brl": { ticker: "EUR / BRL", name: "Euro Comercial", symbol: "EURBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 6.0679 },
-  "gbp-brl": { ticker: "GBP / BRL", name: "Libra Esterlina", symbol: "GBPBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 7.2827 },
-  "jpy-brl": { ticker: "JPY / BRL", name: "Iene Japonês", symbol: "JPYBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 0.0344 },
-  "chf-brl": { ticker: "CHF / BRL", name: "Franco Suíço / Real", symbol: "CHFBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 6.2510 },
-  "usd-eur": { ticker: "EUR / USD", name: "Euro vs Dólar", symbol: "EUR=X", category: "Moedas", currency: "USD", exchange: "Forex Global", type: "fx", basePrice: 1.1208 },
-  "usd-jpy": { ticker: "USD / JPY", name: "Dólar / Iene", symbol: "JPY=X", category: "Moedas", currency: "JPY", exchange: "Forex Global", type: "fx", basePrice: 152.40 },
+  // Moedas & Câmbio
+  "usd-brl": { ticker: "USD / BRL", name: "Dólar Comercial", symbol: "BRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 5.4578 },
+  "eur-brl": { ticker: "EUR / BRL", name: "Euro Comercial", symbol: "EURBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 6.1283 },
+  "gbp-brl": { ticker: "GBP / BRL", name: "Libra Esterlina", symbol: "GBPBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 7.3521 },
+  "jpy-brl": { ticker: "JPY / BRL", name: "Iene Japonês", symbol: "JPYBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 0.0345 },
+  "chf-brl": { ticker: "CHF / BRL", name: "Franco Suíço / Real", symbol: "CHFBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 6.3120 },
+  "cad-brl": { ticker: "CAD / BRL", name: "Dólar Canadense / Real", symbol: "CADBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 3.9200 },
+  "aud-brl": { ticker: "AUD / BRL", name: "Dólar Australiano / Real", symbol: "AUDBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 3.5600 },
+  "cny-brl": { ticker: "CNY / BRL", name: "Yuan Chinês / Real", symbol: "CNYBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 0.7600 },
+  "ars-brl": { ticker: "ARS / BRL", name: "Peso Argentino / Real", symbol: "ARSBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 0.0054 },
+  "usd-eur": { ticker: "EUR / USD", name: "Euro vs Dólar", symbol: "EUR=X", category: "Moedas", currency: "USD", exchange: "Forex Global", type: "fx", basePrice: 1.1228 },
+  "usd-jpy": { ticker: "USD / JPY", name: "Dólar / Iene", symbol: "JPY=X", category: "Moedas", currency: "JPY", exchange: "Forex Global", type: "fx", basePrice: 158.20 },
 
   // Criptomoedas
-  bitcoin: { ticker: "BTC", name: "Bitcoin", symbol: "BTC-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 77890 },
-  ether: { ticker: "ETH", name: "Ethereum", symbol: "ETH-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 2654 },
-  solana: { ticker: "SOL", name: "Solana", symbol: "SOL-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 182.4 },
-  bnb: { ticker: "BNB", name: "BNB (Binance Coin)", symbol: "BNB-USD", category: "Criptomoedas", currency: "USD", exchange: "Binance Chain", type: "crypto", basePrice: 645.0 },
+  bitcoin: { ticker: "BTC", name: "Bitcoin", symbol: "BTC-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 80207.72 },
+  ether: { ticker: "ETH", name: "Ethereum", symbol: "ETH-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 2422.85 },
+  solana: { ticker: "SOL", name: "Solana", symbol: "SOL-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 94.81 },
+  bnb: { ticker: "BNB", name: "BNB (Binance Coin)", symbol: "BNB-USD", category: "Criptomoedas", currency: "USD", exchange: "Binance Chain", type: "crypto", basePrice: 716.78 },
   xrp: { ticker: "XRP", name: "Ripple XRP", symbol: "XRP-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 1.85 },
   dogecoin: { ticker: "DOGE", name: "Dogecoin", symbol: "DOGE-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 0.195 },
+  ada: { ticker: "ADA", name: "Cardano", symbol: "ADA-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 0.42 },
+  avax: { ticker: "AVAX", name: "Avalanche", symbol: "AVAX-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 28.50 },
+  link: { ticker: "LINK", name: "Chainlink", symbol: "LINK-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 12.80 },
 
   // Contratos futuros & Commodities
-  "petroleo-brent": { ticker: "BRENT", name: "Petróleo Brent Futuro", symbol: "BZ=F", category: "Contratos futuros", currency: "USD", exchange: "ICE Futures Europe", type: "yf", basePrice: 74.80 },
-  "petroleo-wti": { ticker: "WTI", name: "Petróleo WTI Futuro", symbol: "CL=F", category: "Contratos futuros", currency: "USD", exchange: "NYMEX", type: "yf", basePrice: 70.60 },
-  "ouro-futuro": { ticker: "OURO", name: "Ouro Futuro (Gold COMEX)", symbol: "GC=F", category: "Contratos futuros", currency: "USD", exchange: "COMEX (NYMEX)", type: "yf", basePrice: 2735.0 },
-  prata: { ticker: "PRATA", name: "Prata Futura (Silver COMEX)", symbol: "SI=F", category: "Contratos futuros", currency: "USD", exchange: "COMEX (NYMEX)", type: "yf", basePrice: 31.85 },
-  "soja-futuro": { ticker: "SOJA", name: "Soja Grão Futuro", symbol: "ZS=F", category: "Contratos futuros", currency: "USD", exchange: "CBOT (Chicago)", type: "yf", basePrice: 998 },
+  "petroleo-brent": { ticker: "BRENT", name: "Petróleo Brent Futuro", symbol: "BZ=F", category: "Contratos futuros", currency: "USD", exchange: "ICE Futures Europe", type: "yf", basePrice: 95.22 },
+  "petroleo-wti": { ticker: "WTI", name: "Petróleo WTI Futuro", symbol: "CL=F", category: "Contratos futuros", currency: "USD", exchange: "NYMEX", type: "yf", basePrice: 88.74 },
+  "ouro-futuro": { ticker: "OURO", name: "Ouro Futuro (Gold COMEX)", symbol: "GC=F", category: "Contratos futuros", currency: "USD", exchange: "COMEX (NYMEX)", type: "yf", basePrice: 4073.70 },
+  prata: { ticker: "PRATA", name: "Prata Futura (Silver COMEX)", symbol: "SI=F", category: "Contratos futuros", currency: "USD", exchange: "COMEX (NYMEX)", type: "yf", basePrice: 52.31 },
+  "soja-futuro": { ticker: "SOJA", name: "Soja Grão Futuro", symbol: "ZS=F", category: "Contratos futuros", currency: "USD", exchange: "CBOT (Chicago)", type: "yf", basePrice: 998.00 },
   "gas-natural": { ticker: "GÁS NAT", name: "Gás Natural Henry Hub", symbol: "NG=F", category: "Contratos futuros", currency: "USD", exchange: "NYMEX", type: "yf", basePrice: 2.85 },
-  "sp-500-futuros": { ticker: "S&P FUT", name: "S&P 500 E-mini Futuros", symbol: "ES=F", category: "Contratos futuros", currency: "USD", exchange: "CME Group", type: "yf", basePrice: 5875 },
+  "cafe-futuro": { ticker: "CAFÉ", name: "Café Arábica Futuro", symbol: "KC=F", category: "Contratos futuros", currency: "USD", exchange: "ICE Futures US", type: "yf", basePrice: 320.00 },
+  "milho-futuro": { ticker: "MILHO", name: "Milho Grão Futuro", symbol: "ZC=F", category: "Contratos futuros", currency: "USD", exchange: "CBOT (Chicago)", type: "yf", basePrice: 435.00 },
+  "cobre-futuro": { ticker: "COBRE", name: "Cobre Futuro High Grade", symbol: "HG=F", category: "Contratos futuros", currency: "USD", exchange: "COMEX (NYMEX)", type: "yf", basePrice: 4.35 },
+  "sp-500-futuros": { ticker: "S&P FUT", name: "S&P 500 E-mini Futuros", symbol: "ES=F", category: "Contratos futuros", currency: "USD", exchange: "CME Group", type: "yf", basePrice: 7705.00 },
 };
 
 // In-Memory Live Quotes Cache
@@ -150,166 +171,171 @@ class QuotesService {
   }
 
   /**
-   * 1. Fetch from AwesomeAPI with fallback to Open Exchange Rates & HG Brasil
+   * 1. Fetch from AwesomeAPI with fallback to Yahoo Finance (BRL=X, EURBRL=X) & Open Exchange Rates
    */
   public async fetchAwesomeApiQuotes(): Promise<Record<string, { price: number; changePct: number; high: number; low: number; open?: number }> | null> {
-    const baseUrl = this.getAwesomeApiBase();
     const timestamp = Date.now();
 
-    const candidates = [
-      `${baseUrl}/last/USD-BRL,EUR-BRL,GBP-BRL,JPY-BRL,BTC-BRL,ETH-BRL,XRP-BRL,DOGE-BRL,EUR-USD?t=${timestamp}`,
-      `https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL,GBP-BRL,JPY-BRL,BTC-BRL,ETH-BRL,XRP-BRL,DOGE-BRL,EUR-USD?t=${timestamp}`,
-      `${baseUrl}/all?t=${timestamp}`,
-      `https://economia.awesomeapi.com.br/json/all?t=${timestamp}`,
-    ];
-
-    for (const url of candidates) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-        const res = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Accept: "application/json",
-            "User-Agent": "DinhEuro-Node/1.0 (+https://dinheuro.com)",
-          },
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          console.warn(`[AwesomeAPI] HTTP ${res.status} from ${url}`);
-          continue;
-        }
-
-        const data = await res.json();
-        if (!data || typeof data !== "object" || data.status === 429 || data.code === "QuotaExceeded") {
-          console.warn(`[AwesomeAPI] Rate-limited from ${url}, activating live failover.`);
-          break; // Exit loop to trigger immediate live failover
-        }
-
-        const result: Record<string, { price: number; changePct: number; high: number; low: number; open?: number }> = {};
-
-        // Parse pair response format (USDBRL, EURBRL, BTCBRL, etc.)
-        const parseEntry = (item: any) => {
-          if (!item) return null;
-          const bid = Number(item.bid || item.ask || item.price || 0);
-          const pct = Number(item.pctChange || item.changePct || 0);
-          const high = Number(item.high || bid * 1.01);
-          const low = Number(item.low || bid * 0.99);
-          const open = Number(item.varBid ? bid - Number(item.varBid) : bid);
-          if (bid > 0) {
-            return { price: bid, changePct: pct, high, low, open };
-          }
-          return null;
-        };
-
-        if (data.USDBRL || data.USD) result["usd-brl"] = parseEntry(data.USDBRL || data.USD)!;
-        if (data.EURBRL || data.EUR) result["eur-brl"] = parseEntry(data.EURBRL || data.EUR)!;
-        if (data.GBPBRL || data.GBP) result["gbp-brl"] = parseEntry(data.GBPBRL || data.GBP)!;
-        if (data.JPYBRL || data.JPY) result["jpy-brl"] = parseEntry(data.JPYBRL || data.JPY)!;
-        if (data.EURUSD) result["usd-eur"] = parseEntry(data.EURUSD)!;
-
-        // Crypto from AwesomeAPI (BTC in BRL or USD)
-        if (data.BTCBRL) {
-          const btcBrl = parseEntry(data.BTCBRL);
-          const usdBrlPrice = result["usd-brl"]?.price || 5.4397;
-          if (btcBrl && usdBrlPrice > 0) {
-            result["bitcoin"] = {
-              price: Number((btcBrl.price / usdBrlPrice).toFixed(2)),
-              changePct: btcBrl.changePct,
-              high: Number((btcBrl.high / usdBrlPrice).toFixed(2)),
-              low: Number((btcBrl.low / usdBrlPrice).toFixed(2)),
-            };
-          }
-        }
-
-        if (data.ETHBRL) {
-          const ethBrl = parseEntry(data.ETHBRL);
-          const usdBrlPrice = result["usd-brl"]?.price || 5.4397;
-          if (ethBrl && usdBrlPrice > 0) {
-            result["ether"] = {
-              price: Number((ethBrl.price / usdBrlPrice).toFixed(2)),
-              changePct: ethBrl.changePct,
-              high: Number((ethBrl.high / usdBrlPrice).toFixed(2)),
-              low: Number((ethBrl.low / usdBrlPrice).toFixed(2)),
-            };
-          }
-        }
-
-        if (Object.keys(result).length > 0) {
-          if (result["usd-brl"]?.price) {
-            setGlobalExchangeRates({
-              usdBrl: result["usd-brl"].price,
-              eurBrl: result["eur-brl"]?.price || result["usd-brl"].price * 1.11,
-              gbpBrl: result["gbp-brl"]?.price || result["usd-brl"].price * 1.34,
-            });
-          }
-          console.log(`[AwesomeAPI] Successfully loaded ${Object.keys(result).length} currency/crypto quotes.`);
-          return result;
-        }
-      } catch (err: any) {
-        console.warn(`[AwesomeAPI] Error connecting to ${url}:`, err?.message || err);
-      }
+    // Se a AwesomeAPI estiver em cooldown por 429 recente, aciona failover instantaneamente
+    if (typeof (this as any).awesomeCooldownUntil === "number" && timestamp < (this as any).awesomeCooldownUntil) {
+      return this.fetchLiveExchangeFailover();
     }
 
-    // Failover directly to Open Exchange Rates & HG Brasil
+    const baseUrl = this.getAwesomeApiBase();
     try {
-      const [openErRes, hgRes] = await Promise.all([
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const url = `${baseUrl}/last/USD-BRL,EUR-BRL,GBP-BRL,JPY-BRL,BTC-BRL,ETH-BRL,XRP-BRL,DOGE-BRL,EUR-USD?t=${timestamp}`;
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Accept: "application/json",
+          "User-Agent": "DinhEuro-Node/1.0",
+        },
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok || res.status === 429) {
+        (this as any).awesomeCooldownUntil = timestamp + 180000; // 3 min cooldown
+        return this.fetchLiveExchangeFailover();
+      }
+
+      const data = await res.json();
+      if (!data || data.status === 429 || data.code === "QuotaExceeded") {
+        (this as any).awesomeCooldownUntil = timestamp + 180000;
+        return this.fetchLiveExchangeFailover();
+      }
+
+      const result: Record<string, { price: number; changePct: number; high: number; low: number; open?: number }> = {};
+      const parseEntry = (item: any) => {
+        if (!item) return null;
+        const bid = Number(item.bid || item.ask || item.price || 0);
+        const pct = Number(item.pctChange || item.changePct || 0);
+        const high = Number(item.high || bid * 1.01);
+        const low = Number(item.low || bid * 0.99);
+        const open = Number(item.varBid ? bid - Number(item.varBid) : bid);
+        if (bid > 0) return { price: bid, changePct: pct, high, low, open };
+        return null;
+      };
+
+      if (data.USDBRL) result["usd-brl"] = parseEntry(data.USDBRL)!;
+      if (data.EURBRL) result["eur-brl"] = parseEntry(data.EURBRL)!;
+      if (data.GBPBRL) result["gbp-brl"] = parseEntry(data.GBPBRL)!;
+      if (data.JPYBRL) result["jpy-brl"] = parseEntry(data.JPYBRL)!;
+      if (data.EURUSD) result["usd-eur"] = parseEntry(data.EURUSD)!;
+
+      if (result["usd-brl"]?.price) {
+        setGlobalExchangeRates({
+          usdBrl: result["usd-brl"].price,
+          eurBrl: result["eur-brl"]?.price || result["usd-brl"].price * 1.11,
+          gbpBrl: result["gbp-brl"]?.price || result["usd-brl"].price * 1.34,
+        });
+        return result;
+      }
+    } catch {
+      (this as any).awesomeCooldownUntil = timestamp + 180000;
+    }
+
+    return this.fetchLiveExchangeFailover();
+  }
+
+  /**
+   * Failover de alta precisão para moedas e câmbio via Yahoo Finance & OpenER
+   */
+  private async fetchLiveExchangeFailover(): Promise<Record<string, { price: number; changePct: number; high: number; low: number; open?: number }> | null> {
+    try {
+      const [openErRes, yfUsd, yfEur, yfGbp, yfJpy, yfChf, yfEurUsd, yfUsdJpy] = await Promise.all([
         fetch(`https://open.er-api.com/v6/latest/USD?t=${Date.now()}`).then((r) => r.json()).catch(() => null),
-        fetch(`https://api.hgbrasil.com/finance?format=json&t=${Date.now()}`).then((r) => r.json()).catch(() => null),
+        this.fetchYahooQuote("BRL=X"),
+        this.fetchYahooQuote("EURBRL=X"),
+        this.fetchYahooQuote("GBPBRL=X"),
+        this.fetchYahooQuote("JPYBRL=X"),
+        this.fetchYahooQuote("CHFBRL=X"),
+        this.fetchYahooQuote("EUR=X"),
+        this.fetchYahooQuote("JPY=X"),
       ]);
 
       const result: Record<string, { price: number; changePct: number; high: number; low: number; open?: number }> = {};
-      const usdBrlRate = Number(hgRes?.results?.currencies?.USD?.buy || openErRes?.rates?.BRL || 5.4397);
-      const eurBrlRate = Number(hgRes?.results?.currencies?.EUR?.buy || (openErRes?.rates?.EUR ? usdBrlRate / openErRes.rates.EUR : 6.0679));
-      const gbpBrlRate = Number(hgRes?.results?.currencies?.GBP?.buy || (openErRes?.rates?.GBP ? usdBrlRate / openErRes.rates.GBP : 7.2827));
-      const jpyBrlRate = Number(hgRes?.results?.currencies?.JPY?.buy || (openErRes?.rates?.JPY ? usdBrlRate / openErRes.rates.JPY : 0.0344));
-      const eurUsdRate = openErRes?.rates?.EUR ? 1 / openErRes.rates.EUR : 1.1208;
+      const usdBrlRate = yfUsd?.price || Number(openErRes?.rates?.BRL || 5.4578);
+      const eurBrlRate = yfEur?.price || (openErRes?.rates?.EUR ? usdBrlRate / openErRes.rates.EUR : 6.1283);
+      const gbpBrlRate = yfGbp?.price || (openErRes?.rates?.GBP ? usdBrlRate / openErRes.rates.GBP : 7.3521);
+      const jpyBrlRate = yfJpy?.price || (openErRes?.rates?.JPY ? usdBrlRate / openErRes.rates.JPY : 0.0345);
+      const chfBrlRate = yfChf?.price || (openErRes?.rates?.CHF ? usdBrlRate / openErRes.rates.CHF : 6.3120);
+      const eurUsdRate = yfEurUsd?.price || (openErRes?.rates?.EUR ? 1 / openErRes.rates.EUR : 1.1228);
+      const usdJpyRate = yfUsdJpy?.price || (openErRes?.rates?.JPY ? openErRes.rates.JPY : 158.20);
+
+      const usdChg = yfUsd ? ((yfUsd.price - yfUsd.prevClose) / yfUsd.prevClose) * 100 : -0.56;
+      const eurChg = yfEur ? ((yfEur.price - yfEur.prevClose) / yfEur.prevClose) * 100 : -0.32;
+      const gbpChg = yfGbp ? ((yfGbp.price - yfGbp.prevClose) / yfGbp.prevClose) * 100 : -0.23;
+      const jpyChg = yfJpy ? ((yfJpy.price - yfJpy.prevClose) / yfJpy.prevClose) * 100 : 0.15;
+      const chfChg = yfChf ? ((yfChf.price - yfChf.prevClose) / yfChf.prevClose) * 100 : -0.10;
 
       result["usd-brl"] = {
         price: usdBrlRate,
-        changePct: Number(hgRes?.results?.currencies?.USD?.variation || 0.06),
-        high: usdBrlRate * 1.008,
-        low: usdBrlRate * 0.992,
-      };
-      result["eur-brl"] = {
-        price: eurBrlRate,
-        changePct: Number(hgRes?.results?.currencies?.EUR?.variation || 0.04),
-        high: eurBrlRate * 1.008,
-        low: eurBrlRate * 0.992,
-      };
-      result["gbp-brl"] = {
-        price: gbpBrlRate,
-        changePct: Number(hgRes?.results?.currencies?.GBP?.variation || 0.04),
-        high: gbpBrlRate * 1.008,
-        low: gbpBrlRate * 0.992,
-      };
-      result["jpy-brl"] = {
-        price: jpyBrlRate,
-        changePct: Number(hgRes?.results?.currencies?.JPY?.variation || 0),
-        high: jpyBrlRate * 1.01,
-        low: jpyBrlRate * 0.99,
-      };
-      result["usd-eur"] = {
-        price: eurUsdRate,
-        changePct: 0.1,
-        high: eurUsdRate * 1.005,
-        low: eurUsdRate * 0.995,
+        changePct: Number(usdChg.toFixed(2)),
+        high: yfUsd?.high || usdBrlRate * 1.008,
+        low: yfUsd?.low || usdBrlRate * 0.992,
+        open: yfUsd?.open || yfUsd?.prevClose,
       };
 
-      if (hgRes?.results?.currencies?.BTC?.buy) {
-        const btcBrl = Number(hgRes.results.currencies.BTC.buy);
-        result["bitcoin"] = {
-          price: Number((btcBrl / usdBrlRate).toFixed(2)),
-          changePct: Number(hgRes.results.currencies.BTC.variation || 1.3),
-          high: Number(((btcBrl * 1.02) / usdBrlRate).toFixed(2)),
-          low: Number(((btcBrl * 0.98) / usdBrlRate).toFixed(2)),
-        };
-      }
+      result["eur-brl"] = {
+        price: eurBrlRate,
+        changePct: Number(eurChg.toFixed(2)),
+        high: yfEur?.high || eurBrlRate * 1.008,
+        low: yfEur?.low || eurBrlRate * 0.992,
+        open: yfEur?.open || yfEur?.prevClose,
+      };
+
+      result["gbp-brl"] = {
+        price: gbpBrlRate,
+        changePct: Number(gbpChg.toFixed(2)),
+        high: yfGbp?.high || gbpBrlRate * 1.008,
+        low: yfGbp?.low || gbpBrlRate * 0.992,
+        open: yfGbp?.open || yfGbp?.prevClose,
+      };
+
+      result["jpy-brl"] = {
+        price: jpyBrlRate,
+        changePct: Number(jpyChg.toFixed(2)),
+        high: yfJpy?.high || jpyBrlRate * 1.01,
+        low: yfJpy?.low || jpyBrlRate * 0.99,
+        open: yfJpy?.open || yfJpy?.prevClose,
+      };
+
+      result["chf-brl"] = {
+        price: chfBrlRate,
+        changePct: Number(chfChg.toFixed(2)),
+        high: yfChf?.high || chfBrlRate * 1.008,
+        low: yfChf?.low || chfBrlRate * 0.992,
+        open: yfChf?.open || yfChf?.prevClose,
+      };
+
+      result["usd-eur"] = {
+        price: eurUsdRate,
+        changePct: yfEurUsd ? Number((((yfEurUsd.price - yfEurUsd.prevClose) / yfEurUsd.prevClose) * 100).toFixed(2)) : 0.12,
+        high: yfEurUsd?.high || eurUsdRate * 1.005,
+        low: yfEurUsd?.low || eurUsdRate * 0.995,
+      };
+
+      result["usd-jpy"] = {
+        price: usdJpyRate,
+        changePct: yfUsdJpy ? Number((((yfUsdJpy.price - yfUsdJpy.prevClose) / yfUsdJpy.prevClose) * 100).toFixed(2)) : -0.15,
+        high: yfUsdJpy?.high || usdJpyRate * 1.005,
+        low: yfUsdJpy?.low || usdJpyRate * 0.995,
+      };
+
+      // Adiciona cotações adicionais de moedas globais
+      const cadRate = openErRes?.rates?.CAD ? usdBrlRate / openErRes.rates.CAD : 3.92;
+      const audRate = openErRes?.rates?.AUD ? usdBrlRate / openErRes.rates.AUD : 3.56;
+      const cnyRate = openErRes?.rates?.CNY ? usdBrlRate / openErRes.rates.CNY : 0.76;
+      const arsRate = openErRes?.rates?.ARS ? usdBrlRate / openErRes.rates.ARS : 0.0054;
+
+      result["cad-brl"] = { price: Number(cadRate.toFixed(4)), changePct: 0.18, high: cadRate * 1.008, low: cadRate * 0.992 };
+      result["aud-brl"] = { price: Number(audRate.toFixed(4)), changePct: 0.22, high: audRate * 1.008, low: audRate * 0.992 };
+      result["cny-brl"] = { price: Number(cnyRate.toFixed(4)), changePct: 0.08, high: cnyRate * 1.008, low: cnyRate * 0.992 };
+      result["ars-brl"] = { price: Number(arsRate.toFixed(4)), changePct: -0.45, high: arsRate * 1.01, low: arsRate * 0.99 };
 
       setGlobalExchangeRates({
         usdBrl: usdBrlRate,
@@ -317,13 +343,12 @@ class QuotesService {
         gbpBrl: gbpBrlRate,
       });
 
-      console.log(`[QuotesService] Live exchange rates loaded via OpenER/HGBrasil. USD/BRL: ${usdBrlRate}`);
+      console.log(`[QuotesService] Live exchange rates loaded via Yahoo Finance/OpenER. USD/BRL: ${usdBrlRate.toFixed(4)} | EUR/BRL: ${eurBrlRate.toFixed(4)}`);
       return result;
     } catch (err: any) {
       console.warn("[QuotesService] Error in currency failover:", err?.message);
+      return null;
     }
-
-    return null;
   }
 
   /**
@@ -675,7 +700,7 @@ class QuotesService {
               let finnhubData: { price: number; prevClose: number; open: number; high: number; low: number; change: number; changePercent: number } | null = null;
 
               const finnhubTickers: Record<string, string> = {
-                // Ações dos EUA & Globais
+                // Ações dos EUA & Globais (Wall Street)
                 aapl: "AAPL",
                 nvda: "NVDA",
                 msft: "MSFT",
@@ -683,28 +708,12 @@ class QuotesService {
                 googl: "GOOGL",
                 tsla: "TSLA",
                 meta: "META",
-                // Bolsas Globais & Índices
-                "sp-500": "SPY",
-                "sp-500-futuros": "SPY",
-                nasdaq: "QQQ",
-                "dow-jones": "DIA",
-                "russell-2000": "IWM",
-                dax: "EWG",
-                "ftse-100": "EWU",
-                "cac-40": "FEZ",
-                "euro-stoxx-50": "FEZ",
-                "nikkei-225": "EWJ",
-                "sse-composite": "MCHI",
-                "hang-seng": "FXI",
-                kospi: "EWY",
-                "bse-sensex": "INDA",
-                "nifty-50": "INDY",
-                "sp-latin-america": "ILF",
-                // Commodities Globais
-                "ouro-futuro": "GLD",
-                "petroleo-brent": "USO",
-                "soja-futuro": "SOYB",
-                "gas-natural": "UNG",
+                nflx: "NFLX",
+                amd: "AMD",
+                baba: "BABA",
+                dis: "DIS",
+                jpm: "JPM",
+                wmt: "WMT",
               };
 
               if (finnhubTickers[id]) {

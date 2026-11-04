@@ -8,6 +8,7 @@ import {
   ChartPeriod,
 } from "../types/finance";
 import { getAssetSector, getAssetTags } from "../utils/assetTaxonomy";
+import { EXTRA_RAW_ASSETS } from "./extraMarketAssets";
 
 // Helper to generate realistic historical curves
 function generateTimeSeries(
@@ -1789,7 +1790,9 @@ const RAW_ASSETS: Asset[] = [
   },
 ];
 
-export const ALL_ASSETS: Asset[] = RAW_ASSETS.map((asset) => ({
+const COMBINED_RAW_ASSETS: Asset[] = [...RAW_ASSETS, ...EXTRA_RAW_ASSETS];
+
+export const ALL_ASSETS: Asset[] = COMBINED_RAW_ASSETS.map((asset) => ({
   ...asset,
   sector: asset.sector || getAssetSector(asset),
   tags: asset.tags || getAssetTags(asset),

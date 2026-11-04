@@ -281,7 +281,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
                 <span>Todas as Ações e Ativos</span>
               </div>
               <span className="px-2 py-0.5 rounded-full bg-[#58a6ff]/30 text-[#58a6ff] text-[10px] font-mono font-bold">
-                33 ATIVOS
+                +70 ATIVOS
               </span>
             </button>
           )}

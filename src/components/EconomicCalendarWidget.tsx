@@ -134,6 +134,15 @@ export const EconomicCalendarWidget: React.FC<EconomicCalendarWidgetProps> = ({
     return Object.values(groups);
   }, [filteredEvents]);
 
+  // Contagem por país para badges dos filtros
+  const countryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: events.length, BR: 0, US: 0, EU: 0, GB: 0, JP: 0 };
+    events.forEach((ev) => {
+      if (counts[ev.country] !== undefined) counts[ev.country]++;
+    });
+    return counts;
+  }, [events]);
+
   // Categorias disponíveis
   const categories: Array<{ id: string; label: string; icon: any }> = [
     { id: "all", label: "Todos os Eventos", icon: Layers },
@@ -253,10 +262,21 @@ export const EconomicCalendarWidget: React.FC<EconomicCalendarWidgetProps> = ({
               <div className="text-left md:text-right">
                 <div className="text-[10px] text-[#8b949e] uppercase font-semibold">Projeção do Mercado</div>
                 <div className="text-base sm:text-lg font-mono font-bold text-[#58a6ff]">
-                  {nextMajorEvent.forecast || "Aguardando"}
+                  {nextMajorEvent.forecast || (
+                    <span className="text-xs font-sans font-medium text-[#8b949e]">
+                      {nextMajorEvent.category === "central_bank" ? "Consenso Livre" : "Aguardando divulgação"}
+                    </span>
+                  )}
                 </div>
                 <div className="text-[11px] font-mono text-[#8b949e]">
-                  Anterior: <span className="text-[#e6edf3]">{nextMajorEvent.previous || "N/A"}</span>
+                  Anterior:{" "}
+                  <span className="text-[#e6edf3]">
+                    {nextMajorEvent.previous || (
+                      <span className="text-[10px] text-[#8b949e] font-sans">
+                        {nextMajorEvent.category === "central_bank" ? "Pauta Oficial" : "Aguardando"}
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
 
@@ -310,24 +330,28 @@ export const EconomicCalendarWidget: React.FC<EconomicCalendarWidgetProps> = ({
 
           {/* País & Filtro de Alto Impacto */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Seletor de País */}
+            {/* Seletor de País com contagem real */}
             <div className="flex items-center bg-[#0e1117] border border-[#30363d] rounded-xl p-0.5">
-              {countries.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setActiveCountry(c.id)}
-                  title={c.label}
-                  className={`px-2 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 ${
-                    activeCountry === c.id
-                      ? "bg-[#21262d] text-[#e6edf3]"
-                      : "text-[#8b949e] hover:text-[#e6edf3]"
-                  }`}
-                >
-                  <span>{c.flag}</span>
-                  <span className="hidden sm:inline text-[11px]">{c.label}</span>
-                </button>
-              ))}
+              {countries.map((c) => {
+                const count = countryCounts[c.id] || 0;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setActiveCountry(c.id)}
+                    title={`${c.label} (${count} eventos)`}
+                    className={`px-2 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 ${
+                      activeCountry === c.id
+                        ? "bg-[#21262d] text-[#e6edf3]"
+                        : "text-[#8b949e] hover:text-[#e6edf3]"
+                    }`}
+                  >
+                    <span>{c.flag}</span>
+                    <span className="hidden sm:inline text-[11px]">{c.label}</span>
+                    <span className="text-[10px] opacity-60">({count})</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Toggle de Apenas Alto Impacto */}
@@ -427,31 +451,48 @@ export const EconomicCalendarWidget: React.FC<EconomicCalendarWidgetProps> = ({
                           </div>
 
                           {/* Coluna 2: Dados Numéricos (Anterior / Projeção / Atual) */}
-                          <div className="flex items-center gap-4 sm:gap-6 justify-between md:justify-end shrink-0 pl-14 md:pl-0 border-t md:border-t-0 pt-2 md:pt-0 border-[#30363d]/50">
-                            <div className="text-left md:text-right">
+                          <div className="flex items-center gap-3 sm:gap-6 justify-between md:justify-end shrink-0 pl-14 md:pl-0 border-t md:border-t-0 pt-2 md:pt-0 border-[#30363d]/50">
+                            <div className="text-left md:text-right min-w-[55px]">
                               <div className="text-[10px] text-[#8b949e] uppercase font-semibold">Anterior</div>
                               <div className="text-xs font-mono text-[#8b949e]">
-                                {event.previous || "—"}
+                                {event.previous ? (
+                                  event.previous
+                                ) : event.category === "central_bank" ? (
+                                  <span className="text-[10px] text-[#8b949e] font-sans">Pauta Oficial</span>
+                                ) : (
+                                  <span className="text-[10px] text-[#8b949e] font-sans italic">Aguardando</span>
+                                )}
                               </div>
                             </div>
 
-                            <div className="text-left md:text-right">
+                            <div className="text-left md:text-right min-w-[70px]">
                               <div className="text-[10px] text-[#58a6ff] uppercase font-semibold">Projeção</div>
                               <div className="text-xs font-mono font-bold text-[#e6edf3]">
-                                {event.forecast || "—"}
+                                {event.forecast ? (
+                                  event.forecast
+                                ) : (
+                                  <span className="text-[10px] font-normal text-[#8b949e] font-sans italic">
+                                    {event.category === "central_bank" ? "Consenso Livre" : "Aguardando divulgação"}
+                                  </span>
+                                )}
                               </div>
                             </div>
 
-                            <div className="text-left md:text-right min-w-[60px]">
+                            <div className="text-left md:text-right min-w-[80px]">
                               <div className="text-[10px] text-[#8b949e] uppercase font-semibold">Atual</div>
                               {event.actual ? (
                                 <div className="text-xs font-mono font-bold text-[#00c853]">
                                   {event.actual}
                                 </div>
+                              ) : timing.isPast ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-sans font-medium text-[#e3b341] bg-[#e3b341]/10 px-1.5 py-0.5 rounded border border-[#e3b341]/20">
+                                  Aguardando
+                                </span>
                               ) : (
-                                <div className="text-[11px] font-mono text-[#e3b341]">
-                                  {timing.isPast ? "Aguardando" : "Agendado"}
-                                </div>
+                                <span className="inline-flex items-center gap-1 text-[10px] font-sans font-medium text-[#58a6ff] bg-[#1f6feb]/10 px-1.5 py-0.5 rounded border border-[#1f6feb]/20">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  Agendado
+                                </span>
                               )}
                             </div>
 

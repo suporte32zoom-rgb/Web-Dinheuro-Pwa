@@ -38,6 +38,7 @@ interface DynamicIndicesCarouselProps {
   groupBySector?: boolean;
   onSelectSector?: (sector: string) => void;
   onSelectTag?: (tag: string) => void;
+  onOpenAllAssets?: () => void;
 }
 
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
@@ -65,6 +66,7 @@ export const DynamicIndicesCarousel: React.FC<DynamicIndicesCarouselProps> = ({
   groupBySector = false,
   onSelectSector,
   onSelectTag,
+  onOpenAllAssets,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -376,6 +378,27 @@ export const DynamicIndicesCarousel: React.FC<DynamicIndicesCarouselProps> = ({
                   </div>
                 ))
               : filteredAssets.map((asset) => renderAssetCard(asset))}
+
+            {onOpenAllAssets && filteredAssets.length > 0 && (
+              <div
+                onClick={onOpenAllAssets}
+                className="snap-start shrink-0 w-[200px] sm:w-[220px] bg-gradient-to-br from-[#161b22] to-[#21262d] hover:from-[#1f6feb]/20 hover:to-[#238636]/20 border border-dashed border-[#58a6ff]/40 hover:border-[#58a6ff] rounded-2xl p-4 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 group shadow-md"
+                title="Abrir catálogo completo com todas as ações e ativos"
+              >
+                <div className="p-3 rounded-full bg-[#58a6ff]/20 text-[#58a6ff] group-hover:scale-110 transition-transform mb-2">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-bold text-white group-hover:text-[#58a6ff] transition-colors">
+                  Ver Todos os Ativos
+                </h4>
+                <p className="text-[10px] text-[#8b949e] mt-1">
+                  Catálogo com +70 ações, moedas, criptos e commodities
+                </p>
+                <span className="mt-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1f6feb]/30 text-[#58a6ff]">
+                  Explorar Catálogo →
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

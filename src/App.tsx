@@ -109,6 +109,7 @@ export default function App() {
   const [googleChatOpen, setGoogleChatOpen] = useState(false);
   const [chatShareText, setChatShareText] = useState("");
   const [deepDiveTopic, setDeepDiveTopic] = useState<AIAccordionTopic | null>(null);
+  const [allAssetsModalOpen, setAllAssetsModalOpen] = useState(false);
 
   // Institutional, Legal & LGPD Compliance Modal State
   const [legalModalOpen, setLegalModalOpen] = useState(false);
@@ -487,27 +488,7 @@ export default function App() {
   }, []);
 
   const handleViewAllStocks = useCallback(() => {
-    setActiveTab("América Latina");
-    setSelectedSector("all");
-    setActiveTag("");
-    if (selectedAssetRef.current) {
-      setSelectedAsset(null);
-      if (window.location.hash) {
-        try {
-          window.history.pushState(null, "", window.location.pathname);
-        } catch {
-          window.location.hash = "";
-        }
-      }
-    }
-    setTimeout(() => {
-      const el = document.getElementById("market-assets-section");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else {
-        window.scrollTo({ top: 380, behavior: "smooth" });
-      }
-    }, 50);
+    setAllAssetsModalOpen(true);
   }, []);
 
   const handleToggleWatchlist = (asset: Asset) => {
@@ -550,6 +531,7 @@ export default function App() {
         onOpenSidebar={() => setSidebarOpen(true)}
         onOpenPortfolio={() => setPortfolioOpen(true)}
         onOpenWatchlist={() => setWatchlistOpen(true)}
+        onOpenAllAssets={() => setAllAssetsModalOpen(true)}
         onOpenGoogleChat={() => {
           setChatShareText("");
           setGoogleChatOpen(true);
@@ -608,6 +590,7 @@ export default function App() {
               onSelectTab={(tab) => {
                 setActiveTab(tab);
               }}
+              onOpenAllAssets={() => setAllAssetsModalOpen(true)}
             />
 
             {/* Setores & Tags Customizadas Filter Bar */}
@@ -632,6 +615,7 @@ export default function App() {
               groupBySector={groupBySector}
               onSelectSector={setSelectedSector}
               onSelectTag={setActiveTag}
+              onOpenAllAssets={() => setAllAssetsModalOpen(true)}
             />
 
             {/* Global Economy & AwesomeAPI Live Indicators */}
@@ -685,6 +669,7 @@ export default function App() {
         onOpenPortfolio={() => setPortfolioOpen(true)}
         portfolioCount={portfolioPositions.length}
         onOpenWatchlist={() => setWatchlistOpen(true)}
+        onOpenAllAssets={() => setAllAssetsModalOpen(true)}
         onOpenGoogleChat={() => {
           setChatShareText("");
           setGoogleChatOpen(true);
@@ -729,6 +714,14 @@ export default function App() {
       <AIDeepDiveModal
         topic={deepDiveTopic}
         onClose={() => setDeepDiveTopic(null)}
+      />
+
+      {/* Catálogo Completo de Todas as Ações e Ativos em Tempo Real */}
+      <AllAssetsModal
+        isOpen={allAssetsModalOpen}
+        onClose={() => setAllAssetsModalOpen(false)}
+        onSelectAsset={handleSelectAsset}
+        liveAssets={liveAssets}
       />
 
       {/* Google Chat Workspace Integration Modal */}

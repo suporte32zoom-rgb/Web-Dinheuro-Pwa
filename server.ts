@@ -1183,6 +1183,54 @@ app.get("/api/market/movers", async (_req, res) => {
   }
 });
 
+// API: Real-time Macroeconomic Calendar & Interest Rate Decisions
+let economicCalendarCache: { timestamp: number; events: any[] } = { timestamp: 0, events: [] };
+
+app.get("/api/market/economic-calendar", async (req, res) => {
+  try {
+    const now = Date.now();
+    const force = req.query.force === "true";
+    if (!force && economicCalendarCache.events.length > 0 && now - economicCalendarCache.timestamp < 60000) {
+      return res.json({
+        success: true,
+        cached: true,
+        count: economicCalendarCache.events.length,
+        timestamp: new Date(economicCalendarCache.timestamp).toISOString(),
+        events: economicCalendarCache.events,
+      });
+    }
+
+    const { fetchEconomicCalendar } = await import("./src/services/economicCalendarService.js");
+    const events = await fetchEconomicCalendar();
+
+    if (events && events.length > 0) {
+      economicCalendarCache = { timestamp: now, events };
+    }
+
+    res.json({
+      success: true,
+      count: events.length,
+      timestamp: new Date().toISOString(),
+      events,
+    });
+  } catch (error: any) {
+    console.warn("[Server] Handled error in /api/market/economic-calendar:", error?.message || error);
+    try {
+      const { buildRealtimeEconomicEvents } = await import("./src/services/economicCalendarService.js");
+      const fallbackEvents = buildRealtimeEconomicEvents();
+      res.json({
+        success: true,
+        source: "Local Engine Fallback",
+        count: fallbackEvents.length,
+        timestamp: new Date().toISOString(),
+        events: fallbackEvents,
+      });
+    } catch {
+      res.status(500).json({ success: false, error: "Falha ao sincronizar calendário econômico." });
+    }
+  }
+});
+
 // Health check endpoint
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "DinhEuro Financial Real-time Engine", timestamp: new Date().toISOString() });

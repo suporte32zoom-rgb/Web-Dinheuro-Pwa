@@ -164,12 +164,12 @@ export const MarketMoversGrid: React.FC<MarketMoversGridProps> = ({
               id="btn-view-all-market-stocks"
               onClick={onViewAllStocks}
               className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] hover:text-white border border-[#30363d] hover:border-[#58a6ff] transition-all text-xs font-semibold cursor-pointer shadow-xs shrink-0"
-              title="Abrir lista completa com todas as 33 ações e ativos"
+              title="Abrir catálogo completo com todas as ações e ativos mundiais"
             >
               <Layers className="w-3.5 h-3.5 text-[#58a6ff]" />
               <span>Ver todas as ações do mercado</span>
               <span className="px-1.5 py-0.2 rounded text-[10px] bg-[#58a6ff]/20 text-[#58a6ff] font-bold">
-                33 ativos
+                +70 ativos
               </span>
             </button>
           )}

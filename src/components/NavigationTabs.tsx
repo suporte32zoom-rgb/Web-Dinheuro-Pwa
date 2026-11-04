@@ -78,12 +78,12 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({
               id="tab-all-market-assets"
               onClick={onOpenAllAssets}
               className="ml-auto flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer shrink-0 bg-gradient-to-r from-[#1f6feb]/20 to-[#238636]/20 text-[#58a6ff] hover:text-white hover:from-[#1f6feb] hover:to-[#238636] border border-[#58a6ff]/40 shadow-xs"
-              title="Abrir modal com todas as ações e ativos do mercado (33 ativos)"
+              title="Abrir catálogo completo com todas as ações e ativos do mercado mundial"
             >
               <Layers className="w-3.5 h-3.5" />
               <span>Ver todas as ações do mercado</span>
               <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#58a6ff]/30 text-white">
-                33
+                +70
               </span>
             </button>
           )}
