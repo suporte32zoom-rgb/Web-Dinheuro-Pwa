@@ -1,7 +1,7 @@
 import React from "react";
 import { TOP_MOVERS_DATA } from "../data/mockMarketData";
 import { MarketMoverItem } from "../types/finance";
-import { TrendingUp, TrendingDown, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, ArrowUpRight, ArrowDownRight, Layers } from "lucide-react";
 import { formatAssetDisplayPrice } from "../utils/formatters";
 import { DualPriceDisplay } from "../utils/currencyConversion";
 
@@ -148,7 +148,7 @@ export const MarketMoversGrid: React.FC<MarketMoversGridProps> = ({
   return (
     <section className="w-full py-4" id="market-movers-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-base font-bold text-[#e6edf3] tracking-tight">
               Termômetro de Ações em Tempo Real (B3)
@@ -157,6 +157,22 @@ export const MarketMoversGrid: React.FC<MarketMoversGridProps> = ({
               Destaques de volume financeiro, oscilações máximas e mínimas do pregão ao vivo
             </p>
           </div>
+
+          {onViewAllStocks && (
+            <button
+              type="button"
+              id="btn-view-all-market-stocks"
+              onClick={onViewAllStocks}
+              className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] hover:text-white border border-[#30363d] hover:border-[#58a6ff] transition-all text-xs font-semibold cursor-pointer shadow-xs shrink-0"
+              title="Abrir lista completa com todas as 33 ações e ativos"
+            >
+              <Layers className="w-3.5 h-3.5 text-[#58a6ff]" />
+              <span>Ver todas as ações do mercado</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-[#58a6ff]/20 text-[#58a6ff] font-bold">
+                33 ativos
+              </span>
+            </button>
+          )}
         </div>
 
         {/* 3-Column Grid */}

@@ -12,6 +12,7 @@ import {
   Clock,
   Bell,
   BellRing,
+  Layers,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -19,6 +20,7 @@ interface HeaderProps {
   onOpenSidebar: () => void;
   onOpenPortfolio: () => void;
   onOpenWatchlist: () => void;
+  onOpenAllAssets?: () => void;
   onOpenCopilot?: () => void;
   onOpenGoogleChat?: () => void;
   onOpenNotifications?: () => void;
@@ -43,6 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSidebar,
   onOpenPortfolio,
   onOpenWatchlist,
+  onOpenAllAssets,
   onOpenCopilot,
   onOpenGoogleChat,
   onOpenNotifications,
@@ -314,6 +317,23 @@ export const Header: React.FC<HeaderProps> = ({
                   {notificationsCount}
                 </span>
               )}
+            </button>
+          )}
+
+          {/* Todas as Ações do Mercado (33 Ativos) Quick Button */}
+          {onOpenAllAssets && (
+            <button
+              type="button"
+              id="btn-header-all-assets"
+              onClick={onOpenAllAssets}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-[#58a6ff] bg-[#161b22] hover:bg-[#21262d] border border-[#58a6ff]/40 hover:border-[#58a6ff] transition-all cursor-pointer shrink-0 shadow-xs"
+              title="Ver todas as 33 ações e ativos do mercado com cotações em tempo real"
+            >
+              <Layers className="w-4 h-4 text-[#58a6ff] shrink-0" />
+              <span className="hidden sm:inline">Todas as Ações</span>
+              <span className="px-1.5 py-0.2 bg-[#58a6ff]/20 text-[#58a6ff] rounded-full text-[10px] font-bold shrink-0">
+                33
+              </span>
             </button>
           )}
 

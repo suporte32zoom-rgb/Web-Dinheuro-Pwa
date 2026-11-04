@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   Info,
   Cookie,
+  Layers,
 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { LegalDocId } from "../types/legal";
@@ -52,6 +53,7 @@ interface SidebarDrawerProps {
   onSelectTab: (tab: RegionalTab) => void;
   onOpenPortfolio: () => void;
   onOpenWatchlist: () => void;
+  onOpenAllAssets?: () => void;
   onOpenCopilot?: () => void;
   onOpenGoogleChat?: () => void;
   onOpenNotifications?: () => void;
@@ -70,6 +72,7 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   onSelectTab,
   onOpenPortfolio,
   onOpenWatchlist,
+  onOpenAllAssets,
   onOpenCopilot,
   onOpenGoogleChat,
   onOpenNotifications,
@@ -258,6 +261,27 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
               </div>
               <span className="px-2 py-0.5 rounded-full bg-[#58a6ff]/20 text-[#58a6ff] text-[10px] font-mono">
                 CONFIGURAR
+              </span>
+            </button>
+          )}
+
+          {onOpenAllAssets && (
+            <button
+              id="sidebar-btn-all-assets"
+              onClick={() => {
+                onClose();
+                onOpenAllAssets();
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-[#1f6feb]/20 to-[#238636]/20 hover:from-[#1f6feb]/30 hover:to-[#238636]/30 border border-[#58a6ff]/40 text-xs font-bold text-white transition-all cursor-pointer shadow-xs"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-1 rounded-lg bg-[#58a6ff]/20 text-[#58a6ff]">
+                  <Layers className="w-3.5 h-3.5" />
+                </div>
+                <span>Todas as Ações e Ativos</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-[#58a6ff]/30 text-[#58a6ff] text-[10px] font-mono font-bold">
+                33 ATIVOS
               </span>
             </button>
           )}

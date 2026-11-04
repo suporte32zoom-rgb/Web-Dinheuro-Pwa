@@ -27,6 +27,7 @@ import { AIMarketSummaryAccordion } from "./components/AIMarketSummaryAccordion"
 import { MarketMoversGrid } from "./components/MarketMoversGrid";
 import { NewsSection } from "./components/NewsSection";
 import { AssetDetailView } from "./components/AssetDetailView";
+import { AllAssetsModal } from "./components/AllAssetsModal";
 import { SidebarDrawer } from "./components/SidebarDrawer";
 import { GlobalSearchModal } from "./components/GlobalSearchModal";
 import { PortfolioModal } from "./components/PortfolioModal";

@@ -49,10 +49,10 @@ export const ASSET_REGISTRY: Record<string, AssetRegistryItem> = {
   petr4: { ticker: "PETR4", name: "Petrobras PN", symbol: "PETR4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 52.71 },
   vale3: { ticker: "VALE3", name: "Vale ON", symbol: "VALE3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 61.20 },
   itub4: { ticker: "ITUB4", name: "Itaú Unibanco PN", symbol: "ITUB4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 38.45 },
+  bbdc4: { ticker: "BBDC4", name: "Banco Bradesco PN", symbol: "BBDC4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 14.85 },
   bbas3: { ticker: "BBAS3", name: "Banco do Brasil ON", symbol: "BBAS3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 28.5 },
   wege3: { ticker: "WEGE3", name: "WEG S.A. ON", symbol: "WEGE3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 54.12 },
   b3sa3: { ticker: "B3SA3", name: "B3 S.A. ON", symbol: "B3SA3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 11.28 },
-  mglu3: { ticker: "MGLU3", name: "Magazine Luiza ON", symbol: "MGLU3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 9.45 },
   prio3: { ticker: "PRIO3", name: "PRIO S.A. ON", symbol: "PRIO3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 44.8 },
   embra3: { ticker: "EMBR3", name: "Embraer ON", symbol: "EMBR3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 56.7 },
   totv3: { ticker: "TOTS3", name: "Totvs ON", symbol: "TOTS3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 32.15 },
@@ -99,18 +99,23 @@ export const ASSET_REGISTRY: Record<string, AssetRegistryItem> = {
   "eur-brl": { ticker: "EUR / BRL", name: "Euro Comercial", symbol: "EURBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 6.0679 },
   "gbp-brl": { ticker: "GBP / BRL", name: "Libra Esterlina", symbol: "GBPBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 7.2827 },
   "jpy-brl": { ticker: "JPY / BRL", name: "Iene Japonês", symbol: "JPYBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 0.0344 },
+  "chf-brl": { ticker: "CHF / BRL", name: "Franco Suíço / Real", symbol: "CHFBRL=X", category: "Moedas", currency: "BRL", exchange: "Mercado Interbancário", type: "fx", basePrice: 6.2510 },
   "usd-eur": { ticker: "EUR / USD", name: "Euro vs Dólar", symbol: "EUR=X", category: "Moedas", currency: "USD", exchange: "Forex Global", type: "fx", basePrice: 1.1208 },
+  "usd-jpy": { ticker: "USD / JPY", name: "Dólar / Iene", symbol: "JPY=X", category: "Moedas", currency: "JPY", exchange: "Forex Global", type: "fx", basePrice: 152.40 },
 
   // Criptomoedas
   bitcoin: { ticker: "BTC", name: "Bitcoin", symbol: "BTC-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 77890 },
   ether: { ticker: "ETH", name: "Ethereum", symbol: "ETH-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 2654 },
   solana: { ticker: "SOL", name: "Solana", symbol: "SOL-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 182.4 },
+  bnb: { ticker: "BNB", name: "BNB (Binance Coin)", symbol: "BNB-USD", category: "Criptomoedas", currency: "USD", exchange: "Binance Chain", type: "crypto", basePrice: 645.0 },
   xrp: { ticker: "XRP", name: "Ripple XRP", symbol: "XRP-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 1.85 },
   dogecoin: { ticker: "DOGE", name: "Dogecoin", symbol: "DOGE-USD", category: "Criptomoedas", currency: "USD", exchange: "Cripto 24/7", type: "crypto", basePrice: 0.195 },
 
   // Contratos futuros & Commodities
   "petroleo-brent": { ticker: "BRENT", name: "Petróleo Brent Futuro", symbol: "BZ=F", category: "Contratos futuros", currency: "USD", exchange: "ICE Futures Europe", type: "yf", basePrice: 74.80 },
+  "petroleo-wti": { ticker: "WTI", name: "Petróleo WTI Futuro", symbol: "CL=F", category: "Contratos futuros", currency: "USD", exchange: "NYMEX", type: "yf", basePrice: 70.60 },
   "ouro-futuro": { ticker: "OURO", name: "Ouro Futuro (Gold COMEX)", symbol: "GC=F", category: "Contratos futuros", currency: "USD", exchange: "COMEX (NYMEX)", type: "yf", basePrice: 2735.0 },
+  prata: { ticker: "PRATA", name: "Prata Futura (Silver COMEX)", symbol: "SI=F", category: "Contratos futuros", currency: "USD", exchange: "COMEX (NYMEX)", type: "yf", basePrice: 31.85 },
   "soja-futuro": { ticker: "SOJA", name: "Soja Grão Futuro", symbol: "ZS=F", category: "Contratos futuros", currency: "USD", exchange: "CBOT (Chicago)", type: "yf", basePrice: 998 },
   "gas-natural": { ticker: "GÁS NAT", name: "Gás Natural Henry Hub", symbol: "NG=F", category: "Contratos futuros", currency: "USD", exchange: "NYMEX", type: "yf", basePrice: 2.85 },
   "sp-500-futuros": { ticker: "S&P FUT", name: "S&P 500 E-mini Futuros", symbol: "ES=F", category: "Contratos futuros", currency: "USD", exchange: "CME Group", type: "yf", basePrice: 5875 },
@@ -421,7 +426,7 @@ class QuotesService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ripple,dogecoin&vs_currencies=usd&include_24hr_change=true&t=${timestamp}`;
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ripple,dogecoin,binancecoin&vs_currencies=usd&include_24hr_change=true&t=${timestamp}`;
       const res = await fetch(url, {
         signal: controller.signal,
         headers: {
@@ -438,6 +443,7 @@ class QuotesService {
           bitcoin: { price: data.bitcoin?.usd, change24h: data.bitcoin?.usd_24h_change || 0 },
           ether: { price: data.ethereum?.usd, change24h: data.ethereum?.usd_24h_change || 0 },
           solana: { price: data.solana?.usd, change24h: data.solana?.usd_24h_change || 0 },
+          bnb: { price: data.binancecoin?.usd, change24h: data.binancecoin?.usd_24h_change || 0 },
           xrp: { price: data.ripple?.usd, change24h: data.ripple?.usd_24h_change || 0 },
           dogecoin: { price: data.dogecoin?.usd, change24h: data.dogecoin?.usd_24h_change || 0 },
         };
