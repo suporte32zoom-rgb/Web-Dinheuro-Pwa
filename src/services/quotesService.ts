@@ -154,6 +154,18 @@ class QuotesService {
 
   private isFetching = false;
   private backgroundIntervalId: any = null;
+  private hgCache: {
+    timestamp: number;
+    data: {
+      ibovespa?: { price: number; variation: number };
+      nasdaq?: { price: number; variation: number };
+      dowjones?: { price: number; variation: number };
+      cac?: { price: number; variation: number };
+      nikkei?: { price: number; variation: number };
+      currencies?: Record<string, { buy: number; variation: number }>;
+    } | null;
+  } = { timestamp: 0, data: null };
+  private hgCooldownUntil = 0;
 
   constructor() {
     this.startBackgroundPoller();
@@ -400,12 +412,24 @@ class QuotesService {
     nikkei?: { price: number; variation: number };
     currencies?: Record<string, { buy: number; variation: number }>;
   } | null> {
-    try {
-      const timestamp = Date.now();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const now = Date.now();
 
-      const res = await fetch(`https://api.hgbrasil.com/finance?format=json&t=${timestamp}`, {
+    // 1. Retorna dados do cache se tiverem menos de 90 segundos
+    if (this.hgCache.data && now - this.hgCache.timestamp < 90000) {
+      return this.hgCache.data;
+    }
+
+    // 2. Se em cooldown de rate-limit ou abort, preserva cache existente
+    if (now < this.hgCooldownUntil && this.hgCache.data) {
+      return this.hgCache.data;
+    }
+
+    let timeoutId: any = null;
+    try {
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const res = await fetch(`https://api.hgbrasil.com/finance?format=json&t=${now}`, {
         signal: controller.signal,
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -418,17 +442,17 @@ class QuotesService {
       clearTimeout(timeoutId);
 
       if (!res.ok) {
-        console.warn(`[HGBrasil] HTTP ${res.status}`);
-        return null;
+        if (res.status === 429 || res.status === 403) {
+          this.hgCooldownUntil = now + 120000;
+        }
+        return this.hgCache.data;
       }
 
       const json = await res.json();
       const stocks = json?.results?.stocks;
       const currencies = json?.results?.currencies;
 
-      console.log(`[HGBrasil] Real-time market feed loaded. IBOVESPA: ${stocks?.IBOVESPA?.points || "N/A"} pts (${stocks?.IBOVESPA?.variation || 0}%)`);
-
-      return {
+      const result = {
         ibovespa: stocks?.IBOVESPA ? { price: Number(stocks.IBOVESPA.points), variation: Number(stocks.IBOVESPA.variation || 0) } : undefined,
         nasdaq: stocks?.NASDAQ ? { price: Number(stocks.NASDAQ.points), variation: Number(stocks.NASDAQ.variation || 0) } : undefined,
         dowjones: stocks?.DOWJONES ? { price: Number(stocks.DOWJONES.points), variation: Number(stocks.DOWJONES.variation || 0) } : undefined,
@@ -436,9 +460,14 @@ class QuotesService {
         nikkei: stocks?.NIKKEI ? { price: Number(stocks.NIKKEI.points), variation: Number(stocks.NIKKEI.variation || 0) } : undefined,
         currencies: currencies || {},
       };
-    } catch (err: any) {
-      console.warn(`[HGBrasil] Failed fetching market data:`, err?.message || err);
-      return null;
+
+      this.hgCache = { timestamp: now, data: result };
+      return result;
+    } catch {
+      if (timeoutId) clearTimeout(timeoutId);
+      // Em caso de timeout ou abort de rede, ativa cooldown suave e devolve o cache sem poluir logs
+      this.hgCooldownUntil = now + 45000;
+      return this.hgCache.data || null;
     }
   }
 
@@ -665,10 +694,7 @@ class QuotesService {
           console.warn("[QuotesService] BRAPI step caught:", e?.message);
           return null;
         }),
-        this.fetchHGBrasilQuotes().catch((e) => {
-          console.warn("[QuotesService] HGBrasil step caught:", e?.message);
-          return null;
-        }),
+        this.fetchHGBrasilQuotes().catch(() => null),
         this.fetchCryptoRates().catch((e) => {
           console.warn("[QuotesService] Crypto step caught:", e?.message);
           return null;

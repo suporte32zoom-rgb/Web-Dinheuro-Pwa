@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Asset,
   RegionalTab,
@@ -7,7 +7,6 @@ import {
   DayTradeAccountSummary,
   DOMLevel,
   TimesAndTradesItem,
-  BrokerRankingItem,
 } from "../../types/finance";
 import { dayTradeService } from "../../services/dayTradeService";
 import { formatAssetDisplayPrice } from "../../utils/formatters";
@@ -20,9 +19,6 @@ import { BrokerApiModal } from "./BrokerApiModal";
 import { IntradayCandleChart } from "./IntradayCandleChart";
 import { FixedIncomeAndDerivativesView } from "./FixedIncomeAndDerivativesView";
 import {
-  Activity,
-  Sliders,
-  Percent,
   ShieldCheck,
   ShieldAlert,
   RotateCcw,
@@ -30,10 +26,6 @@ import {
   Maximize2,
   TrendingUp,
   TrendingDown,
-  Layers,
-  ChevronDown,
-  Sparkles,
-  Zap,
 } from "lucide-react";
 
 interface DayTradeTerminalProps {
@@ -61,6 +53,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
 }) => {
   // Current Selected Asset for trading
   const [selectedTicker, setSelectedTicker] = useState<string>("PETR4");
+  const [selectedDomPrice, setSelectedDomPrice] = useState<number | undefined>(undefined);
   const [riskModalOpen, setRiskModalOpen] = useState(false);
   const [brokerModalOpen, setBrokerModalOpen] = useState(false);
 
@@ -140,7 +133,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
   );
 
   const [tradesFeed, setTradesFeed] = useState<TimesAndTradesItem[]>(() =>
-    dayTradeService.generateTimesAndTrades(currentAsset.price, 30)
+    dayTradeService.generateTimesAndTrades(currentAsset.price, 35)
   );
 
   // Broker ranking derived from trades
@@ -151,7 +144,6 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
   // Live High-Frequency Ticks interval simulation (updates DOM & streaming trades)
   useEffect(() => {
     const timer = setInterval(() => {
-      // Small realistic price micro-tick
       const tickDelta = (Math.random() - 0.49) * (currentAsset.price * 0.0004);
       const newPrice = Number((currentAsset.price + tickDelta).toFixed(2));
 
@@ -179,7 +171,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
         sellerBroker: "BTG Pactual",
       };
 
-      setTradesFeed((prev) => [newTrade, ...prev.slice(0, 40)]);
+      setTradesFeed((prev) => [newTrade, ...prev.slice(0, 45)]);
     }, 1600);
 
     return () => clearInterval(timer);
@@ -197,27 +189,33 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
     );
   }
 
+  const totalDayPL = account.realizedPLDay + account.unrealizedPL;
+  const isPositiveDay = totalDayPL >= 0;
+
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full py-4 space-y-4">
-      {/* 1. TOP CONTROL BAR: Ticker Switcher, Quick Stats & Action Buttons */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-2xl p-3.5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+    <div className="w-full h-full flex flex-col overflow-hidden bg-[#0a0d12] text-[#e6edf3] select-none p-2 gap-2">
+      {/* 1. TOP DENSE CONTROL STRIP (Height ~38px) */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-xl px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-sm">
         {/* Left: Quick Tickers Carousel */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none w-full lg:w-auto py-1">
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
           {QUICK_TRADING_TICKERS.map((t) => {
             const isSelected = selectedTicker === t.ticker;
             return (
               <button
                 key={t.ticker}
                 type="button"
-                onClick={() => setSelectedTicker(t.ticker)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                onClick={() => {
+                  setSelectedTicker(t.ticker);
+                  setSelectedDomPrice(undefined);
+                }}
+                className={`px-2 py-0.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   isSelected
                     ? "bg-[#21262d] text-[#58a6ff] border border-[#58a6ff] shadow-xs font-bold"
                     : "bg-[#0e1117] text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d]/60 border border-[#30363d]"
                 }`}
               >
                 <span>{t.ticker}</span>
-                <span className="text-[10px] font-mono text-[#8b949e]">
+                <span className="text-[10px] font-mono opacity-80">
                   {formatAssetDisplayPrice(t.basePrice, t.currency)}
                 </span>
               </button>
@@ -225,14 +223,36 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
           })}
         </div>
 
-        {/* Right: Risk Button, Broker API & Simulator Reset */}
-        <div className="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap">
+        {/* Center / Right: Live Ticker Quick Quote + P&L Indicator + Controls */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap ml-auto">
+          {/* Active Asset Live Quote */}
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
+            <span className="font-bold text-white">{currentAsset.ticker}</span>
+            <span className="text-white font-bold">{formatAssetDisplayPrice(currentAsset.price, currentAsset.currency)}</span>
+            <span
+              className={`text-[10.5px] font-bold flex items-center ${
+                currentAsset.changePercent >= 0 ? "text-[#00c853]" : "text-[#ff5252]"
+              }`}
+            >
+              {currentAsset.changePercent >= 0 ? <TrendingUp className="w-3 h-3 inline mr-0.5" /> : <TrendingDown className="w-3 h-3 inline mr-0.5" />}
+              {currentAsset.changePercent >= 0 ? "+" : ""}{currentAsset.changePercent.toFixed(2)}%
+            </span>
+          </div>
+
+          {/* Quick Account P&L */}
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
+            <span className="text-[10px] text-[#8b949e] uppercase font-sans font-semibold">P&L Dia:</span>
+            <span className={`font-bold ${isPositiveDay ? "text-[#00c853]" : "text-[#ff5252]"}`}>
+              {isPositiveDay ? "+" : ""}R$ {totalDayPL.toFixed(2)}
+            </span>
+          </div>
+
           {/* Risk Management Button */}
           <button
             type="button"
             id="btn-daytrade-risk-settings"
             onClick={() => setRiskModalOpen(true)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs ${
+            className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border shadow-xs ${
               riskSettings.isLocked
                 ? "bg-[#ff5252]/20 text-[#ff5252] border-[#ff5252]/50 animate-pulse"
                 : "bg-[#161b22] text-[#8b949e] hover:text-white border-[#30363d] hover:border-[#8b949e]"
@@ -244,7 +264,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
             ) : (
               <ShieldCheck className="w-3.5 h-3.5 text-[#00c853]" />
             )}
-            <span>{riskSettings.isLocked ? "Trava Bloqueada" : "Travas de Risco"}</span>
+            <span className="hidden md:inline">{riskSettings.isLocked ? "Trava Ativa" : "Travas de Risco"}</span>
           </button>
 
           {/* Broker API Modal Trigger */}
@@ -252,11 +272,11 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
             type="button"
             id="btn-daytrade-broker-api"
             onClick={() => setBrokerModalOpen(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+            className="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
             title="Conectar Conta Real via API DMA2"
           >
             <Key className="w-3.5 h-3.5 text-[#e3b341]" />
-            <span>API Corretora</span>
+            <span className="hidden sm:inline">API Corretora</span>
           </button>
 
           {/* Reset Simulated Account */}
@@ -267,7 +287,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                 dayTradeService.resetSimulatedAccount();
               }
             }}
-            className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors cursor-pointer"
             title="Redefinir Conta Simulada (Paper Trading)"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -275,19 +295,24 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
         </div>
       </div>
 
-      {/* 2. MAIN COCKPIT: Order Ticket + Chart + Microstructure (DOM / Trades) */}
+      {/* 2. MAIN COCKPIT: SINGLE-SCREEN RESPONSIVE GRID (ZERO SCROLL) */}
       {activeTab === "Fluxo & Tape Reading" ? (
-        /* FLUXO & TAPE READING DEEP VIEW: Full DOM + Stream + Broker Ranking */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-4">
+        /* FLUXO & TAPE READING WORKSPACE: DOM (Col 1-4) + Tape & Players (Col 5-9) + Boleta & Mini Chart (Col 10-12) */
+        <div className="flex-1 grid grid-cols-12 gap-2 overflow-hidden min-h-0">
+          {/* Column 1: Full Height DOM Ladder (4 cols) */}
+          <div className="col-span-12 lg:col-span-4 flex flex-col h-full overflow-hidden min-h-0">
             <DepthOfMarketDOM
               ticker={currentAsset.ticker}
               currency={currentAsset.currency}
               currentPrice={currentAsset.price}
               domLevels={domLevels}
+              onSelectPriceLevel={(price) => setSelectedDomPrice(price)}
+              selectedPrice={selectedDomPrice}
             />
           </div>
-          <div className="lg:col-span-4">
+
+          {/* Column 2: Full Height Times & Trades Feed + Broker Ranking (5 cols) */}
+          <div className="col-span-12 lg:col-span-5 flex flex-col h-full overflow-hidden min-h-0">
             <TimesAndTradesFeed
               ticker={currentAsset.ticker}
               currency={currentAsset.currency}
@@ -295,34 +320,78 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
               brokerRanking={brokerRanking}
             />
           </div>
-          <div className="lg:col-span-4">
+
+          {/* Column 3: Order Ticket (Top) + Positions / Mini Chart (Bottom) (3 cols) */}
+          <div className="col-span-12 lg:col-span-3 flex flex-col gap-2 h-full overflow-hidden min-h-0">
             <OrderTicket
               asset={currentAsset}
               onOpenRiskModal={() => setRiskModalOpen(true)}
               onOpenBrokerModal={() => setBrokerModalOpen(true)}
               activePositionQuantity={activePositionOnAsset?.quantity}
               activePositionSide={activePositionOnAsset?.side}
+              externalPrice={selectedDomPrice}
             />
+
+            <div className="flex-1 overflow-hidden min-h-0">
+              <PositionsAndPLTable
+                positions={positions}
+                orders={orders}
+                account={account}
+                onSelectTicker={(t) => setSelectedTicker(t)}
+              />
+            </div>
           </div>
         </div>
       ) : (
-        /* STANDARD DAY TRADE & SCALPING VIEW: Chart + Boleta + Microstructure */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Main Chart (Col 1-8) */}
-          <div className="lg:col-span-8 flex flex-col gap-4">
-            <IntradayCandleChart
+        /* STANDARD DAY TRADE & SCALPING WORKSPACE: 3 COLUMNS SIDE-BY-SIDE */
+        <div className="flex-1 grid grid-cols-12 gap-2 overflow-hidden min-h-0">
+          {/* Column 1 (Left): 6 cols -> Chart (top ~58%) + Positions Table (bottom ~42%) */}
+          <div className="col-span-12 lg:col-span-6 flex flex-col gap-2 h-full overflow-hidden min-h-0">
+            {/* Chart Area */}
+            <div className="flex-[3] min-h-[220px] overflow-hidden">
+              <IntradayCandleChart
+                asset={currentAsset}
+                activePosition={activePositionOnAsset}
+              />
+            </div>
+
+            {/* Positions & Daily P&L Table */}
+            <div className="flex-[2] min-h-[140px] overflow-hidden">
+              <PositionsAndPLTable
+                positions={positions}
+                orders={orders}
+                account={account}
+                onSelectTicker={(t) => setSelectedTicker(t)}
+              />
+            </div>
+          </div>
+
+          {/* Column 2 (Center): 3 cols -> Full Height Book de Ofertas (DOM Ladder) */}
+          <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col h-full overflow-hidden min-h-0">
+            <DepthOfMarketDOM
+              ticker={currentAsset.ticker}
+              currency={currentAsset.currency}
+              currentPrice={currentAsset.price}
+              domLevels={domLevels}
+              onSelectPriceLevel={(price) => setSelectedDomPrice(price)}
+              selectedPrice={selectedDomPrice}
+            />
+          </div>
+
+          {/* Column 3 (Right): 3 cols -> Order Ticket Boleta (top) + Times & Trades (bottom) */}
+          <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col gap-2 h-full overflow-hidden min-h-0">
+            {/* Fixed Execution Boleta at the top */}
+            <OrderTicket
               asset={currentAsset}
-              activePosition={activePositionOnAsset}
+              onOpenRiskModal={() => setRiskModalOpen(true)}
+              onOpenBrokerModal={() => setBrokerModalOpen(true)}
+              activePositionQuantity={activePositionOnAsset?.quantity}
+              activePositionSide={activePositionOnAsset?.side}
+              externalPrice={selectedDomPrice}
             />
 
-            {/* DOM and Times & Trades Side by Side under chart on wide screens */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[300px]">
-              <DepthOfMarketDOM
-                ticker={currentAsset.ticker}
-                currency={currentAsset.currency}
-                currentPrice={currentAsset.price}
-                domLevels={domLevels}
-              />
+            {/* Times & Trades Fita at the bottom */}
+            <div className="flex-1 min-h-[150px] overflow-hidden">
               <TimesAndTradesFeed
                 ticker={currentAsset.ticker}
                 currency={currentAsset.currency}
@@ -331,29 +400,10 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
               />
             </div>
           </div>
-
-          {/* Right Column: Order Ticket Boleta (Col 9-12) */}
-          <div className="lg:col-span-4 flex flex-col gap-4">
-            <OrderTicket
-              asset={currentAsset}
-              onOpenRiskModal={() => setRiskModalOpen(true)}
-              onOpenBrokerModal={() => setBrokerModalOpen(true)}
-              activePositionQuantity={activePositionOnAsset?.quantity}
-              activePositionSide={activePositionOnAsset?.side}
-            />
-          </div>
         </div>
       )}
 
-      {/* 3. POSITIONS & DAILY P&L TABLE (Always visible at the bottom) */}
-      <PositionsAndPLTable
-        positions={positions}
-        orders={orders}
-        account={account}
-        onSelectTicker={(t) => setSelectedTicker(t)}
-      />
-
-      {/* 4. MODALS */}
+      {/* 3. MODALS */}
       <RiskManagementModal
         isOpen={riskModalOpen}
         onClose={() => setRiskModalOpen(false)}

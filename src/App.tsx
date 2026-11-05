@@ -511,9 +511,10 @@ export default function App() {
   };
 
   const watchlistAssets = liveAssets.filter((a) => watchlistIds.includes(a.id));
+  const isDayTradeFullscreen = !selectedAsset && (activeTab === "Day Trade & Scalping" || activeTab === "Fluxo & Tape Reading");
 
   return (
-    <div className="min-h-screen bg-[#0e1117] text-[#e6edf3] flex flex-col selection:bg-[#58a6ff]/30 selection:text-white">
+    <div className={`min-h-screen bg-[#0e1117] text-[#e6edf3] flex flex-col selection:bg-[#58a6ff]/30 selection:text-white ${isDayTradeFullscreen ? "h-screen overflow-hidden" : ""}`}>
       {/* PWA Splash Screen on launch */}
       <PWASplashIntro />
 
@@ -562,7 +563,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full flex flex-col">
+      <main className={`flex-1 w-full flex flex-col ${isDayTradeFullscreen ? "overflow-hidden min-h-0" : ""}`}>
         {selectedAsset ? (
           /* 2. PÁGINA INTERNA (VISÃO DETALHADA DO ATIVO/ÍNDICE) */
           <AssetDetailView
@@ -584,7 +585,7 @@ export default function App() {
           />
         ) : (
           /* 1. VISÃO GERAL (PÁGINA INICIAL) */
-          <div className="flex-1 flex flex-col">
+          <div className={`flex-1 flex flex-col ${isDayTradeFullscreen ? "overflow-hidden min-h-0" : ""}`}>
             {/* Category Pills Navigation */}
             <NavigationTabs
               activeTab={activeTab}
@@ -779,12 +780,14 @@ export default function App() {
       />
 
       {/* Binance Official Partner Banner */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full my-4">
-        <BinanceBanner />
-      </div>
+      {!isDayTradeFullscreen && (
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full my-4">
+          <BinanceBanner />
+        </div>
+      )}
 
       {/* Global Footer with Legal & Compliance Navigation */}
-      <Footer onOpenLegalDoc={handleOpenLegalDoc} />
+      {!isDayTradeFullscreen && <Footer onOpenLegalDoc={handleOpenLegalDoc} />}
     </div>
   );
 }
