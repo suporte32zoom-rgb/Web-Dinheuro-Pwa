@@ -8,6 +8,9 @@ import {
   TrendingUp,
   Landmark,
   Layers,
+  Activity,
+  Sliders,
+  Percent,
 } from "lucide-react";
 
 interface NavigationTabsProps {
@@ -16,11 +19,14 @@ interface NavigationTabsProps {
   onOpenAllAssets?: () => void;
 }
 
-const TABS: { id: RegionalTab; label: string; icon: React.ReactNode; badge?: string }[] = [
+const TABS: { id: RegionalTab; label: string; icon: React.ReactNode; badge?: string; badgeColor?: string }[] = [
+  { id: "América Latina", label: "América Latina", icon: <Globe className="w-3.5 h-3.5" />, badge: "B3" },
+  { id: "Day Trade & Scalping", label: "Day Trade & Scalping", icon: <Activity className="w-3.5 h-3.5 text-[#00c853]" />, badge: "PRO", badgeColor: "bg-[#00c853]/20 text-[#00c853] border border-[#00c853]/40" },
+  { id: "Fluxo & Tape Reading", label: "Fluxo & Tape Reading", icon: <Sliders className="w-3.5 h-3.5 text-[#58a6ff]" />, badge: "DOM", badgeColor: "bg-[#1f6feb]/20 text-[#58a6ff] border border-[#58a6ff]/40" },
+  { id: "Renda Fixa & Derivativos", label: "Renda Fixa & Derivativos", icon: <Percent className="w-3.5 h-3.5 text-[#e3b341]" />, badge: "DI/Selic" },
   { id: "EUA", label: "EUA", icon: <Landmark className="w-3.5 h-3.5" /> },
   { id: "Europa", label: "Europa", icon: <Globe className="w-3.5 h-3.5" /> },
   { id: "Ásia", label: "Ásia", icon: <TrendingUp className="w-3.5 h-3.5" /> },
-  { id: "América Latina", label: "América Latina", icon: <Globe className="w-3.5 h-3.5" />, badge: "B3" },
   { id: "Moedas", label: "Moedas", icon: <DollarSign className="w-3.5 h-3.5" /> },
   { id: "Criptomoedas", label: "Criptomoedas", icon: <Coins className="w-3.5 h-3.5" />, badge: "24h" },
   { id: "Contratos futuros", label: "Contratos futuros", icon: <FileSpreadsheet className="w-3.5 h-3.5" /> },
@@ -59,7 +65,9 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({
                 {tab.badge && (
                   <span
                     className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
-                      isActive
+                      tab.badgeColor
+                        ? tab.badgeColor
+                        : isActive
                         ? "bg-[#58a6ff]/20 text-[#58a6ff]"
                         : "bg-[#30363d] text-[#8b949e]"
                     }`}

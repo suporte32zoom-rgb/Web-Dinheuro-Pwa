@@ -28,6 +28,7 @@ import { MarketMoversGrid } from "./components/MarketMoversGrid";
 import { NewsSection } from "./components/NewsSection";
 import { AssetDetailView } from "./components/AssetDetailView";
 import { AllAssetsModal } from "./components/AllAssetsModal";
+import { DayTradeTerminal } from "./components/DayTradeTerminal/DayTradeTerminal";
 import { SidebarDrawer } from "./components/SidebarDrawer";
 import { GlobalSearchModal } from "./components/GlobalSearchModal";
 import { PortfolioModal } from "./components/PortfolioModal";
@@ -593,66 +594,79 @@ export default function App() {
               onOpenAllAssets={() => setAllAssetsModalOpen(true)}
             />
 
-            {/* Setores & Tags Customizadas Filter Bar */}
-            <SectorFilterBar
-              assets={liveAssets}
-              selectedSector={selectedSector}
-              onSelectSector={setSelectedSector}
-              groupBySector={groupBySector}
-              onToggleGroupBySector={setGroupBySector}
-              activeTag={activeTag}
-              onSelectTag={setActiveTag}
-            />
-
-            {/* Dynamic Indices Carousel (com suporte a filtros e agrupamento setorial) */}
-            <DynamicIndicesCarousel
-              assets={liveAssets}
-              activeTab={activeTab}
-              onSelectAsset={handleSelectAsset}
-              isLoading={isRefreshing && liveAssets.length === 0}
-              selectedSector={selectedSector}
-              activeTag={activeTag}
-              groupBySector={groupBySector}
-              onSelectSector={setSelectedSector}
-              onSelectTag={setActiveTag}
-              onOpenAllAssets={() => setAllAssetsModalOpen(true)}
-            />
-
-            {/* Global Economy & AwesomeAPI Live Indicators */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-2">
-              <GlobalEconomyWidget
-                onSelectAsset={handleSelectAsset}
-                liveAssets={liveAssets}
+            {/* Roteamento Condicional de Visualização */}
+            {activeTab === "Day Trade & Scalping" ||
+            activeTab === "Fluxo & Tape Reading" ||
+            activeTab === "Renda Fixa & Derivativos" ? (
+              <DayTradeTerminal
+                allAssets={liveAssets}
+                activeTab={activeTab}
+                onSelectTab={setActiveTab}
               />
-            </div>
+            ) : (
+              <>
+                {/* Setores & Tags Customizadas Filter Bar */}
+                <SectorFilterBar
+                  assets={liveAssets}
+                  selectedSector={selectedSector}
+                  onSelectSector={setSelectedSector}
+                  groupBySector={groupBySector}
+                  onToggleGroupBySector={setGroupBySector}
+                  activeTag={activeTag}
+                  onSelectTag={setActiveTag}
+                />
 
-            {/* Calendário Econômico & Decisões de Juros (Copom, Fed, BCE, IPCA, Payroll) */}
-            <EconomicCalendarWidget
-              onSelectTicker={handleSelectTicker}
-              onOpenNotifications={() => {
-                setAlertTargetAsset(null);
-                setNotificationsOpen(true);
-              }}
-            />
+                {/* Dynamic Indices Carousel (com suporte a filtros e agrupamento setorial) */}
+                <DynamicIndicesCarousel
+                  assets={liveAssets}
+                  activeTab={activeTab}
+                  onSelectAsset={handleSelectAsset}
+                  isLoading={isRefreshing && liveAssets.length === 0}
+                  selectedSector={selectedSector}
+                  activeTag={activeTag}
+                  groupBySector={groupBySector}
+                  onSelectSector={setSelectedSector}
+                  onSelectTag={setActiveTag}
+                  onOpenAllAssets={() => setAllAssetsModalOpen(true)}
+                />
 
-            {/* AI Market Summary Accordion */}
-            <AIMarketSummaryAccordion
-              activeTab={activeTab}
-              onOpenDeepDive={(topic) => setDeepDiveTopic(topic)}
-            />
+                {/* Global Economy & AwesomeAPI Live Indicators */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-2">
+                  <GlobalEconomyWidget
+                    onSelectAsset={handleSelectAsset}
+                    liveAssets={liveAssets}
+                  />
+                </div>
 
-            {/* Market Movers (Mais ativas, Maiores altas, Maiores quedas) */}
-            <MarketMoversGrid
-              onSelectTicker={handleSelectTicker}
-              liveMovers={liveMovers}
-              onViewAllStocks={handleViewAllStocks}
-            />
+                {/* Calendário Econômico & Decisões de Juros (Copom, Fed, BCE, IPCA, Payroll) */}
+                <EconomicCalendarWidget
+                  onSelectTicker={handleSelectTicker}
+                  onOpenNotifications={() => {
+                    setAlertTargetAsset(null);
+                    setNotificationsOpen(true);
+                  }}
+                />
 
-            {/* Portal News Section */}
-            <NewsSection
-              onSelectTicker={handleSelectTicker}
-              liveNews={liveNews}
-            />
+                {/* AI Market Summary Accordion */}
+                <AIMarketSummaryAccordion
+                  activeTab={activeTab}
+                  onOpenDeepDive={(topic) => setDeepDiveTopic(topic)}
+                />
+
+                {/* Market Movers (Mais ativas, Maiores altas, Maiores quedas) */}
+                <MarketMoversGrid
+                  onSelectTicker={handleSelectTicker}
+                  liveMovers={liveMovers}
+                  onViewAllStocks={handleViewAllStocks}
+                />
+
+                {/* Portal News Section */}
+                <NewsSection
+                  onSelectTicker={handleSelectTicker}
+                  liveNews={liveNews}
+                />
+              </>
+            )}
           </div>
         )}
       </main>

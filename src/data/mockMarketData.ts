@@ -1946,6 +1946,78 @@ export const AI_MARKET_TOPICS_BY_REGION: Record<RegionalTab, AIAccordionTopic[]>
       region: "Contratos futuros",
     },
   ],
+  "Day Trade & Scalping": [
+    {
+      id: "daytrade-volatility",
+      title: "Volatilidade Intraday no Mini Índice (WIN) e Mini Dólar (WDO)",
+      summary:
+        "Oscilações de abertura concentram maior liquidez entre 09:00 e 11:30 com atuação intensa de HFTs e arbitradores de índice à vista.",
+      detailedContext:
+        "O volume financeiro nos primeiros 90 minutos de pregão responde por mais de 45% do giro diário de derivativos na B3, com spreads mínimos de 5 pontos no índice e meio ponto no dólar.",
+      impactTag: "Impacto Alto • Intraday & Scalping",
+      trend: "bullish",
+      region: "Day Trade & Scalping",
+    },
+    {
+      id: "daytrade-risk-rules",
+      title: "Gerenciamento de Risco e Disciplina de Stop Loss Operacional",
+      summary:
+        "Especialistas reforçam a importância de travas de perda máxima diária (Loss Limit) e metas de ganho predefinidas para preservar o capital do trader.",
+      detailedContext:
+        "A relação risco-retorno assimétrica (mínimo 2:1) combinada com encerramento automático em caso de drawdown intraday é a principal métrica de consistência a longo prazo.",
+      impactTag: "Impacto Alto • Gestão de Risco",
+      trend: "neutral",
+      region: "Day Trade & Scalping",
+    },
+  ],
+  "Fluxo & Tape Reading": [
+    {
+      id: "tape-reading-aggression",
+      title: "Leitura de Agressão no Times & Trades e Desbalanceamento do DOM",
+      summary:
+        "Investidores monitoram a absorção passiva de lotes no book de ofertas frente a agressões a mercado de grandes players institucionais.",
+      detailedContext:
+        "O saldo líquido acumulado de corretoras estrangeiras e tesourarias bancárias é o indicador primário de continuação de tendência ou exaustão de movimento.",
+      impactTag: "Impacto Alto • Microestrutura de Mercado",
+      trend: "bullish",
+      region: "Fluxo & Tape Reading",
+    },
+    {
+      id: "tape-reading-iceberg",
+      title: "Identificação de Ordens Iceberg e Camadas de Liquidez",
+      summary:
+        "Presença de lotes ocultos em regiões de suporte e resistência do Book revela posicionamento não aparente de grandes formadores de mercado.",
+      detailedContext:
+        "Ao rastrear o Volume at Price (VAP) e as renovações instantâneas de fila no Bid/Ask, scalpers conseguem antecipar rupturas com baixo risco de execução.",
+      impactTag: "Impacto Médio • Tape Reading",
+      trend: "bullish",
+      region: "Fluxo & Tape Reading",
+    },
+  ],
+  "Renda Fixa & Derivativos": [
+    {
+      id: "di-curve-steepening",
+      title: "Curva de Juros Futuros (Contratos de DI1) e Precificação da Selic",
+      summary:
+        "Vértices curtos e longos da taxa DI operam sensíveis aos dados fiscais e projeções do Boletim Focus para as próximas reuniões do Copom.",
+      detailedContext:
+        "O fechamento ou empinamento da curva de DI dita o prêmio de risco dos papéis de crédito privado, debêntures incentivadas e títulos públicos do Tesouro Direto.",
+      impactTag: "Impacto Alto • Renda Fixa & Derivativos",
+      trend: "neutral",
+      region: "Renda Fixa & Derivativos",
+    },
+    {
+      id: "options-volatility-skew",
+      title: "Mercado de Opções de Ações e Derivativos de Volatilidade na B3",
+      summary:
+        "Operações estruturadas de travas de alta, venda coberta de calls e straddles registram aumento expressivo em semanas de vencimento mensal.",
+      detailedContext:
+        "A volatilidade implícita de Petrobras (PETR4) e Vale (VALE3) se mantém como referência para a precificação de prêmios de derivativos líquidos no Brasil.",
+      impactTag: "Impacto Médio • Derivativos",
+      trend: "bullish",
+      region: "Renda Fixa & Derivativos",
+    },
+  ],
 };
 
 // 3-column Market Movers

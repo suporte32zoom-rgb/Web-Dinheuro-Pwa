@@ -1,8 +1,11 @@
 export type RegionalTab =
+  | "América Latina"
+  | "Day Trade & Scalping"
+  | "Fluxo & Tape Reading"
+  | "Renda Fixa & Derivativos"
   | "EUA"
   | "Europa"
   | "Ásia"
-  | "América Latina"
   | "Moedas"
   | "Criptomoedas"
   | "Contratos futuros";
@@ -176,3 +179,96 @@ export interface EconomicEvent {
   importanceReason: string;
   affectedTickers?: string[];
 }
+
+// ==================== DAY TRADE & TAPE READING ====================
+
+export type OrderSide = "BUY" | "SELL";
+export type OrderType = "MARKET" | "LIMIT" | "STOP";
+export type TradingMode = "SIMULATED" | "REAL";
+
+export interface DayTradePosition {
+  id: string;
+  ticker: string;
+  name: string;
+  side: OrderSide;
+  quantity: number;
+  entryPrice: number;
+  currentPrice: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  entryTime: string;
+  unrealizedPL: number; // in asset currency
+  unrealizedPLBRL: number;
+  unrealizedPLUSD: number;
+  unrealizedPLPercent: number;
+  currency: string;
+}
+
+export interface DayTradeOrder {
+  id: string;
+  ticker: string;
+  side: OrderSide;
+  type: OrderType;
+  quantity: number;
+  price?: number;
+  stopPrice?: number;
+  status: "FILLED" | "PENDING" | "CANCELLED" | "REJECTED";
+  timestamp: string;
+  executedPrice?: number;
+  pnl?: number; // realized PnL in BRL
+}
+
+export interface DOMLevel {
+  price: number;
+  bidQty: number;
+  bidOrders: number;
+  askQty: number;
+  askOrders: number;
+  totalVolume: number;
+  isLastPrice?: boolean;
+}
+
+export interface TimesAndTradesItem {
+  id: string;
+  time: string;
+  price: number;
+  quantity: number;
+  aggressor: "BUY" | "SELL" | "DIRECT";
+  buyerBroker: string;
+  sellerBroker: string;
+}
+
+export interface BrokerRankingItem {
+  broker: string;
+  buyVolume: number;
+  sellVolume: number;
+  netBalance: number;
+  averagePrice: number;
+  sharePercent: number;
+}
+
+export interface DayTradeRiskSettings {
+  dailyGainTarget: number; // Meta de Ganho Diária em R$
+  dailyLossLimit: number; // Limite de Perda Diária em R$ (Trava)
+  maxLossPerTrade: number; // Stop Máximo por Operação em R$
+  maxQuantityPerOrder: number; // Lotes máximos
+  autoLockOnLossLimit: boolean; // Bloquear envio de ordens ao atingir loss
+  autoLockOnGainTarget: boolean; // Travar lucro ao atingir meta de gain
+  cutoffTime: string; // "17:50"
+  isLocked: boolean; // Flag de bloqueio ativo
+  lockedReason?: string;
+}
+
+export interface DayTradeAccountSummary {
+  mode: TradingMode;
+  initialBalance: number;
+  balance: number;
+  equity: number;
+  realizedPLDay: number;
+  unrealizedPL: number;
+  totalTrades: number;
+  winningTrades: number;
+  losingTrades: number;
+  winRate: number;
+}
+

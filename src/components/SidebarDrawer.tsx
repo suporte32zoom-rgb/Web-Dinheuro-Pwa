@@ -26,6 +26,9 @@ import {
   Info,
   Cookie,
   Layers,
+  Activity,
+  Sliders,
+  Percent,
 } from "lucide-react";
 import { BrandLogo } from "./BrandLogo";
 import { LegalDocId } from "../types/legal";
@@ -163,10 +166,13 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({
   if (!isOpen) return null;
 
   const categories: { id: RegionalTab; label: string; icon: React.ReactNode }[] = [
+    { id: "Day Trade & Scalping", label: "Day Trade & Scalping (Terminal)", icon: <Activity className="w-4 h-4 text-[#00c853]" /> },
+    { id: "Fluxo & Tape Reading", label: "Fluxo & Tape Reading (DOM)", icon: <Sliders className="w-4 h-4 text-[#58a6ff]" /> },
+    { id: "Renda Fixa & Derivativos", label: "Renda Fixa & Derivativos", icon: <Percent className="w-4 h-4 text-[#e3b341]" /> },
+    { id: "América Latina", label: "América Latina (B3)", icon: <Globe className="w-4 h-4" /> },
     { id: "EUA", label: "EUA & Wall Street", icon: <Landmark className="w-4 h-4" /> },
     { id: "Europa", label: "Europa & Zona do Euro", icon: <Globe className="w-4 h-4" /> },
     { id: "Ásia", label: "Ásia & Mercados Emergentes", icon: <TrendingUp className="w-4 h-4" /> },
-    { id: "América Latina", label: "América Latina (B3)", icon: <Globe className="w-4 h-4" /> },
     { id: "Moedas", label: "Câmbio & Forex", icon: <DollarSign className="w-4 h-4" /> },
     { id: "Criptomoedas", label: "Criptoativos (24h)", icon: <Coins className="w-4 h-4" /> },
     { id: "Contratos futuros", label: "Contratos Futuros & Agro", icon: <FileSpreadsheet className="w-4 h-4" /> },

@@ -30,6 +30,13 @@ let currentRates: ExchangeRates = {
 const rateListeners = new Set<(rates: ExchangeRates) => void>();
 
 /**
+ * Obtém o snapshot das taxas de câmbio em tempo real
+ */
+export function getLiveExchangeRates(): ExchangeRates {
+  return { ...currentRates };
+}
+
+/**
  * Atualiza as taxas cambiais globais em tempo real
  */
 export function setGlobalExchangeRates(newRates: Partial<ExchangeRates>): void {
