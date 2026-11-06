@@ -10,8 +10,11 @@ import {
 } from "../../types/finance";
 import { dayTradeService } from "../../services/dayTradeService";
 import { formatAssetDisplayPrice } from "../../utils/formatters";
+import { RealTimeTickerRibbon } from "./RealTimeTickerRibbon";
+import { TradingDeskSidebar } from "./TradingDeskSidebar";
+import { MarketRealTimeWatchlist } from "./MarketRealTimeWatchlist";
+import { LowerPerformanceDashboard } from "./LowerPerformanceDashboard";
 import { OrderTicket } from "./OrderTicket";
-import { PositionsAndPLTable } from "./PositionsAndPLTable";
 import { DepthOfMarketDOM } from "./DepthOfMarketDOM";
 import { TimesAndTradesFeed } from "./TimesAndTradesFeed";
 import { RiskManagementModal } from "./RiskManagementModal";
@@ -23,9 +26,17 @@ import {
   ShieldAlert,
   RotateCcw,
   Key,
-  Maximize2,
   TrendingUp,
   TrendingDown,
+  LineChart,
+  BookOpen,
+  Activity,
+  Sliders,
+  Compass,
+  Radio,
+  CheckCircle2,
+  Clock,
+  Sparkles,
 } from "lucide-react";
 
 interface DayTradeTerminalProps {
@@ -34,7 +45,7 @@ interface DayTradeTerminalProps {
   onSelectTab?: (tab: RegionalTab) => void;
 }
 
-// Default Liquid Day Trade Assets
+// Preset Quick Trading Assets
 const QUICK_TRADING_TICKERS = [
   { id: "win", ticker: "WIN$", name: "Mini Índice Futuro B3", basePrice: 167548.0, currency: "BRL" },
   { id: "wdo", ticker: "WDO$", name: "Mini Dólar Futuro B3", basePrice: 5459.6, currency: "BRL" },
@@ -46,6 +57,8 @@ const QUICK_TRADING_TICKERS = [
   { id: "nvda", ticker: "NVDA", name: "NVIDIA Corp", basePrice: 200.13, currency: "USD" },
 ];
 
+type DeskSubTab = "chart" | "tape" | "dom" | "indicators" | "strategies";
+
 export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
   allAssets,
   activeTab,
@@ -54,8 +67,24 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
   // Current Selected Asset for trading
   const [selectedTicker, setSelectedTicker] = useState<string>("PETR4");
   const [selectedDomPrice, setSelectedDomPrice] = useState<number | undefined>(undefined);
+  const [activeSubTab, setActiveSubTab] = useState<DeskSubTab>("chart");
+  const [sidebarActiveView, setSidebarActiveView] = useState<string>("chart");
   const [riskModalOpen, setRiskModalOpen] = useState(false);
   const [brokerModalOpen, setBrokerModalOpen] = useState(false);
+
+  // Live Clock for B3 / Brasília Official Time
+  const [brtTime, setBrtTime] = useState(() => {
+    const d = new Date();
+    return d.toLocaleTimeString("pt-BR", { hour12: false });
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const d = new Date();
+      setBrtTime(d.toLocaleTimeString("pt-BR", { hour12: false }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Subscribe to DayTradeService state changes
   const [positions, setPositions] = useState<DayTradePosition[]>(() => dayTradeService.getPositions());
@@ -141,7 +170,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
     return dayTradeService.getBrokerRanking(tradesFeed);
   }, [tradesFeed]);
 
-  // Live High-Frequency Ticks interval simulation (updates DOM & streaming trades)
+  // Live High-Frequency Ticks simulation (updates DOM & streaming trades)
   useEffect(() => {
     const timer = setInterval(() => {
       const tickDelta = (Math.random() - 0.49) * (currentAsset.price * 0.0004);
@@ -189,221 +218,502 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
     );
   }
 
+  // Handle Sidebar Navigation
+  const handleSidebarSelect = (viewId: string) => {
+    setSidebarActiveView(viewId);
+    if (viewId === "home" && onSelectTab) {
+      onSelectTab("América Latina");
+    } else if (viewId === "markets" && onSelectTab) {
+      onSelectTab("Mercados Globais");
+    } else if (viewId === "chart") {
+      setActiveSubTab("chart");
+    } else if (viewId === "tape") {
+      setActiveSubTab("tape");
+    } else if (viewId === "book") {
+      setActiveSubTab("dom");
+    } else if (viewId === "indicators") {
+      setActiveSubTab("indicators");
+    } else if (viewId === "strategies") {
+      setActiveSubTab("strategies");
+    } else if (viewId === "risk") {
+      setRiskModalOpen(true);
+    } else if (viewId === "broker") {
+      setBrokerModalOpen(true);
+    } else if (viewId === "sim") {
+      if (confirm("Deseja redefinir a conta simulada para R$ 100.000,00 e zerar posições?")) {
+        dayTradeService.resetSimulatedAccount();
+      }
+    }
+  };
+
   const totalDayPL = account.realizedPLDay + account.unrealizedPL;
   const isPositiveDay = totalDayPL >= 0;
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden bg-[#0a0d12] text-[#e6edf3] select-none p-2 gap-2">
-      {/* 1. TOP DENSE CONTROL STRIP (Height ~38px) */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-sm">
-        {/* Left: Quick Tickers Carousel */}
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
-          {QUICK_TRADING_TICKERS.map((t) => {
-            const isSelected = selectedTicker === t.ticker;
-            return (
-              <button
-                key={t.ticker}
-                type="button"
-                onClick={() => {
-                  setSelectedTicker(t.ticker);
+    <div className="w-full h-full flex flex-col overflow-hidden bg-[#0a0d14] text-[#e6edf3] select-none">
+      {/* 1. TOP BAR: CONTINUOUS REAL-TIME GLOBAL TICKER RIBBON */}
+      <RealTimeTickerRibbon
+        onSelectTicker={(ticker) => {
+          setSelectedTicker(ticker);
+          setSelectedDomPrice(undefined);
+        }}
+      />
+
+      {/* 2. MAIN COCKPIT: SLIM SIDEBAR + INTEGRATED WORKSPACE */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        {/* LEFT SLIM SIDEBAR (48px) */}
+        <TradingDeskSidebar
+          activeView={sidebarActiveView}
+          onSelectView={handleSidebarSelect}
+        />
+
+        {/* CENTER + RIGHT DESK (Split View) */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0 p-1.5 gap-1.5">
+          {/* CENTER COLUMN: Central Viewport + Lower Performance Dashboard */}
+          <div className="flex-1 flex flex-col gap-1.5 overflow-hidden min-h-0">
+            {/* Asset Selector & Functional Sub-Tabs Control Strip */}
+            <div className="bg-[#161b22] border border-[#30363d] rounded-xl px-2 py-1.5 flex flex-wrap items-center justify-between gap-1.5 shrink-0 shadow-xs">
+              {/* Asset Selectors */}
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
+                {QUICK_TRADING_TICKERS.map((t) => {
+                  const isSelected = selectedTicker === t.ticker;
+                  return (
+                    <button
+                      key={t.ticker}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTicker(t.ticker);
+                        setSelectedDomPrice(undefined);
+                      }}
+                      className={`px-2 py-0.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
+                        isSelected
+                          ? "bg-[#21262d] text-[#58a6ff] border border-[#58a6ff] shadow-xs font-bold"
+                          : "bg-[#0e1117] text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d]/60 border border-[#30363d]"
+                      }`}
+                    >
+                      <span>{t.ticker}</span>
+                      <span className="text-[10px] font-mono opacity-80">
+                        {formatAssetDisplayPrice(t.basePrice, t.currency)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Functional Sub-Tabs: Gráfico | Tape Reading | Book | Indicadores | Estratégias */}
+              <div className="flex items-center bg-[#0e1117] border border-[#30363d] rounded-lg p-0.5 gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSubTab("chart");
+                    setSidebarActiveView("chart");
+                  }}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                    activeSubTab === "chart"
+                      ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
+                      : "text-[#8b949e] hover:text-[#e6edf3]"
+                  }`}
+                >
+                  <LineChart className="w-3.5 h-3.5" />
+                  <span>Gráfico</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSubTab("tape");
+                    setSidebarActiveView("tape");
+                  }}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                    activeSubTab === "tape"
+                      ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
+                      : "text-[#8b949e] hover:text-[#e6edf3]"
+                  }`}
+                >
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>Tape Reading</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSubTab("dom");
+                    setSidebarActiveView("book");
+                  }}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                    activeSubTab === "dom"
+                      ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
+                      : "text-[#8b949e] hover:text-[#e6edf3]"
+                  }`}
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Book de Ofertas</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSubTab("indicators");
+                    setSidebarActiveView("indicators");
+                  }}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                    activeSubTab === "indicators"
+                      ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
+                      : "text-[#8b949e] hover:text-[#e6edf3]"
+                  }`}
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Indicadores</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveSubTab("strategies");
+                    setSidebarActiveView("strategies");
+                  }}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                    activeSubTab === "strategies"
+                      ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
+                      : "text-[#8b949e] hover:text-[#e6edf3]"
+                  }`}
+                >
+                  <Compass className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Estratégias</span>
+                </button>
+              </div>
+
+              {/* Live Ticker Quick Quote + P&L Indicator + Controls */}
+              <div className="flex items-center gap-1.5 ml-auto">
+                {/* Active Asset Live Quote */}
+                <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
+                  <span className="font-bold text-white">{currentAsset.ticker}</span>
+                  <span className="text-white font-bold">{formatAssetDisplayPrice(currentAsset.price, currentAsset.currency)}</span>
+                  <span
+                    className={`text-[10.5px] font-bold flex items-center ${
+                      currentAsset.changePercent >= 0 ? "text-[#00c853]" : "text-[#ff5252]"
+                    }`}
+                  >
+                    {currentAsset.changePercent >= 0 ? <TrendingUp className="w-3 h-3 inline mr-0.5" /> : <TrendingDown className="w-3 h-3 inline mr-0.5" />}
+                    {currentAsset.changePercent >= 0 ? "+" : ""}{currentAsset.changePercent.toFixed(2)}%
+                  </span>
+                </div>
+
+                {/* Risk Management Button */}
+                <button
+                  type="button"
+                  onClick={() => setRiskModalOpen(true)}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border shadow-xs ${
+                    riskSettings.isLocked
+                      ? "bg-[#ff5252]/20 text-[#ff5252] border-[#ff5252]/50 animate-pulse"
+                      : "bg-[#161b22] text-[#8b949e] hover:text-white border-[#30363d] hover:border-[#8b949e]"
+                  }`}
+                  title="Abrir Gerenciador e Travas de Risco"
+                >
+                  {riskSettings.isLocked ? (
+                    <ShieldAlert className="w-3.5 h-3.5 text-[#ff5252]" />
+                  ) : (
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#00c853]" />
+                  )}
+                  <span className="hidden md:inline">{riskSettings.isLocked ? "Trava Ativa" : "Risco"}</span>
+                </button>
+
+                {/* Broker API Modal Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setBrokerModalOpen(true)}
+                  className="px-2 py-0.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+                  title="Conectar Conta Real via API DMA2"
+                >
+                  <Key className="w-3.5 h-3.5 text-[#e3b341]" />
+                  <span className="hidden sm:inline">API</span>
+                </button>
+
+                {/* Reset Simulated Account */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm("Deseja redefinir a conta simulada para R$ 100.000,00 e zerar o P&L do dia?")) {
+                      dayTradeService.resetSimulatedAccount();
+                    }
+                  }}
+                  className="p-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors cursor-pointer"
+                  title="Redefinir Conta Simulada"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Central Viewport Switcher */}
+            <div className="flex-1 min-h-[220px] overflow-hidden">
+              {activeSubTab === "chart" && (
+                <IntradayCandleChart
+                  asset={currentAsset}
+                  activePosition={activePositionOnAsset}
+                />
+              )}
+
+              {activeSubTab === "tape" && (
+                <div className="h-full bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden p-1">
+                  <TimesAndTradesFeed
+                    ticker={currentAsset.ticker}
+                    currency={currentAsset.currency}
+                    trades={tradesFeed}
+                    brokerRanking={brokerRanking}
+                  />
+                </div>
+              )}
+
+              {activeSubTab === "dom" && (
+                <div className="h-full bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden p-1">
+                  <DepthOfMarketDOM
+                    ticker={currentAsset.ticker}
+                    currency={currentAsset.currency}
+                    currentPrice={currentAsset.price}
+                    domLevels={domLevels}
+                    onSelectPriceLevel={(price) => setSelectedDomPrice(price)}
+                    selectedPrice={selectedDomPrice}
+                  />
+                </div>
+              )}
+
+              {activeSubTab === "indicators" && (
+                <div className="h-full bg-[#161b22] border border-[#30363d] rounded-xl p-3 overflow-y-auto scrollbar-none flex flex-col gap-3">
+                  <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                    <div className="flex items-center gap-2">
+                      <Sliders className="w-4 h-4 text-[#58a6ff]" />
+                      <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                        Painel de Indicadores Técnicos Intraday · {currentAsset.ticker}
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-[#3fb950] font-mono font-bold flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse" />
+                      Calculados em Tempo Real
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    {/* RSI 14 */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-2.5">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-[#8b949e] font-semibold">IFR / RSI (14)</span>
+                        <span className="text-[#3fb950] font-bold font-mono">58.4 · Neutro-Alta</span>
+                      </div>
+                      <div className="w-full bg-[#21262d] h-2 rounded-full overflow-hidden">
+                        <div className="bg-[#3fb950] h-full" style={{ width: "58.4%" }} />
+                      </div>
+                      <div className="flex justify-between text-[9px] text-[#8b949e] mt-1 font-mono">
+                        <span>Sobrevenda (30)</span>
+                        <span>Neutro (50)</span>
+                        <span>Sobrecompra (70)</span>
+                      </div>
+                    </div>
+
+                    {/* MACD */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-2.5">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-[#8b949e] font-semibold">MACD (12, 26, 9)</span>
+                        <span className="text-[#58a6ff] font-bold font-mono">+14.2 · Compra</span>
+                      </div>
+                      <p className="text-[10px] text-[#8b949e] leading-relaxed">
+                        Histograma positivo. Linha rápida acima do sinal indicando momentum de alta.
+                      </p>
+                    </div>
+
+                    {/* Bandas de Bollinger */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-2.5">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-[#8b949e] font-semibold">Bandas de Bollinger (20, 2)</span>
+                        <span className="text-[#e3b341] font-bold font-mono">Canal Normal</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] font-mono text-[#8b949e]">
+                        <span>Sup: {(currentAsset.price * 1.018).toFixed(2)}</span>
+                        <span>Inf: {(currentAsset.price * 0.982).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    {/* Médias Móveis Rastreadas */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-2.5 flex flex-col gap-1.5">
+                      <span className="text-xs font-bold text-white">Médias Móveis Institucionais</span>
+                      <div className="flex items-center justify-between text-xs font-mono border-b border-[#21262d] py-1">
+                        <span className="text-[#58a6ff]">MA 9 Exponencial (Curto Prazo)</span>
+                        <span className="text-white font-bold">{(currentAsset.price * 0.998).toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs font-mono border-b border-[#21262d] py-1">
+                        <span className="text-[#f0883e]">MA 21 Aritmética (Médio Prazo)</span>
+                        <span className="text-white font-bold">{(currentAsset.price * 0.994).toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs font-mono py-1">
+                        <span className="text-[#bc8cff]">MA 200 Institucional (Longo Prazo)</span>
+                        <span className="text-white font-bold">{(currentAsset.price * 0.988).toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* Fluxo e VWAP */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-2.5 flex flex-col gap-1.5">
+                      <span className="text-xs font-bold text-white">Preço Médio Ponderado por Volume (VWAP)</span>
+                      <div className="flex items-center justify-between text-xs font-mono py-1">
+                        <span className="text-[#e3b341]">VWAP do Dia</span>
+                        <span className="text-white font-bold">{(currentAsset.price * 0.996).toFixed(2)}</span>
+                      </div>
+                      <p className="text-[10px] text-[#8b949e] leading-relaxed">
+                        Preço atual negociando <strong className="text-[#3fb950]">+0.40%</strong> acima da VWAP. Tendência intraday dominante: COMPRA.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSubTab === "strategies" && (
+                <div className="h-full bg-[#161b22] border border-[#30363d] rounded-xl p-3 overflow-y-auto scrollbar-none flex flex-col gap-3">
+                  <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                    <div className="flex items-center gap-2">
+                      <Compass className="w-4 h-4 text-[#e3b341]" />
+                      <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                        Estratégias Quantitativas & Setups Operacionais
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-[#58a6ff] font-mono">Algoritmos Ativos</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    {/* Setup 1 */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-3 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Cruzamento MA 9 x MA 21</span>
+                        <span className="px-1.5 py-0.5 rounded bg-[#238636]/20 text-[#3fb950] text-[10px] font-bold">
+                          Sinal de Compra
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-[#8b949e]">
+                        Gatilho ativado no candle das 15:45. Alvo: 1.5x amplitude de risco. Stop Loss: mínima do candle anterior.
+                      </p>
+                    </div>
+
+                    {/* Setup 2 */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-3 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Pullback na VWAP</span>
+                        <span className="px-1.5 py-0.5 rounded bg-[#e3b341]/20 text-[#e3b341] text-[10px] font-bold">
+                          Monitorando Entrada
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-[#8b949e]">
+                        Aguardando retração controlada até o nível de VWAP com redução do volume de agressão vendedora.
+                      </p>
+                    </div>
+
+                    {/* Setup 3 */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-3 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Rompimento de Máxima Diária</span>
+                        <span className="px-1.5 py-0.5 rounded bg-[#58a6ff]/20 text-[#58a6ff] text-[10px] font-bold">
+                          Alerta Próximo
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-[#8b949e]">
+                        Ativo a 0.2% da máxima do dia. Entrada por ordem stop na superação da máxima com confirmação de fluxo.
+                      </p>
+                    </div>
+
+                    {/* Setup 4 */}
+                    <div className="bg-[#0e1117] border border-[#30363d] rounded-lg p-3 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">Filtro de Tendência MA 200</span>
+                        <span className="px-1.5 py-0.5 rounded bg-[#bc8cff]/20 text-[#bc8cff] text-[10px] font-bold">
+                          Filtro Ativo
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-[#8b949e]">
+                        Operações a favor da tendência primária. Vendas contra a tendência desabilitadas pelo algoritmo de risco.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* LOWER HORIZONTAL PANEL: Minhas Posições + Performance do Dia + Notícias */}
+            <div className="h-[148px] shrink-0 overflow-hidden">
+              <LowerPerformanceDashboard
+                positions={positions}
+                account={account}
+                onSelectTicker={(t) => setSelectedTicker(t)}
+              />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: "MERCADO EM TEMPO REAL" (Top ~40%) + IMMEDIATE ORDER TICKET (Bottom ~60%) */}
+          <div className="w-full lg:w-[325px] xl:w-[340px] flex flex-col gap-1.5 h-full overflow-hidden shrink-0">
+            {/* Top Watchlist (~38% of right column) */}
+            <div className="h-[200px] xl:h-[220px] shrink-0 overflow-hidden">
+              <MarketRealTimeWatchlist
+                selectedTicker={selectedTicker}
+                onSelectAsset={(ticker) => {
+                  setSelectedTicker(ticker);
                   setSelectedDomPrice(undefined);
                 }}
-                className={`px-2 py-0.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                  isSelected
-                    ? "bg-[#21262d] text-[#58a6ff] border border-[#58a6ff] shadow-xs font-bold"
-                    : "bg-[#0e1117] text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d]/60 border border-[#30363d]"
-                }`}
-              >
-                <span>{t.ticker}</span>
-                <span className="text-[10px] font-mono opacity-80">
-                  {formatAssetDisplayPrice(t.basePrice, t.currency)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+              />
+            </div>
 
-        {/* Center / Right: Live Ticker Quick Quote + P&L Indicator + Controls */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap ml-auto">
-          {/* Active Asset Live Quote */}
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
-            <span className="font-bold text-white">{currentAsset.ticker}</span>
-            <span className="text-white font-bold">{formatAssetDisplayPrice(currentAsset.price, currentAsset.currency)}</span>
-            <span
-              className={`text-[10.5px] font-bold flex items-center ${
-                currentAsset.changePercent >= 0 ? "text-[#00c853]" : "text-[#ff5252]"
-              }`}
-            >
-              {currentAsset.changePercent >= 0 ? <TrendingUp className="w-3 h-3 inline mr-0.5" /> : <TrendingDown className="w-3 h-3 inline mr-0.5" />}
-              {currentAsset.changePercent >= 0 ? "+" : ""}{currentAsset.changePercent.toFixed(2)}%
-            </span>
+            {/* Bottom Order Ticket Execution Boleta (Remaining flex height) */}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <OrderTicket
+                asset={currentAsset}
+                onOpenRiskModal={() => setRiskModalOpen(true)}
+                onOpenBrokerModal={() => setBrokerModalOpen(true)}
+                activePositionQuantity={activePositionOnAsset?.quantity}
+                activePositionSide={activePositionOnAsset?.side}
+                externalPrice={selectedDomPrice}
+              />
+            </div>
           </div>
-
-          {/* Quick Account P&L */}
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
-            <span className="text-[10px] text-[#8b949e] uppercase font-sans font-semibold">P&L Dia:</span>
-            <span className={`font-bold ${isPositiveDay ? "text-[#00c853]" : "text-[#ff5252]"}`}>
-              {isPositiveDay ? "+" : ""}R$ {totalDayPL.toFixed(2)}
-            </span>
-          </div>
-
-          {/* Risk Management Button */}
-          <button
-            type="button"
-            id="btn-daytrade-risk-settings"
-            onClick={() => setRiskModalOpen(true)}
-            className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border shadow-xs ${
-              riskSettings.isLocked
-                ? "bg-[#ff5252]/20 text-[#ff5252] border-[#ff5252]/50 animate-pulse"
-                : "bg-[#161b22] text-[#8b949e] hover:text-white border-[#30363d] hover:border-[#8b949e]"
-            }`}
-            title="Abrir Gerenciador e Travas de Risco"
-          >
-            {riskSettings.isLocked ? (
-              <ShieldAlert className="w-3.5 h-3.5 text-[#ff5252]" />
-            ) : (
-              <ShieldCheck className="w-3.5 h-3.5 text-[#00c853]" />
-            )}
-            <span className="hidden md:inline">{riskSettings.isLocked ? "Trava Ativa" : "Travas de Risco"}</span>
-          </button>
-
-          {/* Broker API Modal Trigger */}
-          <button
-            type="button"
-            id="btn-daytrade-broker-api"
-            onClick={() => setBrokerModalOpen(true)}
-            className="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
-            title="Conectar Conta Real via API DMA2"
-          >
-            <Key className="w-3.5 h-3.5 text-[#e3b341]" />
-            <span className="hidden sm:inline">API Corretora</span>
-          </button>
-
-          {/* Reset Simulated Account */}
-          <button
-            type="button"
-            onClick={() => {
-              if (confirm("Deseja redefinir a conta simulada para R$ 100.000,00 e zerar o P&L do dia?")) {
-                dayTradeService.resetSimulatedAccount();
-              }
-            }}
-            className="p-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors cursor-pointer"
-            title="Redefinir Conta Simulada (Paper Trading)"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
 
-      {/* 2. MAIN COCKPIT: SINGLE-SCREEN RESPONSIVE GRID (ZERO SCROLL) */}
-      {activeTab === "Fluxo & Tape Reading" ? (
-        /* FLUXO & TAPE READING WORKSPACE: DOM (Col 1-4) + Tape & Players (Col 5-9) + Boleta & Mini Chart (Col 10-12) */
-        <div className="flex-1 grid grid-cols-12 gap-2 overflow-hidden min-h-0">
-          {/* Column 1: Full Height DOM Ladder (4 cols) */}
-          <div className="col-span-12 lg:col-span-4 flex flex-col h-full overflow-hidden min-h-0">
-            <DepthOfMarketDOM
-              ticker={currentAsset.ticker}
-              currency={currentAsset.currency}
-              currentPrice={currentAsset.price}
-              domLevels={domLevels}
-              onSelectPriceLevel={(price) => setSelectedDomPrice(price)}
-              selectedPrice={selectedDomPrice}
-            />
+      {/* 3. FIXED INSTITUTIONAL FOOTER STATUS BAR */}
+      <footer className="h-6 bg-[#090c10] border-t border-[#21262d] px-3 flex items-center justify-between text-[11px] font-mono text-[#8b949e] shrink-0 z-10 select-none">
+        {/* Left: Connection Quality */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#00c853] animate-pulse" />
+            <span className="text-[#3fb950] font-semibold">Conexão: Estável (DMA2 · 12ms)</span>
           </div>
 
-          {/* Column 2: Full Height Times & Trades Feed + Broker Ranking (5 cols) */}
-          <div className="col-span-12 lg:col-span-5 flex flex-col h-full overflow-hidden min-h-0">
-            <TimesAndTradesFeed
-              ticker={currentAsset.ticker}
-              currency={currentAsset.currency}
-              trades={tradesFeed}
-              brokerRanking={brokerRanking}
-            />
-          </div>
+          <span className="text-[#30363d]">|</span>
 
-          {/* Column 3: Order Ticket (Top) + Positions / Mini Chart (Bottom) (3 cols) */}
-          <div className="col-span-12 lg:col-span-3 flex flex-col gap-2 h-full overflow-hidden min-h-0">
-            <OrderTicket
-              asset={currentAsset}
-              onOpenRiskModal={() => setRiskModalOpen(true)}
-              onOpenBrokerModal={() => setBrokerModalOpen(true)}
-              activePositionQuantity={activePositionOnAsset?.quantity}
-              activePositionSide={activePositionOnAsset?.side}
-              externalPrice={selectedDomPrice}
-            />
-
-            <div className="flex-1 overflow-hidden min-h-0">
-              <PositionsAndPLTable
-                positions={positions}
-                orders={orders}
-                account={account}
-                onSelectTicker={(t) => setSelectedTicker(t)}
-              />
-            </div>
+          <div className="hidden sm:flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-[#58a6ff]" />
+            <span>APIs B3 / BACEN: Online</span>
           </div>
         </div>
-      ) : (
-        /* STANDARD DAY TRADE & SCALPING WORKSPACE: 3 COLUMNS SIDE-BY-SIDE */
-        <div className="flex-1 grid grid-cols-12 gap-2 overflow-hidden min-h-0">
-          {/* Column 1 (Left): 6 cols -> Chart (top ~58%) + Positions Table (bottom ~42%) */}
-          <div className="col-span-12 lg:col-span-6 flex flex-col gap-2 h-full overflow-hidden min-h-0">
-            {/* Chart Area */}
-            <div className="flex-[3] min-h-[220px] overflow-hidden">
-              <IntradayCandleChart
-                asset={currentAsset}
-                activePosition={activePositionOnAsset}
-              />
-            </div>
 
-            {/* Positions & Daily P&L Table */}
-            <div className="flex-[2] min-h-[140px] overflow-hidden">
-              <PositionsAndPLTable
-                positions={positions}
-                orders={orders}
-                account={account}
-                onSelectTicker={(t) => setSelectedTicker(t)}
-              />
-            </div>
-          </div>
-
-          {/* Column 2 (Center): 3 cols -> Full Height Book de Ofertas (DOM Ladder) */}
-          <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col h-full overflow-hidden min-h-0">
-            <DepthOfMarketDOM
-              ticker={currentAsset.ticker}
-              currency={currentAsset.currency}
-              currentPrice={currentAsset.price}
-              domLevels={domLevels}
-              onSelectPriceLevel={(price) => setSelectedDomPrice(price)}
-              selectedPrice={selectedDomPrice}
-            />
-          </div>
-
-          {/* Column 3 (Right): 3 cols -> Order Ticket Boleta (top) + Times & Trades (bottom) */}
-          <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col gap-2 h-full overflow-hidden min-h-0">
-            {/* Fixed Execution Boleta at the top */}
-            <OrderTicket
-              asset={currentAsset}
-              onOpenRiskModal={() => setRiskModalOpen(true)}
-              onOpenBrokerModal={() => setBrokerModalOpen(true)}
-              activePositionQuantity={activePositionOnAsset?.quantity}
-              activePositionSide={activePositionOnAsset?.side}
-              externalPrice={selectedDomPrice}
-            />
-
-            {/* Times & Trades Fita at the bottom */}
-            <div className="flex-1 min-h-[150px] overflow-hidden">
-              <TimesAndTradesFeed
-                ticker={currentAsset.ticker}
-                currency={currentAsset.currency}
-                trades={tradesFeed}
-                brokerRanking={brokerRanking}
-              />
-            </div>
-          </div>
+        {/* Center: Mode Indicator */}
+        <div className="hidden md:flex items-center gap-1.5">
+          <span className="px-1.5 py-0.2 rounded bg-[#21262d] text-[#e6edf3] font-semibold text-[10px]">
+            {account.mode === "SIMULATED" ? "MODO SIMULADO (PAPER TRADING)" : "MODO REAL DMA2"}
+          </span>
         </div>
-      )}
 
-      {/* 3. MODALS */}
+        {/* Right: B3 Time & Branding */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-[#e6edf3]">
+            <Clock className="w-3 h-3 text-[#e3b341]" />
+            <span>{brtTime} BRT · B3 Aberta</span>
+          </div>
+
+          <span className="text-[#30363d] hidden sm:inline">|</span>
+
+          <span className="text-white font-bold hidden sm:inline tracking-wider">
+            DinhEuro <span className="text-[#58a6ff]">PRO</span>
+          </span>
+        </div>
+      </footer>
+
+      {/* 4. MODALS */}
       <RiskManagementModal
         isOpen={riskModalOpen}
         onClose={() => setRiskModalOpen(false)}
