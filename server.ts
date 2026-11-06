@@ -1369,7 +1369,7 @@ app.get("/api/export-project-zip", async (_req, res) => {
     });
 
     res.setHeader("Content-Type", "application/zip");
-    res.setHeader("Content-Disposition", 'attachment; filename="dinheuro-hostinger-vite-react.zip"');
+    res.setHeader("Content-Disposition", 'attachment; filename="dinheuro-production-bundle.zip"');
     res.setHeader("Content-Length", zipBuffer.length.toString());
     res.send(zipBuffer);
   } catch (error: any) {

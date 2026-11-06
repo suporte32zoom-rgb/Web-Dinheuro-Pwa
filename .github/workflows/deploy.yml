@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - DinhEuro Build & Deploy
+name: DinhEuro GitHub Pages Deploy
 
 on:
   push:
@@ -7,11 +7,19 @@ on:
       - master
   workflow_dispatch:
 
-jobs:
-  build-and-verify:
-    name: Build & Verify Production Bundle
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Verify DinhEuro Production Bundle
+    runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
@@ -28,12 +36,34 @@ jobs:
       - name: 🔍 Typecheck (Lint)
         run: npm run lint
 
-      - name: 🚀 Build Production Bundle (Vite + Server)
+      - name: 🚀 Build Static Production Bundle (Vite)
         run: npm run build
 
-      - name: 🛡️ Verify Production Build Artifacts
+      - name: 🌐 Ensure SPA Fallback & CNAME for GitHub Pages
         run: |
           test -f dist/index.html || { echo "❌ dist/index.html is missing!"; exit 1; }
-          test -f dist/.htaccess || { echo "❌ dist/.htaccess is missing!"; exit 1; }
-          echo "✅ dist/ build is complete and valid for Hostinger deployment!"
+          # Copy index.html as 404.html so direct URLs reload cleanly in GitHub Pages
+          cp dist/index.html dist/404.html
+          # Ensure CNAME is present in dist
+          test -f dist/CNAME || cp CNAME dist/CNAME 2>/dev/null || true
+          echo "✅ CNAME configured:"
+          cat dist/CNAME || true
+          echo "✅ dist/ production build is verified for GitHub Pages!"
           ls -la dist/
+
+      - name: 📤 Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'dist'
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

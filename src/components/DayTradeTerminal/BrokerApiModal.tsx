@@ -55,7 +55,7 @@ export const BrokerApiModal: React.FC<BrokerApiModalProps> = ({ isOpen, onClose 
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
-                Integração API Corretora (Modo Real)
+                Conexão Institucional de Roteamento (DMA2 / Modo Real)
               </h3>
               <p className="text-xs text-[#8b949e]">
                 Conexão direta DMA2 / FIX / REST com corretoras parceiras
@@ -108,15 +108,15 @@ export const BrokerApiModal: React.FC<BrokerApiModalProps> = ({ isOpen, onClose 
           </div>
         </div>
 
-        {/* API Credentials Input */}
+        {/* Conexão Institucional Credentials Input */}
         <div className="space-y-3 mb-5">
           <div>
             <label className="text-xs text-[#e6edf3] font-medium block mb-1">
-              Chave de Acesso (API Key / Client ID):
+              Credencial de Acesso (Código Operador / Client ID):
             </label>
             <input
               type="text"
-              placeholder="Cole sua chave de API fornecida pela corretora..."
+              placeholder="Identificador institucional fornecido pela corretora..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-[#0e1117] border border-[#30363d] text-white text-xs font-mono focus:outline-none focus:border-[#58a6ff]"
@@ -125,7 +125,7 @@ export const BrokerApiModal: React.FC<BrokerApiModalProps> = ({ isOpen, onClose 
 
           <div>
             <label className="text-xs text-[#e6edf3] font-medium block mb-1">
-              Segredo da Chave (API Secret / Token):
+              Assinatura Eletrônica / Token de Conexão:
             </label>
             <input
               type="password"
