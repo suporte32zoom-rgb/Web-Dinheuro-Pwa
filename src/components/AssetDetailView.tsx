@@ -477,7 +477,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({
                 </div>
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-[#e6edf3] tracking-tight">
-                    Termômetro de Ações • Consenso Finnhub
+                    Termômetro de Ações • Consenso Institucional
                   </h3>
                   <p className="text-xs text-[#8b949e]">
                     Classificação quantitativa de analistas de mercado e bancos globais em tempo real
@@ -496,7 +496,7 @@ export const AssetDetailView: React.FC<AssetDetailViewProps> = ({
                   {finnhubThermometer.sentimentText || "Neutro"} ({finnhubThermometer.score || 50}/100)
                 </span>
                 <span className="text-[11px] px-2.5 py-0.5 rounded-full font-mono bg-[#58a6ff]/10 text-[#58a6ff] border border-[#58a6ff]/20 font-semibold">
-                  Finnhub API
+                  Consenso Global
                 </span>
               </div>
             </div>

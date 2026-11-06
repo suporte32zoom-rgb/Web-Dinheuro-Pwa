@@ -379,7 +379,7 @@ export const AllAssetsModal: React.FC<AllAssetsModalProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-[#8b949e] mt-0.5">
-                  Preços oficiais sincronizados via Finnhub, AwesomeAPI, Yahoo Finance e Binance. Cotação na moeda original com conversão simultânea em Reais (BRL).
+                  Preços oficiais sincronizados em tempo real com os principais mercados globais e B3. Cotação na moeda original com dupla conversão simultânea em Reais (BRL).
                 </p>
               </div>
             </div>

@@ -631,7 +631,7 @@ export default function App() {
                   onOpenAllAssets={() => setAllAssetsModalOpen(true)}
                 />
 
-                {/* Global Economy & AwesomeAPI Live Indicators */}
+                {/* Global Economy & Central Bank Live Indicators */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-2">
                   <GlobalEconomyWidget
                     onSelectAsset={handleSelectAsset}

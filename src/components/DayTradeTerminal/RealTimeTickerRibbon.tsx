@@ -1,17 +1,18 @@
 import React from "react";
 import { Asset } from "../../types/finance";
 import { formatAssetDisplayPrice } from "../../utils/formatters";
+import { computeDualCurrency } from "../../utils/currencyConversion";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface RealTimeTickerRibbonProps {
-  assets: Asset[];
-  selectedTicker: string;
+  assets?: Asset[];
+  selectedTicker?: string;
   onSelectTicker: (ticker: string) => void;
 }
 
 export const RealTimeTickerRibbon: React.FC<RealTimeTickerRibbonProps> = ({
-  assets,
-  selectedTicker,
+  assets = [],
+  selectedTicker = "",
   onSelectTicker,
 }) => {
   // Key global tickers to highlight in the top continuous ribbon
@@ -39,11 +40,12 @@ export const RealTimeTickerRibbon: React.FC<RealTimeTickerRibbonProps> = ({
       <div className="flex items-center gap-2 flex-nowrap">
         {ribbonTickers.map((item) => {
           const cleanTicker = item.ticker.replace("$", "").toUpperCase();
-          const match = assets.find(
+          const match = (assets || []).find(
             (a) =>
-              a.ticker.toUpperCase() === cleanTicker ||
-              a.id.toLowerCase() === item.ticker.toLowerCase() ||
-              a.ticker.toUpperCase().includes(cleanTicker)
+              a &&
+              (a.ticker?.toUpperCase() === cleanTicker ||
+                a.id?.toLowerCase() === item.ticker.toLowerCase() ||
+                a.ticker?.toUpperCase().includes(cleanTicker))
           );
 
           const price = match?.price || item.defaultPrice;
@@ -94,9 +96,14 @@ export const RealTimeTickerRibbon: React.FC<RealTimeTickerRibbonProps> = ({
                     {changePercent.toFixed(2)}%
                   </span>
                 </div>
-                <span className="text-[10px] font-mono font-semibold text-[#c9d1d9]">
-                  {formatAssetDisplayPrice(price, item.currency)}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-mono font-semibold text-[#c9d1d9]">
+                    {formatAssetDisplayPrice(price, item.currency)}
+                  </span>
+                  <span className="text-[8.5px] font-mono text-[#8b949e]">
+                    ≈ {computeDualCurrency(price, item.currency).convertedFormatted}
+                  </span>
+                </div>
               </div>
 
               {/* Mini Sparkline SVG */}

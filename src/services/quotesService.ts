@@ -719,7 +719,7 @@ class QuotesService {
               let low = reg.basePrice * 0.99;
               let high52 = reg.basePrice * 1.25;
               let low52 = reg.basePrice * 0.8;
-              let volumeStr = "R$ 450 Mi";
+              let volumeStr: string | undefined = undefined;
               let dataSource = "default";
 
               // Finnhub API: Responsável exclusivamente pela Economia Global, Bolsas do Mundo, Índices e Commodities

@@ -31,19 +31,25 @@ export type SidebarNavAction =
   | "settings"
   | "help";
 
-interface TradingDeskSidebarProps {
-  activeAction: SidebarNavAction;
-  onSelectAction: (action: SidebarNavAction) => void;
-  onGoHome: () => void;
-  mode: "SIMULATED" | "REAL";
+export interface TradingDeskSidebarProps {
+  activeAction?: string;
+  activeView?: string;
+  onSelectAction?: (action: string) => void;
+  onSelectView?: (viewId: string) => void;
+  onGoHome?: () => void;
+  mode?: "SIMULATED" | "REAL" | string;
 }
 
 export const TradingDeskSidebar: React.FC<TradingDeskSidebarProps> = ({
   activeAction,
+  activeView,
   onSelectAction,
+  onSelectView,
   onGoHome,
-  mode,
+  mode = "SIMULATED",
 }) => {
+  const currentActive = activeAction || activeView || "charts";
+
   const navItems: { id: SidebarNavAction; label: string; icon: React.ReactNode }[] = [
     { id: "home", label: "Início do Portal", icon: <Home className="w-4 h-4" /> },
     { id: "markets", label: "Mercado em Tempo Real", icon: <BarChart2 className="w-4 h-4" /> },
@@ -60,6 +66,17 @@ export const TradingDeskSidebar: React.FC<TradingDeskSidebarProps> = ({
     { id: "help", label: "Atalhos & Ajuda", icon: <HelpCircle className="w-4 h-4" /> },
   ];
 
+  const handleSelect = (id: string) => {
+    if (id === "home") {
+      if (onGoHome) onGoHome();
+      if (onSelectAction) onSelectAction("home");
+      if (onSelectView) onSelectView("home");
+      return;
+    }
+    if (onSelectAction) onSelectAction(id);
+    if (onSelectView) onSelectView(id);
+  };
+
   return (
     <aside
       aria-label="Menu Lateral do Terminal"
@@ -69,7 +86,7 @@ export const TradingDeskSidebar: React.FC<TradingDeskSidebarProps> = ({
       <div className="flex flex-col items-center gap-2 mb-1">
         <button
           type="button"
-          onClick={onGoHome}
+          onClick={() => handleSelect("home")}
           title="DinhEuro - Retornar à Página Principal"
           className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1f6feb] to-[#238636] flex items-center justify-center text-white font-black text-xs shadow-md shadow-[#1f6feb]/20 hover:scale-105 transition-transform cursor-pointer"
         >
@@ -81,18 +98,12 @@ export const TradingDeskSidebar: React.FC<TradingDeskSidebarProps> = ({
       {/* Nav Icons Stack */}
       <nav className="flex flex-col items-center gap-1 w-full flex-1 overflow-y-auto scrollbar-none py-1">
         {navItems.map((item) => {
-          const isActive = activeAction === item.id;
+          const isActive = currentActive === item.id || (item.id === "charts" && currentActive === "chart");
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => {
-                if (item.id === "home") {
-                  onGoHome();
-                } else {
-                  onSelectAction(item.id);
-                }
-              }}
+              onClick={() => handleSelect(item.id)}
               title={item.label}
               className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all relative group cursor-pointer ${
                 isActive

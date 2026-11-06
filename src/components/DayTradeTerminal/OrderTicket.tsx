@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Asset, OrderSide, OrderType } from "../../types/finance";
 import { dayTradeService } from "../../services/dayTradeService";
 import { formatAssetDisplayPrice } from "../../utils/formatters";
+import { computeDualCurrency } from "../../utils/currencyConversion";
 import {
   TrendingUp,
   TrendingDown,
@@ -224,6 +225,9 @@ export const OrderTicket: React.FC<OrderTicketProps> = ({
             <span className="text-[10.5px] font-mono opacity-90 font-medium">
               Ask {formatAssetDisplayPrice(askPrice, asset.currency)}
             </span>
+            <span className="text-[8.5px] font-mono opacity-70">
+              ≈ {computeDualCurrency(askPrice, asset.currency).convertedFormatted}
+            </span>
           </button>
 
           {/* SELL MARKET */}
@@ -240,6 +244,9 @@ export const OrderTicket: React.FC<OrderTicketProps> = ({
             </div>
             <span className="text-[10.5px] font-mono opacity-90 font-medium">
               Bid {formatAssetDisplayPrice(bidPrice, asset.currency)}
+            </span>
+            <span className="text-[8.5px] font-mono opacity-70">
+              ≈ {computeDualCurrency(bidPrice, asset.currency).convertedFormatted}
             </span>
           </button>
         </div>
@@ -368,7 +375,9 @@ export const OrderTicket: React.FC<OrderTicketProps> = ({
         <div className="p-1.5 rounded-lg bg-[#0e1117] border border-[#21262d] space-y-1 mb-1">
           <div className="flex items-center justify-between text-[9.5px] text-[#8b949e] uppercase font-semibold">
             <span>Travas Automáticas OCO</span>
-            <span className="font-mono text-white">Est. {formatAssetDisplayPrice(asset.price * quantity, asset.currency)}</span>
+            <span className="font-mono text-white">
+              Est. {formatAssetDisplayPrice(asset.price * quantity, asset.currency)} (≈ {computeDualCurrency(asset.price * quantity, asset.currency).convertedFormatted})
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-1 text-[10.5px]">

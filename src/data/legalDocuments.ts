@@ -234,7 +234,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocId, LegalDocument> = {
         title: "3. Infraestrutura Tecnológica de Classe Mundial",
         content: [
           "O DinhEuro é desenvolvido como uma aplicação web progressiva (PWA) de ponta, permitindo instalação nativa instantânea no iOS, Android, Windows e macOS sem depender de lojas de aplicativos pesadas.",
-          "Nossos feeds de dados são alimentados por integrações de baixa latência com provedores globais de dados de mercado (incluindo AwesomeAPI, Finnhub, Financial Modeling Prep e bancos centrais oficiais), garantindo redundância, sincronismo milimétrico e integridade contínua.",
+          "Nossos feeds de dados são alimentados por integrações de baixa latência com provedores globais de dados de mercado, feeds institucionais de bolsas de valores e bancos centrais oficiais, garantindo redundância, sincronismo milimétrico e integridade contínua.",
         ],
       },
       {
@@ -271,7 +271,7 @@ export const LEGAL_DOCUMENTS: Record<LegalDocId, LegalDocument> = {
         id: "origem-dados-delays",
         title: "2. Origem das Cotações, Provedores e Delays Normativos",
         content: [
-          "As cotações de ações, commodities, índices mundiais e moedas são obtidas a partir de fontes e APIs de mercado consideradas confiáveis (tais como AwesomeAPI, Finnhub, Financial Modeling Prep, Banco Central do Brasil e Banco Central Europeu).",
+          "As cotações de ações, commodities, índices mundiais e moedas são obtidas a partir de fontes e sistemas de mercado considerados confiáveis (tais como feeds institucionais de bolsas de valores, sistemas interbancários globais, Banco Central do Brasil e Banco Central Europeu).",
           "Aviso sobre Atrasos Normativos: As cotações de bolsas de valores (como B3 e bolsas internacionais) podem conter atrasos normativos exigidos pelos reguladores de até 15 minutos em relação à negociação em pregão viva-voz ou book de ofertas institucional. As cotações de câmbio comercial e de criptomoedas operam em regime 24/7 com atualizações contínuas.",
           "O DinhEuro não se responsabiliza por eventuais imprecisões numéricas, atrasos de provedores de dados, erros tipográficos ou omissões resultantes de instabilidade nas fontes originárias.",
         ],

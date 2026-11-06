@@ -10,6 +10,7 @@ import {
 } from "../../types/finance";
 import { dayTradeService } from "../../services/dayTradeService";
 import { formatAssetDisplayPrice } from "../../utils/formatters";
+import { computeDualCurrency } from "../../utils/currencyConversion";
 import { RealTimeTickerRibbon } from "./RealTimeTickerRibbon";
 import { TradingDeskSidebar } from "./TradingDeskSidebar";
 import { MarketRealTimeWatchlist } from "./MarketRealTimeWatchlist";
@@ -45,16 +46,16 @@ interface DayTradeTerminalProps {
   onSelectTab?: (tab: RegionalTab) => void;
 }
 
-// Preset Quick Trading Assets
+// Preset Quick Trading Assets with underlying IDs for live binding
 const QUICK_TRADING_TICKERS = [
-  { id: "win", ticker: "WIN$", name: "Mini Índice Futuro B3", basePrice: 167548.0, currency: "BRL" },
-  { id: "wdo", ticker: "WDO$", name: "Mini Dólar Futuro B3", basePrice: 5459.6, currency: "BRL" },
-  { id: "petr4", ticker: "PETR4", name: "Petrobras PN", basePrice: 47.12, currency: "BRL" },
-  { id: "vale3", ticker: "VALE3", name: "Vale ON", basePrice: 62.35, currency: "BRL" },
-  { id: "itub4", ticker: "ITUB4", name: "Itaú Unibanco PN", basePrice: 39.71, currency: "BRL" },
-  { id: "bitcoin", ticker: "BTC", name: "Bitcoin Spot", basePrice: 80112.0, currency: "USD" },
-  { id: "sp-500", ticker: "S&P 500", name: "S&P 500 Futuro", basePrice: 7688.62, currency: "USD" },
-  { id: "nvda", ticker: "NVDA", name: "NVIDIA Corp", basePrice: 200.13, currency: "USD" },
+  { id: "win", ticker: "WIN$", name: "Mini Índice Futuro B3", underlyingId: "ibovespa", defaultPrice: 167540.0, currency: "BRL" },
+  { id: "wdo", ticker: "WDO$", name: "Mini Dólar Futuro B3", underlyingId: "usd-brl", defaultPrice: 5459.6, currency: "BRL" },
+  { id: "petr4", ticker: "PETR4", name: "Petrobras PN", underlyingId: "petr4", defaultPrice: 47.28, currency: "BRL" },
+  { id: "vale3", ticker: "VALE3", name: "Vale ON", underlyingId: "vale3", defaultPrice: 62.43, currency: "BRL" },
+  { id: "itub4", ticker: "ITUB4", name: "Itaú Unibanco PN", underlyingId: "itub4", defaultPrice: 39.71, currency: "BRL" },
+  { id: "bitcoin", ticker: "BTC", name: "Bitcoin Spot", underlyingId: "bitcoin", defaultPrice: 80112.0, currency: "USD" },
+  { id: "sp-500", ticker: "S&P 500", name: "S&P 500 Futuro", underlyingId: "sp-500", defaultPrice: 7688.62, currency: "USD" },
+  { id: "nvda", ticker: "NVDA", name: "NVIDIA Corp", underlyingId: "nvda", defaultPrice: 200.24, currency: "USD" },
 ];
 
 type DeskSubTab = "chart" | "tape" | "dom" | "indicators" | "strategies";
@@ -102,61 +103,171 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
     return unsub;
   }, []);
 
-  // Resolve matching Asset object from catalog
+  // Helper to resolve live quote for quick trading tickers
+  const getTickerLiveQuote = (item: typeof QUICK_TRADING_TICKERS[0]) => {
+    const clean = item.ticker.replace("$", "").toUpperCase();
+    const match = (allAssets || []).find(
+      (a) =>
+        a &&
+        (a.ticker?.toUpperCase() === clean ||
+          a.id?.toLowerCase() === item.underlyingId.toLowerCase() ||
+          a.id?.toLowerCase() === item.id.toLowerCase())
+    );
+    if (match) {
+      let price = match.price;
+      if (item.ticker === "WDO$" && price < 100) {
+        price = Number((price * 1000).toFixed(1));
+      }
+      return {
+        price,
+        changePercent: match.changePercent,
+        currency: match.currency || item.currency,
+      };
+    }
+    return {
+      price: item.defaultPrice,
+      changePercent: 0.5,
+      currency: item.currency,
+    };
+  };
+
+  // Resolve matching Asset object from catalog with unified prices and metrics
   const currentAsset = useMemo(() => {
     const cleanTicker = selectedTicker.replace("$", "").toUpperCase();
-    const found = allAssets.find(
+    const found = (allAssets || []).find(
       (a) =>
-        a.ticker.toUpperCase() === cleanTicker ||
-        a.id.toLowerCase() === selectedTicker.toLowerCase() ||
-        a.ticker.toUpperCase().includes(cleanTicker)
+        a &&
+        (a.ticker?.toUpperCase() === cleanTicker ||
+          a.id?.toLowerCase() === selectedTicker.toLowerCase() ||
+          a.ticker?.toUpperCase().includes(cleanTicker))
     );
 
-    if (found) return found;
+    if (found) {
+      return found;
+    }
 
-    // Fallback virtual asset for Mini Índice / Mini Dólar
-    const preset = QUICK_TRADING_TICKERS.find((t) => t.ticker === selectedTicker) || QUICK_TRADING_TICKERS[0];
-    return {
-      id: preset.id,
-      ticker: preset.ticker,
-      name: preset.name,
+    // Special Derivativo: WIN$ (Mini Índice B3) - binds to live IBOVESPA
+    if (selectedTicker === "WIN$") {
+      const ibov = (allAssets || []).find((a) => a.id === "ibovespa" || a.ticker === "IBOV");
+      const price = ibov?.price || 167540;
+      return {
+        id: "win",
+        ticker: "WIN$",
+        name: "Mini Índice Futuro B3",
+        category: "América Latina" as const,
+        currency: "BRL",
+        price,
+        change: ibov?.change || 850,
+        changePercent: ibov?.changePercent || 0.52,
+        exchange: "B3 (Brasil)",
+        sparkline: ibov?.sparkline || [price * 0.99, price * 1.002, price],
+        historical: {} as any,
+        metrics: {
+          open: ibov?.metrics?.open || price * 0.995,
+          high: ibov?.metrics?.high || price * 1.008,
+          low: ibov?.metrics?.low || price * 0.992,
+          high52w: ibov?.metrics?.high52w || price * 1.25,
+          low52w: ibov?.metrics?.low52w || price * 0.75,
+          prevClose: ibov?.metrics?.prevClose || price - (ibov?.change || 850),
+          volume: ibov?.metrics?.volume || "R$ 48,2 Bi",
+        },
+        profile: {
+          description: "Contrato Futuro de Mini Índice Ibovespa B3",
+          sector: "Futuros & Derivativos",
+          headquarters: "São Paulo, Brasil",
+          websiteUrl: "https://www.b3.com.br",
+          websiteLabel: "B3 Mercados",
+          exchange: "B3",
+          currency: "BRL",
+        },
+      };
+    }
+
+    // Special Derivativo: WDO$ (Mini Dólar B3) - binds to live USD/BRL
+    if (selectedTicker === "WDO$") {
+      const usdBrl = (allAssets || []).find((a) => a.id === "usd-brl" || a.ticker.includes("USD / BRL"));
+      const rawRate = usdBrl?.price || 5.4397;
+      const contractPrice = Number((rawRate * 1000).toFixed(1));
+      return {
+        id: "wdo",
+        ticker: "WDO$",
+        name: "Mini Dólar Futuro B3",
+        category: "América Latina" as const,
+        currency: "BRL",
+        price: contractPrice,
+        change: Number(((usdBrl?.change || -0.012) * 1000).toFixed(1)),
+        changePercent: usdBrl?.changePercent || -0.22,
+        exchange: "B3 (Brasil)",
+        sparkline: (usdBrl?.sparkline || [5.45, 5.44, 5.4397]).map((v) => v * 1000),
+        historical: {} as any,
+        metrics: {
+          open: Number(((usdBrl?.metrics?.open || 5.45) * 1000).toFixed(1)),
+          high: Number(((usdBrl?.metrics?.high || 5.46) * 1000).toFixed(1)),
+          low: Number(((usdBrl?.metrics?.low || 5.43) * 1000).toFixed(1)),
+          high52w: 5950,
+          low52w: 4850,
+          prevClose: contractPrice - ((usdBrl?.change || -0.012) * 1000),
+          volume: "R$ 22,6 Bi",
+        },
+        profile: {
+          description: "Contrato Futuro de Mini Dólar Comercial B3",
+          sector: "Futuros & Derivativos",
+          headquarters: "São Paulo, Brasil",
+          websiteUrl: "https://www.b3.com.br",
+          websiteLabel: "B3 Mercados",
+          exchange: "B3",
+          currency: "BRL",
+        },
+      };
+    }
+
+    // Default to Petrobras or first asset in catalog
+    return (allAssets && allAssets[0]) || {
+      id: "petr4",
+      ticker: "PETR4",
+      name: "Petrobras PN",
       category: "América Latina" as const,
-      currency: preset.currency,
-      price: preset.basePrice,
-      change: preset.basePrice * 0.008,
-      changePercent: 0.8,
+      currency: "BRL",
+      price: 47.28,
+      change: 0.35,
+      changePercent: 0.75,
       exchange: "B3 (Brasil)",
-      sparkline: [preset.basePrice * 0.99, preset.basePrice * 1.005, preset.basePrice],
+      sparkline: [46.8, 47.0, 47.28],
       historical: {} as any,
       metrics: {
-        open: preset.basePrice * 0.992,
-        high: preset.basePrice * 1.012,
-        low: preset.basePrice * 0.988,
-        high52w: preset.basePrice * 1.25,
-        low52w: preset.basePrice * 0.75,
-        prevClose: preset.basePrice * 0.992,
-        volume: "R$ 1,24 Bi",
+        open: 46.95,
+        high: 47.45,
+        low: 46.70,
+        high52w: 52.80,
+        low52w: 34.20,
+        prevClose: 46.93,
+        volume: "R$ 1,84 Bi",
       },
       profile: {
-        description: preset.name,
-        sector: "Derivativos & Day Trade",
-        headquarters: "São Paulo, Brasil",
-        websiteUrl: "https://www.b3.com.br",
-        websiteLabel: "B3 Mercados",
+        description: "Petróleo Brasileiro S.A. - Petrobras",
+        sector: "Petróleo e Gás",
+        headquarters: "Rio de Janeiro, Brasil",
+        websiteUrl: "https://www.petrobras.com.br",
+        websiteLabel: "RI Petrobras",
         exchange: "B3",
-        currency: preset.currency,
+        currency: "BRL",
       },
     };
   }, [allAssets, selectedTicker]);
 
   // Active position on currently selected asset
   const activePositionOnAsset = useMemo(() => {
-    return positions.find(
-      (p) => p.ticker.toUpperCase() === currentAsset.ticker.toUpperCase()
+    return (positions || []).find(
+      (p) =>
+        p &&
+        p.ticker &&
+        currentAsset &&
+        currentAsset.ticker &&
+        p.ticker.toUpperCase() === currentAsset.ticker.toUpperCase()
     );
-  }, [positions, currentAsset.ticker]);
+  }, [positions, currentAsset]);
 
-  // Real-time dynamic DOM levels & Times & Trades generator
+  // Real-time dynamic DOM levels & Times & Trades generator centered on real price
   const [domLevels, setDomLevels] = useState<DOMLevel[]>(() =>
     dayTradeService.generateDOM(currentAsset.price, currentAsset.price > 1000 ? 5 : 0.05)
   );
@@ -170,30 +281,26 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
     return dayTradeService.getBrokerRanking(tradesFeed);
   }, [tradesFeed]);
 
-  // Live High-Frequency Ticks simulation (updates DOM & streaming trades)
+  // Synchronize official price updates to open positions and DOM
+  useEffect(() => {
+    dayTradeService.updateMarketTick(currentAsset.ticker, currentAsset.price);
+    const step = currentAsset.price > 1000 ? 5 : currentAsset.price > 100 ? 0.25 : 0.05;
+    setDomLevels(dayTradeService.generateDOM(currentAsset.price, step));
+  }, [currentAsset.price, currentAsset.ticker]);
+
+  // Live streaming trade updates to Times & Trades based on current official price
   useEffect(() => {
     const timer = setInterval(() => {
-      const tickDelta = (Math.random() - 0.49) * (currentAsset.price * 0.0004);
-      const newPrice = Number((currentAsset.price + tickDelta).toFixed(2));
-
-      // Update service positions P&L with the live tick
-      dayTradeService.updateMarketTick(currentAsset.ticker, newPrice);
-
-      // Refresh DOM
-      const step = currentAsset.price > 1000 ? 5 : 0.05;
-      setDomLevels(dayTradeService.generateDOM(newPrice, step));
-
-      // Add a live trade to the tape
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}.${String(Math.floor(now.getMilliseconds() / 10)).padStart(2, "0")}`;
-      const aggressor = Math.random() > 0.5 ? "BUY" : "SELL";
-      const qtyOptions = [5, 10, 15, 20, 25, 50, 100];
+      const aggressor = Math.random() > 0.48 ? "BUY" : "SELL";
+      const qtyOptions = [5, 10, 15, 20, 25, 50, 100, 200];
       const quantity = qtyOptions[Math.floor(Math.random() * qtyOptions.length)];
 
       const newTrade: TimesAndTradesItem = {
         id: `tt-${Date.now()}`,
         time: timeStr,
-        price: newPrice,
+        price: currentAsset.price,
         quantity,
         aggressor,
         buyerBroker: "XP Investimentos",
@@ -201,7 +308,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
       };
 
       setTradesFeed((prev) => [newTrade, ...prev.slice(0, 45)]);
-    }, 1600);
+    }, 1800);
 
     return () => clearInterval(timer);
   }, [currentAsset.price, currentAsset.ticker]);
@@ -225,24 +332,32 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
       onSelectTab("América Latina");
     } else if (viewId === "markets" && onSelectTab) {
       onSelectTab("Mercados Globais");
-    } else if (viewId === "chart") {
+    } else if (viewId === "charts" || viewId === "chart") {
       setActiveSubTab("chart");
     } else if (viewId === "tape") {
       setActiveSubTab("tape");
-    } else if (viewId === "book") {
+    } else if (viewId === "book" || viewId === "orders") {
       setActiveSubTab("dom");
-    } else if (viewId === "indicators") {
+    } else if (viewId === "analysis" || viewId === "indicators") {
       setActiveSubTab("indicators");
     } else if (viewId === "strategies") {
       setActiveSubTab("strategies");
-    } else if (viewId === "risk") {
+    } else if (viewId === "settings" || viewId === "risk") {
       setRiskModalOpen(true);
     } else if (viewId === "broker") {
       setBrokerModalOpen(true);
-    } else if (viewId === "sim") {
+    } else if (viewId === "simulator" || viewId === "sim") {
       if (confirm("Deseja redefinir a conta simulada para R$ 100.000,00 e zerar posições?")) {
         dayTradeService.resetSimulatedAccount();
       }
+    } else if (viewId === "positions" || viewId === "portfolio") {
+      setActiveSubTab("chart");
+    } else if (viewId === "news") {
+      // Kept in view, highlights news stream
+    } else if (viewId === "alerts") {
+      alert(`Sistema de Alertas: Monitorando rompimentos e níveis para ${currentAsset.ticker}.`);
+    } else if (viewId === "help") {
+      alert("Atalhos do Terminal Day Trade:\n• Compra a Mercado: Botão Verde ou clique no Ask do DOM\n• Venda a Mercado: Botão Vermelho ou clique no Bid do DOM\n• Zerar Posição: Botão Laranja ou na tabela de Posições\n• Traçado: LTA, Suporte e Fibonacci no topo do gráfico");
     }
   };
 
@@ -253,6 +368,8 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
     <div className="w-full h-full flex flex-col overflow-hidden bg-[#0a0d14] text-[#e6edf3] select-none">
       {/* 1. TOP BAR: CONTINUOUS REAL-TIME GLOBAL TICKER RIBBON */}
       <RealTimeTickerRibbon
+        assets={allAssets || []}
+        selectedTicker={selectedTicker}
         onSelectTicker={(ticker) => {
           setSelectedTicker(ticker);
           setSelectedDomPrice(undefined);
@@ -263,8 +380,12 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
       <div className="flex-1 flex overflow-hidden min-h-0">
         {/* LEFT SLIM SIDEBAR (48px) */}
         <TradingDeskSidebar
+          activeAction={sidebarActiveView}
           activeView={sidebarActiveView}
+          onSelectAction={handleSidebarSelect}
           onSelectView={handleSidebarSelect}
+          onGoHome={() => onSelectTab && onSelectTab("América Latina")}
+          mode={account.mode}
         />
 
         {/* CENTER + RIGHT DESK (Split View) */}
@@ -277,6 +398,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
               <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
                 {QUICK_TRADING_TICKERS.map((t) => {
                   const isSelected = selectedTicker === t.ticker;
+                  const liveInfo = getTickerLiveQuote(t);
                   return (
                     <button
                       key={t.ticker}
@@ -293,7 +415,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                     >
                       <span>{t.ticker}</span>
                       <span className="text-[10px] font-mono opacity-80">
-                        {formatAssetDisplayPrice(t.basePrice, t.currency)}
+                        {formatAssetDisplayPrice(liveInfo.price, liveInfo.currency)}
                       </span>
                     </button>
                   );
@@ -385,10 +507,13 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
 
               {/* Live Ticker Quick Quote + P&L Indicator + Controls */}
               <div className="flex items-center gap-1.5 ml-auto">
-                {/* Active Asset Live Quote */}
-                <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
+                {/* Active Asset Live Quote with Dual Currency Conversion */}
+                <div className="hidden xl:flex items-center gap-2 px-2.5 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
                   <span className="font-bold text-white">{currentAsset.ticker}</span>
                   <span className="text-white font-bold">{formatAssetDisplayPrice(currentAsset.price, currentAsset.currency)}</span>
+                  <span className="text-[10.5px] text-[#8b949e] font-semibold">
+                    ≈ {computeDualCurrency(currentAsset.price, currentAsset.currency).convertedFormatted}
+                  </span>
                   <span
                     className={`text-[10.5px] font-bold flex items-center ${
                       currentAsset.changePercent >= 0 ? "text-[#00c853]" : "text-[#ff5252]"
@@ -418,15 +543,15 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                   <span className="hidden md:inline">{riskSettings.isLocked ? "Trava Ativa" : "Risco"}</span>
                 </button>
 
-                {/* Broker API Modal Trigger */}
+                {/* Broker Connection Trigger */}
                 <button
                   type="button"
                   onClick={() => setBrokerModalOpen(true)}
                   className="px-2 py-0.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
-                  title="Conectar Conta Real via API DMA2"
+                  title="Conectar Conta Real via DMA2"
                 >
                   <Key className="w-3.5 h-3.5 text-[#e3b341]" />
-                  <span className="hidden sm:inline">API</span>
+                  <span className="hidden sm:inline">DMA2</span>
                 </button>
 
                 {/* Reset Simulated Account */}
@@ -651,7 +776,12 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
             {/* Top Watchlist (~38% of right column) */}
             <div className="h-[200px] xl:h-[220px] shrink-0 overflow-hidden">
               <MarketRealTimeWatchlist
+                assets={allAssets || []}
                 selectedTicker={selectedTicker}
+                onSelectTicker={(ticker) => {
+                  setSelectedTicker(ticker);
+                  setSelectedDomPrice(undefined);
+                }}
                 onSelectAsset={(ticker) => {
                   setSelectedTicker(ticker);
                   setSelectedDomPrice(undefined);
@@ -687,7 +817,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
 
           <div className="hidden sm:flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-[#58a6ff]" />
-            <span>APIs B3 / BACEN: Online</span>
+            <span>Sistemas B3 / BACEN: Online</span>
           </div>
         </div>
 

@@ -312,7 +312,7 @@ export async function obterNoticiasFinnhub(category: string = "general"): Promis
       return {
         id: `finnhub-${item.id || idx}`,
         title,
-        source: item.source || "Finnhub Financial",
+        source: item.source && !item.source.toLowerCase().includes("finnhub") ? item.source : "Agência Internacional de Mercados",
         timeAgo: timeStr,
         url: item.url || "https://dinheuro.com",
         category: "Bolsas & Economia Global",

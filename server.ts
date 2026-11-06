@@ -1046,7 +1046,7 @@ app.get("/api/market/news", async (req, res) => {
             allNews.push({
               id: `finnhub-${item.id || idCounter++}`,
               title: item.headline || "Notícia dos Mercados Globais",
-              source: item.source || "Finnhub Financial",
+              source: item.source && !item.source.toLowerCase().includes("finnhub") ? item.source : "Agência Internacional de Mercados",
               timeAgo,
               url: item.url || "https://dinheuro.com",
               category: "Bolsas & Economia Global",
