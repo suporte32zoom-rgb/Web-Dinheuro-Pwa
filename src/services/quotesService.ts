@@ -45,7 +45,7 @@ export interface AssetRegistryItem {
 
 export const ASSET_REGISTRY: Record<string, AssetRegistryItem> = {
   // América Latina (B3 & Latam)
-  ibovespa: { ticker: "IBOV", name: "Ibovespa Brasil", symbol: "^BVSP", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 167445.8 },
+  ibovespa: { ticker: "IBOV", name: "Ibovespa Brasil", symbol: "^BVSP", category: "América Latina", currency: "pts", exchange: "B3 (Brasil)", type: "yf", basePrice: 167445.8 },
   petr4: { ticker: "PETR4", name: "Petrobras PN", symbol: "PETR4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 47.28 },
   vale3: { ticker: "VALE3", name: "Vale ON", symbol: "VALE3.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 62.43 },
   itub4: { ticker: "ITUB4", name: "Itaú Unibanco PN", symbol: "ITUB4.SA", category: "América Latina", currency: "BRL", exchange: "B3 (Brasil)", type: "yf", basePrice: 39.71 },
@@ -746,6 +746,28 @@ class QuotesService {
                 finnhubData = await this.fetchFinnhubQuote(finnhubTickers[id]);
               } else if (reg.category === "EUA" && !reg.symbol.startsWith("^")) {
                 finnhubData = await this.fetchFinnhubQuote(reg.symbol);
+              }
+
+              // FMP Fallback se Finnhub não retornar
+              if (!finnhubData || finnhubData.price <= 0) {
+                const fmpSym = finnhubTickers[id] || (reg.category === "EUA" ? reg.symbol : null);
+                if (fmpSym) {
+                  const fmpData = await this.fetchFMPQuote(fmpSym);
+                  if (fmpData && fmpData.price > 0) {
+                    finnhubData = {
+                      price: fmpData.price,
+                      prevClose: fmpData.prevClose,
+                      open: fmpData.open,
+                      high: fmpData.high,
+                      low: fmpData.low,
+                      change: fmpData.change,
+                      changePercent: fmpData.changePercent,
+                    };
+                    if (fmpData.volume) {
+                      volumeStr = `US$ ${(fmpData.volume / 1000000).toFixed(1)} Mi`;
+                    }
+                  }
+                }
               }
 
               if (finnhubData && finnhubData.price > 0) {

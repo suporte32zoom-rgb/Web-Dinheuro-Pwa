@@ -139,6 +139,21 @@ export function computeDualCurrency(
     };
   }
 
+  // Caso: Índices cotados em Pontos (ex: IBOVESPA, WIN$)
+  if (cleanCurrency === "PTS" || cleanCurrency === "PONTOS") {
+    const convertedUsd = usdBrl > 0 ? price / usdBrl : price / 5.4397;
+    return {
+      originalFormatted: `${price.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} pts`,
+      originalCurrency: "PTS",
+      originalPrice: price,
+      convertedFormatted: formatAssetDisplayPrice(convertedUsd, "USD"),
+      convertedCurrency: "USD",
+      convertedPrice: convertedUsd,
+      rateUsed: usdBrl,
+      rateLabel: `1 USD = R$ ${usdBrl.toFixed(4)}`,
+    };
+  }
+
   // Caso 3: Ativo cotado em Euro (EUR) -> Exibe em BRL e USD
   if (cleanCurrency === "EUR" || cleanCurrency === "€") {
     const convertedBrl = price * eurBrl;

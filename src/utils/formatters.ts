@@ -101,6 +101,11 @@ export function formatAssetDisplayPrice(price: number, currency: string = "BRL")
 
   // Precisão dinâmica: até 4 casas decimais para taxas cambiais e ativos abaixo de 10 unidades com frações relevantes
   const hasExtraDecimals = price < 10 && price > 0 && Math.abs(price - Math.round(price * 100) / 100) > 0.0001;
+  // Índices de mercado cotados em pontos (ex: IBOVESPA, WIN$)
+  if (raw === "PTS" || raw === "PONTOS") {
+    return `${price.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} pts`;
+  }
+
   const decimals = hasExtraDecimals ? 4 : 2;
 
   if (curr === "BRL") {

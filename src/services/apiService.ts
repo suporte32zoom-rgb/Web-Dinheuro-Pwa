@@ -466,27 +466,49 @@ export async function getResilientMarketQuotes(): Promise<Record<string, LiveQuo
     "sp-500-futuros": "SPY",
   };
 
-  await Promise.all(
-    Object.entries(finnhubAssetMappings).map(async ([id, finnhubSymbol]) => {
-      try {
-        const finnhubQuote = await obterCotacaoFinnhub(finnhubSymbol);
-        if (finnhubQuote && finnhubQuote.precoAtual > 0 && quotes[id]) {
-          quotes[id] = {
-            ...quotes[id],
-            price: finnhubQuote.precoAtual,
-            change: Number(finnhubQuote.variacao.toFixed(2)),
-            changePercent: Number(finnhubQuote.percentualVariacao.toFixed(2)),
-            open: finnhubQuote.abertura || finnhubQuote.precoAtual,
-            high: finnhubQuote.maximaDia || finnhubQuote.precoAtual,
-            low: finnhubQuote.minimaDia || finnhubQuote.precoAtual,
-            lastUpdated: new Date().toISOString(),
-          };
+  const entries = Object.entries(finnhubAssetMappings);
+  const chunkSize = 4;
+  for (let i = 0; i < entries.length; i += chunkSize) {
+    const chunk = entries.slice(i, i + chunkSize);
+    await Promise.all(
+      chunk.map(async ([id, symbol]) => {
+        try {
+          let q = await obterCotacaoFinnhub(symbol);
+          // Fallback automático para Financial Modeling Prep se Finnhub não retornar
+          if (!q || q.precoAtual <= 0) {
+            const fmpQ = await obterCotacaoFMP(symbol);
+            if (fmpQ && fmpQ.price > 0) {
+              q = {
+                simbolo: symbol,
+                precoAtual: fmpQ.price,
+                variacao: fmpQ.change,
+                percentualVariacao: fmpQ.changePercentage,
+                maximaDia: fmpQ.dayHigh,
+                minimaDia: fmpQ.dayLow,
+                abertura: fmpQ.open,
+                fechamentoAnterior: fmpQ.previousClose,
+              };
+            }
+          }
+
+          if (q && q.precoAtual > 0 && quotes[id]) {
+            quotes[id] = {
+              ...quotes[id],
+              price: q.precoAtual,
+              change: Number(q.variacao.toFixed(2)),
+              changePercent: Number(q.percentualVariacao.toFixed(2)),
+              open: q.abertura || q.precoAtual,
+              high: q.maximaDia || q.precoAtual,
+              low: q.minimaDia || q.precoAtual,
+              lastUpdated: new Date().toISOString(),
+            };
+          }
+        } catch {
+          // Silenciosamente ignora falhas pontuais
         }
-      } catch {
-        // Silenciosamente ignora falhas pontuais
-      }
-    })
-  );
+      })
+    );
+  }
 
   persistQuotes(quotes);
   return quotes;

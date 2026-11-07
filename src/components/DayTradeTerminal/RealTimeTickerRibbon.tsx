@@ -17,12 +17,12 @@ export const RealTimeTickerRibbon: React.FC<RealTimeTickerRibbonProps> = ({
 }) => {
   // Key global tickers to highlight in the top continuous ribbon
   const ribbonTickers = [
-    { ticker: "IBOV", name: "Ibovespa", defaultPrice: 167540, currency: "BRL" },
+    { ticker: "IBOV", name: "Ibovespa", defaultPrice: 167540, currency: "pts" },
     { ticker: "USD/BRL", name: "Dólar Comercial", defaultPrice: 5.4397, currency: "BRL" },
     { ticker: "EUR/BRL", name: "Euro Comercial", defaultPrice: 6.0679, currency: "BRL" },
     { ticker: "S&P 500", name: "S&P 500 Futuro", defaultPrice: 5860.5, currency: "USD" },
     { ticker: "BTC", name: "Bitcoin Spot", defaultPrice: 80112, currency: "USD" },
-    { ticker: "WIN$", name: "Mini Índice B3", defaultPrice: 167548, currency: "BRL" },
+    { ticker: "WIN$", name: "Mini Índice B3", defaultPrice: 167548, currency: "pts" },
     { ticker: "WDO$", name: "Mini Dólar B3", defaultPrice: 5459.6, currency: "BRL" },
     { ticker: "PETR4", name: "Petrobras PN", defaultPrice: 47.12, currency: "BRL" },
     { ticker: "VALE3", name: "Vale ON", defaultPrice: 62.35, currency: "BRL" },

@@ -743,7 +743,7 @@ const RAW_ASSETS: Asset[] = [
     ticker: "IBOV",
     name: "Índice Bovespa (Ibovespa)",
     category: "América Latina",
-    currency: "BRL",
+    currency: "pts",
     price: 167921.8,
     change: -1270.2,
     changePercent: -0.75,

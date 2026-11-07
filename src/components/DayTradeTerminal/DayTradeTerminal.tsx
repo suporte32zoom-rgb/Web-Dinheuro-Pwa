@@ -48,7 +48,7 @@ interface DayTradeTerminalProps {
 
 // Preset Quick Trading Assets with underlying IDs for live binding
 const QUICK_TRADING_TICKERS = [
-  { id: "win", ticker: "WIN$", name: "Mini Índice Futuro B3", underlyingId: "ibovespa", defaultPrice: 167540.0, currency: "BRL" },
+  { id: "win", ticker: "WIN$", name: "Mini Índice Futuro B3", underlyingId: "ibovespa", defaultPrice: 167540.0, currency: "pts" },
   { id: "wdo", ticker: "WDO$", name: "Mini Dólar Futuro B3", underlyingId: "usd-brl", defaultPrice: 5459.6, currency: "BRL" },
   { id: "petr4", ticker: "PETR4", name: "Petrobras PN", underlyingId: "petr4", defaultPrice: 47.28, currency: "BRL" },
   { id: "vale3", ticker: "VALE3", name: "Vale ON", underlyingId: "vale3", defaultPrice: 62.43, currency: "BRL" },
@@ -155,7 +155,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
         ticker: "WIN$",
         name: "Mini Índice Futuro B3",
         category: "América Latina" as const,
-        currency: "BRL",
+        currency: "pts",
         price,
         change: ibov?.change || 850,
         changePercent: ibov?.changePercent || 0.52,
