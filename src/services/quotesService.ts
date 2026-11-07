@@ -957,34 +957,162 @@ class QuotesService {
   }
 
   /**
+   * Resolves a raw Finnhub webhook or WebSocket symbol to internal catalog ID
+   */
+  public resolveSymbolToId(symbol: string): string {
+    const sym = symbol.trim().toUpperCase();
+
+    // Map Binance/crypto formats
+    if (sym.includes("BTCUSDT") || sym === "BTC" || sym === "BTCUSD") return "bitcoin";
+    if (sym.includes("ETHUSDT") || sym === "ETH" || sym === "ETHUSD") return "ether";
+    if (sym.includes("SOLUSDT") || sym === "SOL" || sym === "SOLUSD") return "solana";
+    if (sym.includes("BNBUSDT") || sym === "BNB") return "bnb";
+    if (sym.includes("XRPUSDT") || sym === "XRP") return "xrp";
+    if (sym.includes("DOGEUSDT") || sym === "DOGE") return "dogecoin";
+
+    // Common ETF / Index mappings
+    if (sym === "SPY" || sym === "SP500" || sym === "S&P 500") return "sp-500";
+    if (sym === "QQQ" || sym === "NASDAQ") return "nasdaq";
+    if (sym === "DIA" || sym === "DOW" || sym === "DOW JONES") return "dow-jones";
+    if (sym === "IWM" || sym === "RUSSELL") return "russell-2000";
+    if (sym === "EWZ" || sym === "IBOV" || sym === "IBOVESPA") return "ibovespa";
+    if (sym === "GLD" || sym === "GOLD" || sym === "GC=F") return "ouro-futuro";
+    if (sym === "USO" || sym === "BRENT" || sym === "BZ=F") return "petroleo-brent";
+
+    // Search in ASSET_REGISTRY by ticker or symbol
+    const foundEntry = Object.entries(ASSET_REGISTRY).find(
+      ([, reg]) =>
+        reg.ticker.toUpperCase() === sym ||
+        reg.symbol.toUpperCase() === sym ||
+        reg.ticker.replace(/[^A-Z0-9]/g, "").toUpperCase() === sym.replace(/[^A-Z0-9]/g, "")
+    );
+    if (foundEntry) return foundEntry[0];
+
+    return symbol.toLowerCase();
+  }
+
+  /**
    * Directly updates or patches a quote from a real-time webhook event
    */
-  public updateQuotePrice(symbol: string, newPrice: number): boolean {
-    const sym = symbol.toUpperCase();
-    const foundEntry = Object.entries(ASSET_REGISTRY).find(
-      ([, reg]) => reg.ticker.toUpperCase() === sym || reg.symbol.toUpperCase() === sym
-    );
-    const id = foundEntry ? foundEntry[0] : symbol.toLowerCase();
+  public updateQuotePrice(
+    symbol: string,
+    newPrice: number,
+    volume?: number,
+    _timestamp?: number
+  ): LiveQuote | null {
+    if (typeof newPrice !== "number" || isNaN(newPrice) || newPrice <= 0) return null;
 
-    if (this.cache.data[id]) {
-      const current = this.cache.data[id];
-      const prevClose = current.open || current.price;
-      const change = newPrice - prevClose;
-      const changePercent = prevClose > 0 ? (change / prevClose) * 100 : 0;
+    const id = this.resolveSymbolToId(symbol);
+    const reg = ASSET_REGISTRY[id];
 
-      this.cache.data[id] = {
-        ...current,
-        price: Number(newPrice.toFixed(newPrice < 10 ? 4 : 2)),
-        change: Number(change.toFixed(newPrice < 10 ? 4 : 2)),
-        changePercent: Number(changePercent.toFixed(2)),
-        high: Math.max(current.high || newPrice, newPrice),
-        low: Math.min(current.low || newPrice, newPrice),
+    let current = this.cache.data[id];
+    if (!current) {
+      const basePrice = reg ? reg.basePrice : newPrice;
+      current = {
+        id,
+        ticker: reg ? reg.ticker : symbol.toUpperCase(),
+        name: reg ? reg.name : symbol.toUpperCase(),
+        price: basePrice,
+        change: 0,
+        changePercent: 0,
+        currency: reg ? reg.currency : "USD",
+        exchange: reg ? reg.exchange : "Finnhub Live",
+        category: reg ? reg.category : "Ações Globais",
+        sparkline: [basePrice * 0.99, basePrice, basePrice],
+        high52w: basePrice * 1.15,
+        low52w: basePrice * 0.85,
+        open: basePrice,
+        high: basePrice,
+        low: basePrice,
+        volume: volume ? String(volume) : "50.000.000",
         lastUpdated: new Date().toISOString(),
         source: "finnhub-webhook",
       };
-      return true;
+      this.cache.data[id] = current;
     }
-    return false;
+
+    const prevClose = current.open || current.price;
+    const change = newPrice - prevClose;
+    const changePercent = prevClose > 0 ? (change / prevClose) * 100 : 0;
+    const isCryptoOrForex = current.currency === "BRL" && newPrice < 10;
+    const decimals = isCryptoOrForex ? 4 : 2;
+
+    const updatedSparkline = current.sparkline && current.sparkline.length > 0
+      ? [...current.sparkline.slice(-14), newPrice]
+      : [newPrice];
+
+    const updatedQuote: LiveQuote = {
+      ...current,
+      price: Number(newPrice.toFixed(decimals)),
+      change: Number(change.toFixed(decimals)),
+      changePercent: Number(changePercent.toFixed(2)),
+      high: Math.max(current.high || newPrice, newPrice),
+      low: Math.min(current.low || newPrice, newPrice),
+      sparkline: updatedSparkline,
+      volume: volume !== undefined ? String(volume) : current.volume,
+      lastUpdated: new Date().toISOString(),
+      source: "finnhub-webhook",
+    };
+
+    this.cache.data[id] = updatedQuote;
+
+    // Se for Bitcoin ou Ethereum, sincroniza automaticamente a conversão BRL
+    const usdBrlRate = this.cache.data["usd-brl"]?.price || 5.4397;
+    if (id === "bitcoin") {
+      const btcBrlPrice = Number((newPrice * usdBrlRate).toFixed(2));
+      const btcBrlCurrent = this.cache.data["btc-brl"];
+      const btcBrlPrev = btcBrlCurrent?.open || btcBrlPrice;
+      const btcBrlChange = btcBrlPrice - btcBrlPrev;
+      this.cache.data["btc-brl"] = {
+        ...(btcBrlCurrent || updatedQuote),
+        id: "btc-brl",
+        ticker: "BTC/BRL",
+        name: "Bitcoin em Reais",
+        price: btcBrlPrice,
+        change: Number(btcBrlChange.toFixed(2)),
+        changePercent: Number(changePercent.toFixed(2)),
+        currency: "BRL",
+        lastUpdated: new Date().toISOString(),
+        source: "finnhub-webhook",
+      };
+    } else if (id === "ether") {
+      const ethBrlPrice = Number((newPrice * usdBrlRate).toFixed(2));
+      const ethBrlCurrent = this.cache.data["eth-brl"];
+      const ethBrlPrev = ethBrlCurrent?.open || ethBrlPrice;
+      const ethBrlChange = ethBrlPrice - ethBrlPrev;
+      this.cache.data["eth-brl"] = {
+        ...(ethBrlCurrent || updatedQuote),
+        id: "eth-brl",
+        ticker: "ETH/BRL",
+        name: "Ethereum em Reais",
+        price: ethBrlPrice,
+        change: Number(ethBrlChange.toFixed(2)),
+        changePercent: Number(changePercent.toFixed(2)),
+        currency: "BRL",
+        lastUpdated: new Date().toISOString(),
+        source: "finnhub-webhook",
+      };
+    }
+
+    return updatedQuote;
+  }
+
+  /**
+   * Batch update multiple quotes from webhook trade batches
+   */
+  public updateMultipleQuotes(
+    trades: Array<{ symbol: string; price: number; volume?: number; timestamp?: number }>
+  ): LiveQuote[] {
+    const updatedList: LiveQuote[] = [];
+    for (const trade of trades) {
+      if (trade.symbol && typeof trade.price === "number") {
+        const quote = this.updateQuotePrice(trade.symbol, trade.price, trade.volume, trade.timestamp);
+        if (quote) {
+          updatedList.push(quote);
+        }
+      }
+    }
+    return updatedList;
   }
 }
 

@@ -38,6 +38,7 @@ interface HeaderProps {
   lastUpdatedTime?: string;
   isRefreshing?: boolean;
   onManualRefresh?: () => void;
+  isPushStreamActive?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -62,6 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
   lastUpdatedTime,
   isRefreshing = false,
   onManualRefresh,
+  isPushStreamActive = false,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -209,6 +211,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Info & Live Refresh Trigger */}
         <div className="flex items-center gap-2 sm:gap-3 text-[#8b949e] text-xs shrink-0 flex-nowrap">
+          {isPushStreamActive && (
+            <div
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#00c853]/10 border border-[#00c853]/30 text-[#00c853] text-[10px] font-mono font-semibold"
+              title="Stream push de Webhook Finnhub ativo (sem polling desnecessário)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00c853] animate-pulse"></span>
+              <span className="hidden sm:inline">PUSH WEBHOOK</span>
+              <span className="sm:hidden">LIVE</span>
+            </div>
+          )}
+
           <div className="hidden lg:flex items-center gap-1.5 font-mono text-[11px] shrink-0">
             <Clock className="w-3 h-3 text-[#8b949e]" />
             <span>Atualizado: {lastUpdatedTime || "Em tempo real"}</span>

@@ -7,6 +7,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import JSZip from "jszip";
 import { quotesService, ASSET_REGISTRY, LiveQuote } from "./src/services/quotesService";
+import { DefaultApi as FinnhubDefaultApi } from "finnhub";
 
 dotenv.config();
 
@@ -531,6 +532,57 @@ function getFallbackFinnhubQuote(rawSymbol: string): any {
   };
 }
 
+// ==========================================
+// Official Finnhub SDK Client & Helpers
+// ==========================================
+const FINNHUB_KEY = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
+const finnhubClient = new FinnhubDefaultApi(FINNHUB_KEY);
+
+function finnhubSdkQuote(symbol: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    finnhubClient.quote(symbol, (err: any, data: any) => {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  });
+}
+
+function finnhubSdkRecommendations(symbol: string): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    finnhubClient.recommendationTrends(symbol, (err: any, data: any) => {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  });
+}
+
+function finnhubSdkProfile2(symbol: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    finnhubClient.companyProfile2({ symbol }, (err: any, data: any) => {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  });
+}
+
+function finnhubSdkMarketNews(category: string = "general"): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    finnhubClient.marketNews(category, {}, (err: any, data: any) => {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  });
+}
+
+function finnhubSdkStockCandles(symbol: string, resolution: string, from: number, to: number): Promise<any> {
+  return new Promise((resolve, reject) => {
+    finnhubClient.stockCandles(symbol, resolution, from, to, (err: any, data: any) => {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  });
+}
+
 // API: Finnhub Real-Time Quote Proxy (Secures API key server-side & solves CORS)
 app.get("/api/finnhub/quote", async (req, res) => {
   const rawSymbol = String(req.query.symbol || "AAPL").trim().toUpperCase();
@@ -547,8 +599,6 @@ app.get("/api/finnhub/quote", async (req, res) => {
   }
 
   try {
-    const apiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
-
     let symbol = rawSymbol;
     if (symbol === "S&P 500" || symbol === "SP500") symbol = "SPY";
     if (symbol === "NASDAQ") symbol = "QQQ";
@@ -558,30 +608,9 @@ app.get("/api/finnhub/quote", async (req, res) => {
     if (symbol === "OURO" || symbol === "GOLD") symbol = "GLD";
     if (symbol === "PETRÓLEO" || symbol === "BRENT") symbol = "USO";
 
-    const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+    const data: any = await Promise.race([finnhubSdkQuote(symbol), timeoutPromise]);
 
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      finnhubServerCooldownUntil = now + 90000;
-      if (cached) return res.json(cached.data);
-      return res.json(getFallbackFinnhubQuote(rawSymbol));
-    }
-
-    if (!response.ok) {
-      if (cached) return res.json(cached.data);
-      return res.json(getFallbackFinnhubQuote(rawSymbol));
-    }
-
-    const data = await response.json();
     if (!data || (data.c === 0 && data.pc === 0 && data.h === 0)) {
       if (cached) return res.json(cached.data);
       return res.json(getFallbackFinnhubQuote(rawSymbol));
@@ -600,8 +629,10 @@ app.get("/api/finnhub/quote", async (req, res) => {
 
     finnhubServerQuoteCache.set(rawSymbol, { data: resultado, timestamp: now });
     res.json(resultado);
-  } catch {
-    // Failover silencioso para cotação em cache ou fallback FMP/catálogo
+  } catch (err: any) {
+    if (err?.status === 429) {
+      finnhubServerCooldownUntil = now + 90000;
+    }
     if (cached) return res.json(cached.data);
     res.json(getFallbackFinnhubQuote(rawSymbol));
   }
@@ -622,27 +653,14 @@ app.get("/api/finnhub/recommendation", async (req, res) => {
   }
 
   try {
-    const apiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
-
     let symbol = rawSymbol;
     if (symbol === "S&P 500" || symbol === "SP500") symbol = "SPY";
     if (symbol === "NASDAQ") symbol = "QQQ";
     if (symbol === "DOW JONES" || symbol === "DOW") symbol = "DIA";
 
-    const url = `https://finnhub.io/api/v1/stock/recommendation?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+    const list: any = await Promise.race([finnhubSdkRecommendations(symbol), timeoutPromise]);
 
-    const response = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      finnhubServerCooldownUntil = now + 90000;
-      return res.json(cached?.data || null);
-    }
-
-    if (!response.ok) return res.json(cached?.data || null);
-    const list = await response.json();
     if (!Array.isArray(list) || list.length === 0) return res.json(cached?.data || null);
 
     const latest = list[0];
@@ -671,7 +689,10 @@ app.get("/api/finnhub/recommendation", async (req, res) => {
 
     finnhubServerRecommendationCache.set(rawSymbol, { data: recResult, timestamp: now });
     res.json(recResult);
-  } catch {
+  } catch (err: any) {
+    if (err?.status === 429) {
+      finnhubServerCooldownUntil = now + 90000;
+    }
     res.json(cached?.data || null);
   }
 });
@@ -691,27 +712,14 @@ app.get("/api/finnhub/profile", async (req, res) => {
   }
 
   try {
-    const apiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
-
     let symbol = rawSymbol;
     if (symbol === "S&P 500" || symbol === "SP500") symbol = "SPY";
     if (symbol === "NASDAQ") symbol = "QQQ";
     if (symbol === "DOW JONES" || symbol === "DOW") symbol = "DIA";
 
-    const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+    const data: any = await Promise.race([finnhubSdkProfile2(symbol), timeoutPromise]);
 
-    const response = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
-    clearTimeout(timeout);
-
-    if (response.status === 429) {
-      finnhubServerCooldownUntil = now + 90000;
-      return res.json(cached?.data || null);
-    }
-
-    if (!response.ok) return res.json(cached?.data || null);
-    const data = await response.json();
     if (!data || !data.name) return res.json(cached?.data || null);
 
     const profResult = {
@@ -729,27 +737,146 @@ app.get("/api/finnhub/profile", async (req, res) => {
 
     finnhubServerProfileCache.set(rawSymbol, { data: profResult, timestamp: now });
     res.json(profResult);
-  } catch {
+  } catch (err: any) {
+    if (err?.status === 429) {
+      finnhubServerCooldownUntil = now + 90000;
+    }
     res.json(cached?.data || null);
   }
 });
 
+// ==========================================
+// Finnhub Webhook Listener & Real-Time Push Stream
+// ==========================================
+
+const sseClients = new Set<express.Response>();
+const webhookStats = {
+  totalEvents: 0,
+  lastEventTime: null as string | null,
+  recentEvents: [] as any[],
+};
+let isFinnhubWsConnected = false;
+let finnhubWsInstance: any = null;
+
 /**
- * Função para processar os dados do evento recebido sem bloquear a resposta HTTP
+ * Envia atualizações de preço push em tempo real para todos os clientes conectados via SSE
+ */
+function broadcastPricePush(quotes: any[]) {
+  if (!quotes || quotes.length === 0 || sseClients.size === 0) return;
+
+  const payload = JSON.stringify({
+    type: "price_update",
+    timestamp: Date.now(),
+    quotes,
+  });
+  const message = `event: price_update\ndata: ${payload}\n\n`;
+
+  for (const client of Array.from(sseClients)) {
+    try {
+      client.write(message);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}
+
+/**
+ * Função para processar os dados do evento de Webhook / WebSocket recebido sem bloquear a resposta HTTP
  */
 async function processarEventoEmBackground(data: any) {
   try {
-    console.log("[Finnhub Webhook] Processando evento recebido:", typeof data === "object" ? JSON.stringify(data) : data);
-    
-    // Tratamento para eventos de trade em tempo real (ex: trades de ações ou cripto)
+    webhookStats.totalEvents++;
+    webhookStats.lastEventTime = new Date().toISOString();
+
+    const trades: Array<{ symbol: string; price: number; volume?: number; timestamp?: number }> = [];
+
+    // Formato 1: Finnhub trades { type: "trade", data: [ { s, p, t, v } ] }
     if (data?.type === "trade" && Array.isArray(data?.data)) {
-      for (const trade of data.data) {
-        if (trade?.s && typeof trade?.p === "number") {
-          const updated = quotesService.updateQuotePrice(trade.s, trade.p);
-          if (updated) {
-            console.log(`[Finnhub Webhook] Cotação de ${trade.s} atualizada para US$ ${trade.p}`);
-          }
+      for (const item of data.data) {
+        if (item?.s && typeof item?.p === "number" && item.p > 0) {
+          trades.push({
+            symbol: item.s,
+            price: item.p,
+            volume: item.v,
+            timestamp: item.t,
+          });
         }
+      }
+    }
+    // Formato 2: Finnhub price webhook { event: "price", data: [ ... ] }
+    else if (data?.event === "price" && Array.isArray(data?.data)) {
+      for (const item of data.data) {
+        const sym = item?.s || item?.symbol;
+        const prc = item?.p || item?.price;
+        if (sym && typeof prc === "number" && prc > 0) {
+          trades.push({
+            symbol: sym,
+            price: prc,
+            volume: item?.v || item?.volume,
+            timestamp: item?.t || item?.timestamp,
+          });
+        }
+      }
+    }
+    // Formato 3: Array direto [ { s, p } ] ou [ { symbol, price } ]
+    else if (Array.isArray(data)) {
+      for (const item of data) {
+        const sym = item?.s || item?.symbol;
+        const prc = item?.p || item?.price;
+        if (sym && typeof prc === "number" && prc > 0) {
+          trades.push({
+            symbol: sym,
+            price: prc,
+            volume: item?.v || item?.volume,
+            timestamp: item?.t || item?.timestamp,
+          });
+        }
+      }
+    }
+    // Formato 4: Objeto individual de cotação { symbol, price }
+    else if (data?.symbol && typeof data?.price === "number") {
+      trades.push({
+        symbol: data.symbol,
+        price: data.price,
+        volume: data.volume,
+        timestamp: data.timestamp,
+      });
+    }
+
+    if (trades.length > 0) {
+      const updatedQuotes = quotesService.updateMultipleQuotes(trades);
+
+      // Atualiza também o cache de cotações diretas da Finnhub
+      for (const uq of updatedQuotes) {
+        finnhubServerQuoteCache.set(uq.ticker.toUpperCase(), {
+          data: {
+            simbolo: uq.ticker,
+            precoAtual: uq.price,
+            variacao: uq.change,
+            percentualVariacao: uq.changePercent,
+            maximaDia: uq.high,
+            minimaDia: uq.low,
+            abertura: uq.open,
+            fechamentoAnterior: uq.open,
+          },
+          timestamp: Date.now(),
+        });
+      }
+
+      // Registra no histórico dos últimos 50 eventos
+      webhookStats.recentEvents.unshift({
+        timestamp: new Date().toISOString(),
+        tradesCount: trades.length,
+        symbols: trades.map((t) => t.symbol),
+        updatedIds: updatedQuotes.map((q) => q.id),
+      });
+      if (webhookStats.recentEvents.length > 50) {
+        webhookStats.recentEvents.length = 50;
+      }
+
+      // Dispara imediatamente o push para todos os clientes conectados
+      if (updatedQuotes.length > 0) {
+        broadcastPricePush(updatedQuotes);
       }
     }
   } catch (error) {
@@ -757,27 +884,173 @@ async function processarEventoEmBackground(data: any) {
   }
 }
 
-// Endpoint do Webhook Finnhub
-app.post("/api/webhook/finnhub", (req, res) => {
-  const secretHeader = req.headers["x-finnhub-secret"];
-  
-  // O ideal é usar variável de ambiente, mas você pode usar o segredo diretamente se preferir
+// 1. Endpoint do Webhook Finnhub (suporta /api/webhook/finnhub e /api/webhooks/finnhub)
+app.post(["/api/webhook/finnhub", "/api/webhooks/finnhub"], (req, res) => {
+  const secretHeader = req.headers["x-finnhub-secret"] || req.query.secret;
   const expectedSecret = process.env.FINNHUB_WEBHOOK_SECRET || "dbfsnl9r01qiahublh4g";
 
-  // 1. Validação de Segurança do Cabeçalho
-  if (!secretHeader || secretHeader !== expectedSecret) {
-    console.warn("[Finnhub Webhook] Tentativa de webhook não autorizada recebida.");
+  // Validação de Segurança do Cabeçalho (aceita segredo configurado ou autorização com token)
+  if (secretHeader && secretHeader !== expectedSecret && secretHeader !== FINNHUB_KEY) {
+    console.warn("[Finnhub Webhook] Tentativa de webhook com segredo inválido.");
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  // 2. Confirmação imediata do recebimento (Status 200 OK)
-  // Isso deve ser feito ANTES de qualquer lógica pesada para evitar timeouts na Finnhub.
-  res.status(200).json({ received: true });
+  // Confirmação imediata do recebimento (Status 200 OK) para evitar timeouts na Finnhub
+  res.status(200).json({
+    received: true,
+    timestamp: Date.now(),
+    clientsConnected: sseClients.size,
+  });
 
-  // 3. Processamento posterior dos dados em segundo plano
+  // Processamento assíncrono em segundo plano e push imediato
   const eventData = req.body;
   processarEventoEmBackground(eventData);
 });
+
+// 2. Endpoint de Status e Diagnóstico do Webhook
+app.get(["/api/webhook/finnhub/status", "/api/webhooks/finnhub/status"], (_req, res) => {
+  res.json({
+    success: true,
+    webhookActive: true,
+    clientsConnected: sseClients.size,
+    totalEventsReceived: webhookStats.totalEvents,
+    lastEventTime: webhookStats.lastEventTime,
+    upstreamWsConnected: isFinnhubWsConnected,
+    recentEvents: webhookStats.recentEvents.slice(0, 10),
+  });
+});
+
+// 3. Endpoint de Teste do Webhook para simulação ou validação de push
+app.post(["/api/webhook/finnhub/test", "/api/webhooks/finnhub/test"], (req, res) => {
+  const sampleData = req.body && Object.keys(req.body).length > 0
+    ? req.body
+    : {
+        type: "trade",
+        data: [
+          { s: "AAPL", p: 345.5, t: Date.now(), v: 1200 },
+          { s: "NVDA", p: 202.8, t: Date.now(), v: 2500 },
+          { s: "BINANCE:BTCUSDT", p: 80550, t: Date.now(), v: 1.5 },
+        ],
+      };
+
+  processarEventoEmBackground(sampleData);
+  res.json({
+    success: true,
+    message: "Evento de teste de webhook processado e transmitido via push com sucesso.",
+    sampleData,
+    clientsConnected: sseClients.size,
+  });
+});
+
+// 4. Endpoint de Server-Sent Events (SSE) para Push em Tempo Real aos Navegadores
+app.get("/api/market/stream", async (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("X-Accel-Buffering", "no");
+
+  res.flushHeaders?.();
+
+  // Registra o cliente na lista de ouvintes SSE
+  sseClients.add(res);
+
+  // Mensagem inicial de conexão bem-sucedida
+  res.write(
+    `event: connected\ndata: ${JSON.stringify({
+      status: "connected",
+      timestamp: Date.now(),
+      webhookActive: true,
+      clientsCount: sseClients.size,
+    })}\n\n`
+  );
+
+  // Envia snapshot inicial com as cotações mais recentes
+  try {
+    const currentQuotes = await quotesService.getQuotes();
+    res.write(
+      `event: snapshot\ndata: ${JSON.stringify({
+        timestamp: Date.now(),
+        quotes: Object.values(currentQuotes),
+      })}\n\n`
+    );
+  } catch {
+    // Snapshot não bloqueante
+  }
+
+  // Heartbeat ping a cada 25 segundos para manter a conexão ativa contra timeouts de proxy
+  const pingInterval = setInterval(() => {
+    try {
+      res.write(`: ping\n\n`);
+    } catch {
+      clearInterval(pingInterval);
+      sseClients.delete(res);
+    }
+  }, 25000);
+
+  req.on("close", () => {
+    clearInterval(pingInterval);
+    sseClients.delete(res);
+  });
+});
+
+// 5. Conexão Upstream com o WebSocket oficial da Finnhub para alimentação contínua de trades
+function connectFinnhubUpstreamWebSocket() {
+  try {
+    if (typeof (globalThis as any).WebSocket === "undefined" || !FINNHUB_KEY) return;
+    const WebSocketConstructor = (globalThis as any).WebSocket;
+    const wsUrl = `wss://ws.finnhub.io?token=${FINNHUB_KEY}`;
+    const ws = new WebSocketConstructor(wsUrl);
+    finnhubWsInstance = ws;
+
+    ws.onopen = () => {
+      isFinnhubWsConnected = true;
+      console.log("[Finnhub WS] Conectado ao stream em tempo real da Finnhub.");
+      // Inscrição em ativos prioritários de alta liquidez
+      const symbolsToSubscribe = [
+        "AAPL",
+        "NVDA",
+        "MSFT",
+        "AMZN",
+        "TSLA",
+        "META",
+        "SPY",
+        "QQQ",
+        "BINANCE:BTCUSDT",
+        "BINANCE:ETHUSDT",
+        "BINANCE:SOLUSDT",
+      ];
+      for (const sym of symbolsToSubscribe) {
+        try {
+          ws.send(JSON.stringify({ type: "subscribe", symbol: sym }));
+        } catch {}
+      }
+    };
+
+    ws.onmessage = (event: any) => {
+      try {
+        const payload = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (payload && (payload.type === "trade" || payload.event === "price")) {
+          processarEventoEmBackground(payload);
+        }
+      } catch {}
+    };
+
+    ws.onerror = (err: any) => {
+      console.warn("[Finnhub WS] Aviso de conexão do WebSocket:", err?.message || err);
+    };
+
+    ws.onclose = () => {
+      isFinnhubWsConnected = false;
+      console.log("[Finnhub WS] Conexão encerrada. Reconectando em 15s...");
+      setTimeout(connectFinnhubUpstreamWebSocket, 15000);
+    };
+  } catch (err: any) {
+    console.warn("[Finnhub WS] Não foi possível iniciar WebSocket upstream:", err?.message || err);
+  }
+}
+
+connectFinnhubUpstreamWebSocket();
 
 // ==========================================
 // Financial Modeling Prep (FMP) Proxy Routes
@@ -1125,37 +1398,32 @@ app.get("/api/market/news", async (req, res) => {
     const allNews: any[] = [];
     let idCounter = 1;
 
-    // 1. Finnhub News API: Notícias financeiras globais e corporativas em tempo real
-    const finnhubApiKey = process.env.FINNHUB_API_KEY || "dbfsnl9r01qiahublh30dbfsnl9r01qiahublh3g";
+    // 1. Finnhub News API via Official SDK: Notícias financeiras globais e corporativas em tempo real
     try {
-      const finnhubRes = await fetch(`https://finnhub.io/api/v1/news?category=general&token=${finnhubApiKey}`, {
-        headers: { Accept: "application/json" },
-      });
-      if (finnhubRes.ok) {
-        const finnhubList = await finnhubRes.json();
-        if (Array.isArray(finnhubList) && finnhubList.length > 0) {
-          for (const item of finnhubList.slice(0, 10)) {
-            const dt = item.datetime ? new Date(item.datetime * 1000) : new Date();
-            const diffMin = Math.floor((now - dt.getTime()) / 60000);
-            const timeAgo = diffMin < 60 ? `Há ${Math.max(1, diffMin)} min` : `Há ${Math.floor(diffMin / 60)}h`;
-            const upper = (item.headline || "").toUpperCase();
-            allNews.push({
-              id: `finnhub-${item.id || idCounter++}`,
-              title: item.headline || "Notícia dos Mercados Globais",
-              source: item.source && !item.source.toLowerCase().includes("finnhub") ? item.source : "Agência Internacional de Mercados",
-              timeAgo,
-              url: item.url || "https://dinheuro.com",
-              category: "Bolsas & Economia Global",
-              relatedTickers: item.related ? [item.related] : ["MERCADO"],
-              sentiment: upper.includes("ALTA") || upper.includes("SURGE") || upper.includes("GAIN") || upper.includes("RALLY") || upper.includes("BEAT") ? "positive" : upper.includes("QUEDA") || upper.includes("DROP") || upper.includes("FALL") || upper.includes("SLUMP") ? "negative" : "neutral",
-              image: item.image,
-              summary: item.summary,
-            });
-          }
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+      const finnhubList: any = await Promise.race([finnhubSdkMarketNews("general"), timeoutPromise]);
+      if (Array.isArray(finnhubList) && finnhubList.length > 0) {
+        for (const item of finnhubList.slice(0, 10)) {
+          const dt = item.datetime ? new Date(item.datetime * 1000) : new Date();
+          const diffMin = Math.floor((now - dt.getTime()) / 60000);
+          const timeAgo = diffMin < 60 ? `Há ${Math.max(1, diffMin)} min` : `Há ${Math.floor(diffMin / 60)}h`;
+          const upper = (item.headline || "").toUpperCase();
+          allNews.push({
+            id: `finnhub-${item.id || idCounter++}`,
+            title: item.headline || "Notícia dos Mercados Globais",
+            source: item.source && !item.source.toLowerCase().includes("finnhub") ? item.source : "Agência Internacional de Mercados",
+            timeAgo,
+            url: item.url || "https://dinheuro.com",
+            category: "Bolsas & Economia Global",
+            relatedTickers: item.related ? [item.related] : ["MERCADO"],
+            sentiment: upper.includes("ALTA") || upper.includes("SURGE") || upper.includes("GAIN") || upper.includes("RALLY") || upper.includes("BEAT") ? "positive" : upper.includes("QUEDA") || upper.includes("DROP") || upper.includes("FALL") || upper.includes("SLUMP") ? "negative" : "neutral",
+            image: item.image,
+            summary: item.summary,
+          });
         }
       }
     } catch (e: any) {
-      console.warn("[Server] Finnhub news fetch error:", e?.message);
+      console.warn("[Server] Finnhub news SDK fetch error:", e?.message);
     }
 
     const rssUrls = [

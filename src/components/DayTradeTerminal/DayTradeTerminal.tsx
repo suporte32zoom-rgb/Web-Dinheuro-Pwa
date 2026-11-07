@@ -22,6 +22,7 @@ import { RiskManagementModal } from "./RiskManagementModal";
 import { BrokerApiModal } from "./BrokerApiModal";
 import { IntradayCandleChart } from "./IntradayCandleChart";
 import { FixedIncomeAndDerivativesView } from "./FixedIncomeAndDerivativesView";
+import { marketStreamService } from "../../services/marketStreamService";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -312,6 +313,32 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
 
     return () => clearInterval(timer);
   }, [currentAsset.price, currentAsset.ticker]);
+
+  // Listen for real-time pushed trade ticks from Finnhub Webhook stream
+  useEffect(() => {
+    const unsub = marketStreamService.subscribePriceUpdates((quotes) => {
+      const match = quotes.find(
+        (q) =>
+          q.ticker?.toUpperCase() === currentAsset.ticker.toUpperCase() ||
+          q.id?.toLowerCase() === currentAsset.id?.toLowerCase()
+      );
+      if (match && match.price > 0) {
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}.${String(Math.floor(now.getMilliseconds() / 10)).padStart(2, "0")}`;
+        const newTrade: TimesAndTradesItem = {
+          id: `push-${Date.now()}`,
+          time: timeStr,
+          price: match.price,
+          quantity: Math.floor(Math.random() * 50) + 10,
+          aggressor: match.change >= 0 ? "BUY" : "SELL",
+          buyerBroker: "Institutional Flow",
+          sellerBroker: "Market Liquidity",
+        };
+        setTradesFeed((prev) => [newTrade, ...prev.slice(0, 45)]);
+      }
+    });
+    return unsub;
+  }, [currentAsset.ticker, currentAsset.id]);
 
   // If Renda Fixa & Derivativos tab is selected, render dedicated Fixed Income view
   if (activeTab === "Renda Fixa & Derivativos") {

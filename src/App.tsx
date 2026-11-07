@@ -15,6 +15,7 @@ import {
   LiveQuotePayload,
 } from "./services/marketDataService";
 import { getStoredQuotes } from "./services/apiService";
+import { marketStreamService } from "./services/marketStreamService";
 import { Header } from "./components/Header";
 import { NavigationTabs } from "./components/NavigationTabs";
 import { SectorFilterBar } from "./components/SectorFilterBar";
@@ -171,6 +172,9 @@ export default function App() {
     return unsub;
   }, []);
 
+  // Finnhub Webhook & Real-Time Push Stream Connection State
+  const [isPushStreamActive, setIsPushStreamActive] = useState(false);
+
   // Listen for Service Worker push notification clicks to deep-link into assets
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -294,14 +298,56 @@ export default function App() {
     }
   }, [mergeQuotesIntoAssets]);
 
-  // Initial load and periodic polling every 15 seconds
+  // Finnhub Webhook & Real-Time Push Stream (elimina polling agressivo de 15s)
   useEffect(() => {
+    // 1. Carga inicial dos dados de mercado
     refreshAllMarketData();
-    const interval = setInterval(() => {
-      refreshAllMarketData();
+
+    // 2. Inscrição no canal Push em tempo real (Finnhub Webhook Listener + Server-Sent Events)
+    const unsubQuotes = marketStreamService.subscribePriceUpdates((pushedQuotes) => {
+      if (Array.isArray(pushedQuotes) && pushedQuotes.length > 0) {
+        const quotesMap: Record<string, LiveQuotePayload> = {};
+        for (const q of pushedQuotes) {
+          quotesMap[q.id] = q;
+        }
+        mergeQuotesIntoAssets(quotesMap);
+        setLastUpdatedTime(
+          new Date().toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })
+        );
+      }
+    });
+
+    // 3. Monitoramento da conexão de push/webhook
+    const unsubStatus = marketStreamService.subscribeStatus((connected) => {
+      setIsPushStreamActive(connected);
+    });
+
+    // 4. Contingência inteligente:
+    // Se o push estiver ATIVO, NÃO executa polling a cada 15s. Apenas reconciliação passiva (a cada 5 min).
+    // Se o push cair (ou rodando estático sem Node), mantém fallback a cada 15s.
+    const contingencyInterval = setInterval(() => {
+      if (!marketStreamService.isConnected()) {
+        refreshAllMarketData();
+      }
     }, 15000);
-    return () => clearInterval(interval);
-  }, [refreshAllMarketData]);
+
+    const passiveReconciliationInterval = setInterval(() => {
+      if (marketStreamService.isConnected()) {
+        refreshAllMarketData();
+      }
+    }, 300000); // 5 minutos de reconciliação em background
+
+    return () => {
+      unsubQuotes();
+      unsubStatus();
+      clearInterval(contingencyInterval);
+      clearInterval(passiveReconciliationInterval);
+    };
+  }, [refreshAllMarketData, mergeQuotesIntoAssets]);
 
   // Watchlist state (Local Storage persisted - defaults to empty: zero pre-selected items)
   const [watchlistIds, setWatchlistIds] = useState<string[]>(() => {
@@ -560,6 +606,7 @@ export default function App() {
         lastUpdatedTime={lastUpdatedTime}
         isRefreshing={isRefreshing}
         onManualRefresh={refreshAllMarketData}
+        isPushStreamActive={isPushStreamActive}
       />
 
       {/* Main Content Area */}
