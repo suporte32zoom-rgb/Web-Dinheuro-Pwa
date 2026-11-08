@@ -49,6 +49,27 @@
   </head>
   <body class="bg-[#0e1117] text-[#e6edf3]">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Registro Defensivo e Assíncrono do Service Worker para PWA sem travamentos -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          try {
+            navigator.serviceWorker
+              .register('./sw.js', { scope: './' })
+              .then(function (reg) {
+                console.log('[PWA] Service Worker registrado com sucesso (dinheuro-v2-cache):', reg.scope);
+              })
+              .catch(function (err) {
+                console.warn('[PWA] Registro defensivo do Service Worker ignorado:', err);
+              });
+          } catch (e) {
+            console.warn('[PWA] Erro defensivo ao registrar:', e);
+          }
+        });
+      }
+    </script>
+
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>

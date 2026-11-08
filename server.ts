@@ -884,27 +884,48 @@ async function processarEventoEmBackground(data: any) {
   }
 }
 
-// 1. Endpoint do Webhook Finnhub (suporta /api/webhook/finnhub e /api/webhooks/finnhub)
-app.post(["/api/webhook/finnhub", "/api/webhooks/finnhub"], (req, res) => {
-  const secretHeader = req.headers["x-finnhub-secret"] || req.query.secret;
-  const expectedSecret = process.env.FINNHUB_WEBHOOK_SECRET || "dbfsnl9r01qiahublh4g";
+// 1. Endpoint do Webhook Finnhub (suporta URL raiz https://www.dinheuro.com.br, /webhook e rotas /api/webhook/finnhub)
+app.post(
+  ["/", "/webhook", "/webhooks", "/api/webhook", "/api/webhook/finnhub", "/api/webhooks/finnhub"],
+  (req, res) => {
+    const secretHeader =
+      req.headers["x-finnhub-secret"] ||
+      (req.headers as any)["X-Finnhub-Secret"] ||
+      req.query.secret;
+    const expectedSecret = process.env.FINNHUB_WEBHOOK_SECRET || "dbfsnl9r01qiahublh4g";
 
-  // Validação de Segurança do Cabeçalho (aceita segredo configurado ou autorização com token)
-  if (secretHeader && secretHeader !== expectedSecret && secretHeader !== FINNHUB_KEY) {
-    console.warn("[Finnhub Webhook] Tentativa de webhook com segredo inválido.");
-    return res.status(401).json({ error: "Unauthorized" });
+    // Validação de Segurança do Cabeçalho (aceita o segredo exato dbfsnl9r01qiahublh4g ou chave da API)
+    if (secretHeader && secretHeader !== expectedSecret && secretHeader !== FINNHUB_KEY) {
+      console.warn("[Finnhub Webhook] Tentativa de webhook com segredo inválido:", secretHeader);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // CONFIRMAÇÃO IMEDIATA DO EVENTO (HTTP 200 OK) ANTES DE QUALQUER LÓGICA
+    // Garante resposta instantânea (< 5ms) para evitar timeouts na Finnhub e evitar desativação do endpoint
+    res.status(200).json({
+      received: true,
+      status: "ok",
+      code: 200,
+      timestamp: Date.now(),
+      clientsConnected: sseClients.size,
+    });
+
+    // Processamento posterior completamente assíncrono em segundo plano
+    const eventData = req.body;
+    setImmediate(() => {
+      processarEventoEmBackground(eventData);
+    });
   }
+);
 
-  // Confirmação imediata do recebimento (Status 200 OK) para evitar timeouts na Finnhub
+// Verificação de URL e healthcheck para o Webhook Finnhub
+app.get(["/api/webhook/finnhub", "/api/webhooks/finnhub", "/webhook"], (_req, res) => {
   res.status(200).json({
-    received: true,
-    timestamp: Date.now(),
-    clientsConnected: sseClients.size,
+    status: "active",
+    webhook: "Finnhub Listener Online",
+    domain: "https://www.dinheuro.com.br",
+    timestamp: new Date().toISOString(),
   });
-
-  // Processamento assíncrono em segundo plano e push imediato
-  const eventData = req.body;
-  processarEventoEmBackground(eventData);
 });
 
 // 2. Endpoint de Status e Diagnóstico do Webhook

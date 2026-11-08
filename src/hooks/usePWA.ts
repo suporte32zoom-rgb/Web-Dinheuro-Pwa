@@ -78,14 +78,10 @@ export function usePWA() {
               }
             });
 
-            // Listen for controllerchange
-            let refreshing = false;
+            // Listen for controllerchange without forcing page reload
             navigator.serviceWorker.addEventListener("controllerchange", () => {
               console.log("[PWA] Service Worker controller changed - new version active");
-              if (!refreshing) {
-                refreshing = true;
-                window.location.reload();
-              }
+              setHasUpdate(false);
             });
           })
           .catch((error) => {
@@ -149,7 +145,7 @@ export function usePWA() {
     if (swRegistration && swRegistration.waiting) {
       swRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
     }
-    window.location.reload();
+    setHasUpdate(false);
   }, [swRegistration]);
 
   return {

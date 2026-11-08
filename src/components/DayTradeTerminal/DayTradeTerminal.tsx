@@ -39,6 +39,12 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  Maximize2,
+  Minimize2,
+  PanelRightClose,
+  PanelRightOpen,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface DayTradeTerminalProps {
@@ -47,16 +53,26 @@ interface DayTradeTerminalProps {
   onSelectTab?: (tab: RegionalTab) => void;
 }
 
-// Preset Quick Trading Assets with underlying IDs for live binding
+// Preset Quick Trading Assets with underlying IDs for live binding and category tagging
+const MARKET_CATEGORIES = [
+  { id: "ALL", label: "Todos" },
+  { id: "FUTURES", label: "Futuros B3" },
+  { id: "B3", label: "Ações B3" },
+  { id: "GLOBAL", label: "Global / US" },
+  { id: "CRYPTO", label: "Cripto" },
+];
+
 const QUICK_TRADING_TICKERS = [
-  { id: "win", ticker: "WIN$", name: "Mini Índice Futuro B3", underlyingId: "ibovespa", defaultPrice: 167540.0, currency: "pts" },
-  { id: "wdo", ticker: "WDO$", name: "Mini Dólar Futuro B3", underlyingId: "usd-brl", defaultPrice: 5459.6, currency: "BRL" },
-  { id: "petr4", ticker: "PETR4", name: "Petrobras PN", underlyingId: "petr4", defaultPrice: 47.28, currency: "BRL" },
-  { id: "vale3", ticker: "VALE3", name: "Vale ON", underlyingId: "vale3", defaultPrice: 62.43, currency: "BRL" },
-  { id: "itub4", ticker: "ITUB4", name: "Itaú Unibanco PN", underlyingId: "itub4", defaultPrice: 39.71, currency: "BRL" },
-  { id: "bitcoin", ticker: "BTC", name: "Bitcoin Spot", underlyingId: "bitcoin", defaultPrice: 80112.0, currency: "USD" },
-  { id: "sp-500", ticker: "S&P 500", name: "S&P 500 Futuro", underlyingId: "sp-500", defaultPrice: 7688.62, currency: "USD" },
-  { id: "nvda", ticker: "NVDA", name: "NVIDIA Corp", underlyingId: "nvda", defaultPrice: 200.24, currency: "USD" },
+  { id: "win", ticker: "WIN$", name: "Mini Índice Futuro B3", underlyingId: "ibovespa", defaultPrice: 167540.0, currency: "pts", category: "FUTURES" },
+  { id: "wdo", ticker: "WDO$", name: "Mini Dólar Futuro B3", underlyingId: "usd-brl", defaultPrice: 5459.6, currency: "BRL", category: "FUTURES" },
+  { id: "petr4", ticker: "PETR4", name: "Petrobras PN", underlyingId: "petr4", defaultPrice: 47.28, currency: "BRL", category: "B3" },
+  { id: "vale3", ticker: "VALE3", name: "Vale ON", underlyingId: "vale3", defaultPrice: 62.43, currency: "BRL", category: "B3" },
+  { id: "itub4", ticker: "ITUB4", name: "Itaú Unibanco PN", underlyingId: "itub4", defaultPrice: 39.71, currency: "BRL", category: "B3" },
+  { id: "sp-500", ticker: "S&P 500", name: "S&P 500 Futuro", underlyingId: "sp-500", defaultPrice: 7688.62, currency: "USD", category: "GLOBAL" },
+  { id: "nvda", ticker: "NVDA", name: "NVIDIA Corp", underlyingId: "nvda", defaultPrice: 200.24, currency: "USD", category: "GLOBAL" },
+  { id: "aapl", ticker: "AAPL", name: "Apple Inc", underlyingId: "aapl", defaultPrice: 258.40, currency: "USD", category: "GLOBAL" },
+  { id: "bitcoin", ticker: "BTC", name: "Bitcoin Spot", underlyingId: "bitcoin", defaultPrice: 80112.0, currency: "USD", category: "CRYPTO" },
+  { id: "eth", ticker: "ETH", name: "Ethereum", underlyingId: "eth", defaultPrice: 3120.0, currency: "USD", category: "CRYPTO" },
 ];
 
 type DeskSubTab = "chart" | "tape" | "dom" | "indicators" | "strategies";
@@ -103,6 +119,10 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
     });
     return unsub;
   }, []);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [isWidescreenChart, setIsWidescreenChart] = useState(false);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
 
   // Helper to resolve live quote for quick trading tickers
   const getTickerLiveQuote = (item: typeof QUICK_TRADING_TICKERS[0]) => {
@@ -417,38 +437,75 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
 
         {/* CENTER + RIGHT DESK (Split View) */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0 p-1.5 gap-1.5">
-          {/* CENTER COLUMN: Central Viewport + Lower Performance Dashboard */}
-          <div className="flex-1 flex flex-col gap-1.5 overflow-hidden min-h-0">
-            {/* Asset Selector & Functional Sub-Tabs Control Strip */}
-            <div className="bg-[#161b22] border border-[#30363d] rounded-xl px-2 py-1.5 flex flex-wrap items-center justify-between gap-1.5 shrink-0 shadow-xs">
-              {/* Asset Selectors */}
-              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
-                {QUICK_TRADING_TICKERS.map((t) => {
-                  const isSelected = selectedTicker === t.ticker;
-                  const liveInfo = getTickerLiveQuote(t);
-                  return (
-                    <button
-                      key={t.ticker}
-                      type="button"
-                      onClick={() => {
-                        setSelectedTicker(t.ticker);
-                        setSelectedDomPrice(undefined);
-                      }}
-                      className={`px-2 py-0.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
-                        isSelected
-                          ? "bg-[#21262d] text-[#58a6ff] border border-[#58a6ff] shadow-xs font-bold"
-                          : "bg-[#0e1117] text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d]/60 border border-[#30363d]"
-                      }`}
-                    >
-                      <span>{t.ticker}</span>
-                      <span className="text-[10px] font-mono opacity-80">
+          {/* LEFT MINI-DOCK: Categories & Quick Tickers Selector (Alongside Chart) */}
+          <div className="hidden md:flex flex-col w-[170px] lg:w-[190px] bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden shrink-0 shadow-md">
+            {/* Category Filter Chips Header */}
+            <div className="p-2 border-b border-[#21262d] bg-[#0e1117] shrink-0">
+              <span className="text-[10px] font-bold text-[#8b949e] uppercase tracking-wider block mb-1.5">
+                Categorias
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {MARKET_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold transition-all cursor-pointer ${
+                      selectedCategory === cat.id
+                        ? "bg-[#58a6ff] text-white font-bold shadow-xs"
+                        : "bg-[#21262d] text-[#8b949e] hover:text-white"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Tickers List */}
+            <div className="flex-1 overflow-y-auto scrollbar-none p-1.5 flex flex-col gap-1">
+              {QUICK_TRADING_TICKERS.filter(
+                (t) => selectedCategory === "ALL" || t.category === selectedCategory
+              ).map((t) => {
+                const isSelected = selectedTicker === t.ticker;
+                const liveInfo = getTickerLiveQuote(t);
+                const isPositive = (liveInfo.changePercent ?? 0) >= 0;
+                return (
+                  <button
+                    key={t.ticker}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTicker(t.ticker);
+                      setSelectedDomPrice(undefined);
+                    }}
+                    className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-between border ${
+                      isSelected
+                        ? "bg-[#21262d] text-white border-[#58a6ff] shadow-sm font-bold"
+                        : "bg-[#0e1117] text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d]/60 border-[#21262d]"
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      <span className={isSelected ? "text-[#58a6ff]" : "text-white"}>{t.ticker}</span>
+                      <span className="text-[9px] text-[#8b949e] truncate max-w-[80px]">{t.name}</span>
+                    </div>
+                    <div className="flex flex-col items-end font-mono">
+                      <span className="text-[11px] text-white">
                         {formatAssetDisplayPrice(liveInfo.price, liveInfo.currency)}
                       </span>
-                    </button>
-                  );
-                })}
-              </div>
+                      <span className={`text-[9px] font-semibold ${isPositive ? "text-[#00c853]" : "text-[#ff5252]"}`}>
+                        {isPositive ? "+" : ""}{(liveInfo.changePercent ?? 0).toFixed(1)}%
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
+          {/* CENTER COLUMN: Central Viewport + Lower Performance Dashboard (Expands fully when widescreen) */}
+          <div className="flex-1 flex flex-col gap-1.5 overflow-hidden min-h-0">
+            {/* Functional Sub-Tabs Control Strip + Chart Expansion Bar */}
+            <div className="bg-[#161b22] border border-[#30363d] rounded-xl px-2 py-1.5 flex flex-wrap items-center justify-between gap-1.5 shrink-0 shadow-xs">
               {/* Functional Sub-Tabs: Gráfico | Tape Reading | Book | Indicadores | Estratégias */}
               <div className="flex items-center bg-[#0e1117] border border-[#30363d] rounded-lg p-0.5 gap-0.5">
                 <button
@@ -457,14 +514,14 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                     setActiveSubTab("chart");
                     setSidebarActiveView("chart");
                   }}
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                     activeSubTab === "chart"
                       ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
                       : "text-[#8b949e] hover:text-[#e6edf3]"
                   }`}
                 >
                   <LineChart className="w-3.5 h-3.5" />
-                  <span>Gráfico</span>
+                  <span>Gráfico Completo</span>
                 </button>
 
                 <button
@@ -473,7 +530,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                     setActiveSubTab("tape");
                     setSidebarActiveView("tape");
                   }}
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                     activeSubTab === "tape"
                       ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
                       : "text-[#8b949e] hover:text-[#e6edf3]"
@@ -489,7 +546,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                     setActiveSubTab("dom");
                     setSidebarActiveView("book");
                   }}
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                     activeSubTab === "dom"
                       ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
                       : "text-[#8b949e] hover:text-[#e6edf3]"
@@ -505,7 +562,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                     setActiveSubTab("indicators");
                     setSidebarActiveView("indicators");
                   }}
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                     activeSubTab === "indicators"
                       ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
                       : "text-[#8b949e] hover:text-[#e6edf3]"
@@ -521,7 +578,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                     setActiveSubTab("strategies");
                     setSidebarActiveView("strategies");
                   }}
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                     activeSubTab === "strategies"
                       ? "bg-[#21262d] text-[#58a6ff] font-bold shadow-xs"
                       : "text-[#8b949e] hover:text-[#e6edf3]"
@@ -532,10 +589,29 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                 </button>
               </div>
 
+              {/* Mobile Quick Ticker Carousel when side dock is hidden on small screens */}
+              <div className="flex md:hidden items-center gap-1 overflow-x-auto scrollbar-none py-0.5 max-w-[200px]">
+                {QUICK_TRADING_TICKERS.slice(0, 5).map((t) => (
+                  <button
+                    key={t.ticker}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTicker(t.ticker);
+                      setSelectedDomPrice(undefined);
+                    }}
+                    className={`px-1.5 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap cursor-pointer ${
+                      selectedTicker === t.ticker ? "bg-[#58a6ff] text-white" : "bg-[#21262d] text-[#8b949e]"
+                    }`}
+                  >
+                    {t.ticker}
+                  </button>
+                ))}
+              </div>
+
               {/* Live Ticker Quick Quote + P&L Indicator + Controls */}
               <div className="flex items-center gap-1.5 ml-auto">
                 {/* Active Asset Live Quote with Dual Currency Conversion */}
-                <div className="hidden xl:flex items-center gap-2 px-2.5 py-0.5 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
+                <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#0e1117] border border-[#21262d] font-mono text-xs">
                   <span className="font-bold text-white">{currentAsset.ticker}</span>
                   <span className="text-white font-bold">{formatAssetDisplayPrice(currentAsset.price, currentAsset.currency)}</span>
                   <span className="text-[10.5px] text-[#8b949e] font-semibold">
@@ -555,7 +631,7 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                 <button
                   type="button"
                   onClick={() => setRiskModalOpen(true)}
-                  className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border shadow-xs ${
+                  className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border shadow-xs ${
                     riskSettings.isLocked
                       ? "bg-[#ff5252]/20 text-[#ff5252] border-[#ff5252]/50 animate-pulse"
                       : "bg-[#161b22] text-[#8b949e] hover:text-white border-[#30363d] hover:border-[#8b949e]"
@@ -570,17 +646,6 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                   <span className="hidden md:inline">{riskSettings.isLocked ? "Trava Ativa" : "Risco"}</span>
                 </button>
 
-                {/* Broker Connection Trigger */}
-                <button
-                  type="button"
-                  onClick={() => setBrokerModalOpen(true)}
-                  className="px-2 py-0.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
-                  title="Conectar Conta Real via DMA2"
-                >
-                  <Key className="w-3.5 h-3.5 text-[#e3b341]" />
-                  <span className="hidden sm:inline">DMA2</span>
-                </button>
-
                 {/* Reset Simulated Account */}
                 <button
                   type="button"
@@ -589,10 +654,55 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                       dayTradeService.resetSimulatedAccount();
                     }
                   }}
-                  className="p-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors cursor-pointer"
                   title="Redefinir Conta Simulada"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Alargar Tela Toda (Widescreen Toggle to enlarge chart) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsWidescreenChart(!isWidescreenChart);
+                    if (!isWidescreenChart) {
+                      setIsRightPanelOpen(false);
+                    } else {
+                      setIsRightPanelOpen(true);
+                    }
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border shadow-xs ${
+                    isWidescreenChart
+                      ? "bg-[#58a6ff]/20 text-[#58a6ff] border-[#58a6ff]"
+                      : "bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border-[#30363d]"
+                  }`}
+                  title={isWidescreenChart ? "Restaurar layout normal" : "Alargar tela toda do gráfico"}
+                >
+                  {isWidescreenChart ? (
+                    <>
+                      <Minimize2 className="w-3.5 h-3.5 text-[#58a6ff]" />
+                      <span className="hidden sm:inline">Restaurar</span>
+                    </>
+                  ) : (
+                    <>
+                      <Maximize2 className="w-3.5 h-3.5 text-[#58a6ff]" />
+                      <span className="hidden sm:inline">Alargar Tela</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Right Panel Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+                  className="p-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors cursor-pointer hidden lg:flex"
+                  title={isRightPanelOpen ? "Ocultar Painel Lateral" : "Mostrar Painel Lateral"}
+                >
+                  {isRightPanelOpen ? (
+                    <PanelRightClose className="w-3.5 h-3.5" />
+                  ) : (
+                    <PanelRightOpen className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -799,35 +909,37 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
           </div>
 
           {/* RIGHT COLUMN: "MERCADO EM TEMPO REAL" (Top ~40%) + IMMEDIATE ORDER TICKET (Bottom ~60%) */}
-          <div className="w-full lg:w-[325px] xl:w-[340px] flex flex-col gap-1.5 h-full overflow-hidden shrink-0">
-            {/* Top Watchlist (~38% of right column) */}
-            <div className="h-[200px] xl:h-[220px] shrink-0 overflow-hidden">
-              <MarketRealTimeWatchlist
-                assets={allAssets || []}
-                selectedTicker={selectedTicker}
-                onSelectTicker={(ticker) => {
-                  setSelectedTicker(ticker);
-                  setSelectedDomPrice(undefined);
-                }}
-                onSelectAsset={(ticker) => {
-                  setSelectedTicker(ticker);
-                  setSelectedDomPrice(undefined);
-                }}
-              />
-            </div>
+          {isRightPanelOpen && (
+            <div className="w-full lg:w-[325px] xl:w-[340px] flex flex-col gap-1.5 h-full overflow-hidden shrink-0 animate-in fade-in duration-150">
+              {/* Top Watchlist (~38% of right column) */}
+              <div className="h-[200px] xl:h-[220px] shrink-0 overflow-hidden">
+                <MarketRealTimeWatchlist
+                  assets={allAssets || []}
+                  selectedTicker={selectedTicker}
+                  onSelectTicker={(ticker) => {
+                    setSelectedTicker(ticker);
+                    setSelectedDomPrice(undefined);
+                  }}
+                  onSelectAsset={(ticker) => {
+                    setSelectedTicker(ticker);
+                    setSelectedDomPrice(undefined);
+                  }}
+                />
+              </div>
 
-            {/* Bottom Order Ticket Execution Boleta (Remaining flex height) */}
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <OrderTicket
-                asset={currentAsset}
-                onOpenRiskModal={() => setRiskModalOpen(true)}
-                onOpenBrokerModal={() => setBrokerModalOpen(true)}
-                activePositionQuantity={activePositionOnAsset?.quantity}
-                activePositionSide={activePositionOnAsset?.side}
-                externalPrice={selectedDomPrice}
-              />
+              {/* Bottom Order Ticket Execution Boleta (Remaining flex height) */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <OrderTicket
+                  asset={currentAsset}
+                  onOpenRiskModal={() => setRiskModalOpen(true)}
+                  onOpenBrokerModal={() => setBrokerModalOpen(true)}
+                  activePositionQuantity={activePositionOnAsset?.quantity}
+                  activePositionSide={activePositionOnAsset?.side}
+                  externalPrice={selectedDomPrice}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -837,21 +949,21 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#00c853] animate-pulse" />
-            <span className="text-[#3fb950] font-semibold">Conexão: Estável (DMA2 · 12ms)</span>
+            <span className="text-[#3fb950] font-semibold">Conexão: Estável (Ultra Baixa Latência · 12ms)</span>
           </div>
 
           <span className="text-[#30363d]">|</span>
 
           <div className="hidden sm:flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-[#58a6ff]" />
-            <span>Sistemas B3 / BACEN: Online</span>
+            <span>Sistemas B3 / BACEN / Global: Online</span>
           </div>
         </div>
 
         {/* Center: Mode Indicator */}
         <div className="hidden md:flex items-center gap-1.5">
           <span className="px-1.5 py-0.2 rounded bg-[#21262d] text-[#e6edf3] font-semibold text-[10px]">
-            {account.mode === "SIMULATED" ? "MODO SIMULADO (PAPER TRADING)" : "MODO REAL DMA2"}
+            {account.mode === "SIMULATED" ? "MODO SIMULADO (PAPER TRADING)" : "MODO REAL HOMOLOGADO"}
           </span>
         </div>
 

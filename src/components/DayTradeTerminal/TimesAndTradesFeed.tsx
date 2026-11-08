@@ -194,7 +194,7 @@ export const TimesAndTradesFeed: React.FC<TimesAndTradesFeedProps> = ({
 
       {/* 4. Compact Footer */}
       <div className="px-2.5 py-1 border-t border-[#21262d] bg-[#0e1117] flex items-center justify-between text-[9px] text-[#8b949e] font-mono shrink-0">
-        <span>Feed DMA2</span>
+        <span>Feed Direto B3</span>
         <span>{filteredTrades.length} trades</span>
       </div>
     </div>

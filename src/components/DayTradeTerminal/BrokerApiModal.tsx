@@ -26,8 +26,8 @@ export const BrokerApiModal: React.FC<BrokerApiModalProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   const brokers = [
-    { id: "xp", name: "XP Investimentos", type: "B3 / DMA2", status: "Homologado", ping: "2ms" },
-    { id: "btg", name: "BTG Pactual", type: "B3 / DMA2", status: "Homologado", ping: "3ms" },
+    { id: "xp", name: "XP Investimentos", type: "B3 / FIX API", status: "Homologado", ping: "2ms" },
+    { id: "btg", name: "BTG Pactual", type: "B3 / FIX API", status: "Homologado", ping: "3ms" },
     { id: "clear", name: "Clear Corretora", type: "B3 / RLP", status: "Homologado", ping: "4ms" },
     { id: "ib", name: "Interactive Brokers", type: "Global DMA", status: "Homologado", ping: "28ms" },
     { id: "binance", name: "Binance Futures", type: "Cripto / REST & WS", status: "Homologado", ping: "15ms" },
@@ -55,10 +55,10 @@ export const BrokerApiModal: React.FC<BrokerApiModalProps> = ({ isOpen, onClose 
             </div>
             <div>
               <h3 className="text-base font-bold text-white tracking-tight">
-                Conexão Institucional de Roteamento (DMA2 / Modo Real)
+                Conexão Institucional de Roteamento (Modo Real)
               </h3>
               <p className="text-xs text-[#8b949e]">
-                Conexão direta DMA2 / FIX / REST com corretoras parceiras
+                Conexão direta FIX / REST com corretoras parceiras
               </p>
             </div>
           </div>
@@ -148,7 +148,7 @@ export const BrokerApiModal: React.FC<BrokerApiModalProps> = ({ isOpen, onClose 
         <div className="flex items-center justify-between pt-3 border-t border-[#21262d]">
           <span className="text-[11px] text-[#8b949e] flex items-center gap-1">
             <Server className="w-3.5 h-3.5 text-[#00c853]" />
-            Gateway DMA2 B3 • Criptografia AES-256
+            Gateway FIX B3 • Criptografia AES-256
           </span>
 
           <div className="flex items-center gap-2">

@@ -134,7 +134,7 @@ export const IntradayCandleChart: React.FC<IntradayCandleChartProps> = ({
 
   // Generate realistic intraday candle sequence tailored to the timeframe & asset price
   const candleSeries = useMemo(() => {
-    const candlesCount = timeframe === "1m" ? 36 : timeframe === "5m" ? 30 : timeframe === "15m" ? 24 : 20;
+    const candlesCount = timeframe === "1m" ? 48 : timeframe === "5m" ? 40 : timeframe === "15m" ? 32 : 28;
     const base = asset.price;
     const volatility = base > 1000 ? 80 : base > 100 ? 1.5 : 0.25;
 
@@ -244,10 +244,10 @@ export const IntradayCandleChart: React.FC<IntradayCandleChartProps> = ({
     };
   }, [candleSeries, activePosition, drawings]);
 
-  const chartHeight = 260;
+  const chartHeight = 440;
   const candleWidth = 14;
   const candleGap = 6;
-  const svgWidth = Math.max(640, candleSeries.length * (candleWidth + candleGap) + 90);
+  const svgWidth = Math.max(900, candleSeries.length * (candleWidth + candleGap) + 100);
 
   const getY = (val: number, height: number) => {
     if (maxVal === minVal) return height / 2;
@@ -704,7 +704,7 @@ export const IntradayCandleChart: React.FC<IntradayCandleChartProps> = ({
           onMouseMove={handleCanvasMouseMove}
           onMouseLeave={handleCanvasMouseLeave}
           onClick={handleCanvasClick}
-          className={`w-full h-[210px] overflow-visible select-none ${
+          className={`w-full h-full min-h-[360px] overflow-visible select-none ${
             activeTool !== "cursor" ? "cursor-crosshair" : "cursor-default"
           }`}
         >

@@ -61,7 +61,7 @@ export const TradingDeskSidebar: React.FC<TradingDeskSidebarProps> = ({
     { id: "news", label: "Notícias & Fatos Relevantes", icon: <Newspaper className="w-4 h-4" /> },
     { id: "alerts", label: "Alertas de Preço", icon: <Bell className="w-4 h-4" /> },
     { id: "strategies", label: "Estratégias de Day Trade", icon: <Cpu className="w-4 h-4" /> },
-    { id: "simulator", label: mode === "SIMULATED" ? "Modo Simulador Ativo" : "Conta Real DMA2", icon: <Zap className="w-4 h-4" /> },
+    { id: "simulator", label: mode === "SIMULATED" ? "Modo Simulador Ativo" : "Conta Real", icon: <Zap className="w-4 h-4" /> },
     { id: "settings", label: "Travas de Risco & Parâmetros", icon: <Settings className="w-4 h-4" /> },
     { id: "help", label: "Atalhos & Ajuda", icon: <HelpCircle className="w-4 h-4" /> },
   ];
@@ -130,7 +130,7 @@ export const TradingDeskSidebar: React.FC<TradingDeskSidebarProps> = ({
       {/* Bottom Institutional Seal */}
       <div className="flex flex-col items-center gap-1 pt-1 mt-1 border-t border-[#21262d] w-full">
         <div
-          title="Terminal Seguro DinhEuro Institutional DMA2"
+          title="Terminal Seguro DinhEuro Institutional"
           className="w-8 h-8 rounded-lg bg-[#161b22] border border-[#30363d] flex flex-col items-center justify-center text-[#00c853] hover:border-[#00c853] transition-colors cursor-pointer"
         >
           <Shield className="w-3.5 h-3.5" />
