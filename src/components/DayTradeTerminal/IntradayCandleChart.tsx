@@ -701,6 +701,7 @@ export const IntradayCandleChart: React.FC<IntradayCandleChartProps> = ({
         <svg
           ref={svgRef}
           viewBox={`0 0 ${svgWidth} ${chartHeight}`}
+          preserveAspectRatio="none"
           onMouseMove={handleCanvasMouseMove}
           onMouseLeave={handleCanvasMouseLeave}
           onClick={handleCanvasClick}
