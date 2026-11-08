@@ -443,9 +443,22 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
           mode={account.mode}
         />
 
-        {/* CENTER + RIGHT DESK: FULL-VIEWPORT GRID WORKSPACE */}
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0 relative p-1">
-          {/* Functional Sub-Tabs Control Strip + Chart Expansion Bar */}
+        {/* CENTER + RIGHT DESK: FULL-VIEWPORT CSS GRID WORKSPACE WITH 'chart' PRIMARY AREA AND 'sidebar' OVERLAY */}
+        <div
+          className="flex-1 overflow-hidden min-h-0 relative p-1 grid"
+          style={{
+            display: "grid",
+            gridTemplateAreas: `'chart'`,
+            gridTemplateColumns: "100%",
+            gridTemplateRows: "100%",
+          }}
+        >
+          {/* PRIMARY 'chart' AREA (Full height, full width) */}
+          <div
+            className="w-full h-full flex flex-col overflow-hidden min-h-0 relative"
+            style={{ gridArea: "chart" }}
+          >
+            {/* Functional Sub-Tabs Control Strip + Chart Expansion Bar */}
           <div className="bg-[#161b22]/95 backdrop-blur-xs border border-[#30363d] rounded-xl px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-1.5 shrink-0 shadow-xs mb-1 z-20">
             {/* Left Controls: Asset Selector Drawer Trigger + Sub-Tabs */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -860,8 +873,9 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
                 </div>
               )}
             </div>
+          </div>
 
-            {/* COLLAPSIBLE BOTTOM DRAWER: Minhas Posições + Performance do Dia */}
+          {/* COLLAPSIBLE BOTTOM DRAWER: Minhas Posições + Performance do Dia */}
           {isBottomPanelOpen && (
             <div className="absolute bottom-1 left-1 right-1 h-[240px] z-30 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-200">
               <div className="px-3 py-1.5 border-b border-[#21262d] bg-[#0e1117] flex items-center justify-between shrink-0">
@@ -966,9 +980,12 @@ export const DayTradeTerminal: React.FC<DayTradeTerminalProps> = ({
             </div>
           )}
 
-          {/* COLLAPSIBLE RIGHT DRAWER: Watchlist + Boleta de Negociação */}
+          {/* COLLAPSIBLE RIGHT DRAWER: Watchlist + Boleta de Negociação (Overlay 'sidebar' area) */}
           {isRightPanelOpen && (
-            <div className="absolute top-12 right-1 bottom-1 w-[320px] sm:w-[350px] z-30 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-200">
+            <div
+              className="absolute top-12 right-1 bottom-1 w-[320px] sm:w-[350px] z-30 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right duration-200"
+              style={{ gridArea: "sidebar" }}
+            >
               <div className="px-3 py-2 border-b border-[#21262d] bg-[#0e1117] flex items-center justify-between shrink-0">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-[#58a6ff]" />

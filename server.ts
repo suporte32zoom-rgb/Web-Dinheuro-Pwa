@@ -566,10 +566,14 @@ function finnhubSdkProfile2(symbol: string): Promise<any> {
 }
 
 function finnhubSdkMarketNews(category: string = "general"): Promise<any[]> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     finnhubClient.marketNews(category, {}, (err: any, data: any) => {
-      if (err) return reject(err);
-      resolve(data);
+      if (err) {
+        // Finnhub SDK returns plain object { error: '...' } or string
+        const errMsg = typeof err === "object" ? (err?.error || err?.message || JSON.stringify(err)) : String(err);
+        return resolve([]); // Gracefully resolve empty array to avoid unhandled rejections
+      }
+      resolve(Array.isArray(data) ? data : []);
     });
   });
 }
@@ -1421,7 +1425,7 @@ app.get("/api/market/news", async (req, res) => {
 
     // 1. Finnhub News API via Official SDK: Notícias financeiras globais e corporativas em tempo real
     try {
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+      const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve([]), 3000));
       const finnhubList: any = await Promise.race([finnhubSdkMarketNews("general"), timeoutPromise]);
       if (Array.isArray(finnhubList) && finnhubList.length > 0) {
         for (const item of finnhubList.slice(0, 10)) {
@@ -1444,7 +1448,11 @@ app.get("/api/market/news", async (req, res) => {
         }
       }
     } catch (e: any) {
-      console.warn("[Server] Finnhub news SDK fetch error:", e?.message);
+      // Gracefully silent or informative error formatting
+      const errorMsg = e?.message || e?.error || (typeof e === "object" ? JSON.stringify(e) : String(e));
+      if (errorMsg && errorMsg !== "undefined") {
+        console.warn("[Server] Finnhub news notice:", errorMsg);
+      }
     }
 
     const rssUrls = [
