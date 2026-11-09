@@ -37,7 +37,7 @@ jobs:
         run: npm run lint
 
       - name: 🚀 Build Static Production Bundle (Vite)
-        run: npm run build
+        run: npm run build:static
 
       - name: 🌐 Ensure SPA Fallback & CNAME for GitHub Pages
         run: |
