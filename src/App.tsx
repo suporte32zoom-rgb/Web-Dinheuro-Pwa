@@ -9,11 +9,12 @@ import {
 } from "./types/finance";
 import { ALL_ASSETS } from "./data/mockMarketData";
 import {
+  fetchCompleteLiveMarketData,
   fetchLiveQuotes,
   fetchLiveNews,
   fetchLiveMovers,
   LiveQuotePayload,
-} from "./services/marketDataService";
+} from "./services/marketData";
 import { getStoredQuotes } from "./services/apiService";
 import { marketStreamService } from "./services/marketStreamService";
 import { Header } from "./components/Header";
@@ -269,15 +270,25 @@ export default function App() {
   const refreshAllMarketData = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const [quotes, news, movers] = await Promise.all([
-        fetchLiveQuotes(),
+      const [marketResult, news, movers] = await Promise.all([
+        fetchCompleteLiveMarketData(),
         fetchLiveNews(),
         fetchLiveMovers(),
       ]);
 
-      if (quotes) {
-        mergeQuotesIntoAssets(quotes);
+      if (marketResult?.assets && marketResult.assets.length > 0) {
+        setLiveAssets(marketResult.assets);
+        notificationService.evaluateAssetPrices(marketResult.assets);
+
+        setSelectedAsset((cur) => {
+          if (!cur) return null;
+          const match = marketResult.assets.find((a) => a.id === cur.id);
+          return match || cur;
+        });
+      } else if (marketResult?.quotes) {
+        mergeQuotesIntoAssets(marketResult.quotes);
       }
+
       if (news && news.length > 0) {
         setLiveNews(news);
       }
