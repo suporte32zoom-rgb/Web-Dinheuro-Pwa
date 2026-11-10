@@ -1,6 +1,6 @@
 // DinhEuro Finanças - Progressive Web App Service Worker
 // Versão estável sem loops de recarregamento para GitHub Pages e Produção
-const CACHE_NAME = "dinheuro-v2-cache";
+const CACHE_NAME = "dinheuro-v3-live";
 const OFFLINE_URL = "./index.html";
 
 // Recursos estáticos fundamentais do App Shell
@@ -30,7 +30,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// 2. Activate Event: Limpa apenas caches de versões anteriores sem loop de recarga
+// 2. Activate Event: Limpa todos os caches de versões anteriores sem loop de recarga
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
@@ -67,7 +67,9 @@ self.addEventListener("fetch", (event) => {
     url.hostname.includes("financialmodelingprep.com") ||
     url.hostname.includes("brapi.dev") ||
     url.hostname.includes("hgbrasil.com") ||
-    url.hostname.includes("open.er-api.com")
+    url.hostname.includes("open.er-api.com") ||
+    url.hostname.includes("coinbase.com") ||
+    url.hostname.includes("yahoo.com")
   ) {
     event.respondWith(
       fetch(request)
@@ -90,10 +92,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // B. Navegação SPA: Network-First com fallback para cache do index.html (sem reload loop)
+  // B. Navegação SPA: Network-First com bypass de cache para carregar sempre a versão mais recente
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "no-cache" })
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const clone = networkResponse.clone();

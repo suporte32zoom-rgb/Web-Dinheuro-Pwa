@@ -58,7 +58,10 @@
             navigator.serviceWorker
               .register('./sw.js', { scope: './' })
               .then(function (reg) {
-                console.log('[PWA] Service Worker registrado com sucesso (dinheuro-v2-cache):', reg.scope);
+                console.log('[PWA] Service Worker registrado com sucesso (dinheuro-v3-live):', reg.scope);
+                if (reg.update) {
+                  reg.update();
+                }
               })
               .catch(function (err) {
                 console.warn('[PWA] Registro defensivo do Service Worker ignorado:', err);

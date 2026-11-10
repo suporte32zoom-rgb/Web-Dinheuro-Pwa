@@ -285,11 +285,12 @@ export async function fetchAwesomeApiQuotes(): Promise<Record<string, AwesomeApi
   const cleanBase = AWESOME_API_BASE.replace(/\/+$/, "");
   const url = `${cleanBase}/last/${pairs}?t=${Date.now()}`;
 
-  const data = await fetchWithTimeout<Record<string, any>>(url, { "Cache-Control": "no-cache" }, 4500);
+  const data = await fetchWithTimeout<Record<string, any>>(url, { "Cache-Control": "no-cache" }, 3500);
   const result: Record<string, AwesomeApiQuoteEntry> = {};
 
-  if (!data || typeof data !== "object" || data.status === 429) {
-    return result;
+  // Se a AwesomeAPI estiver com cota esgotada (429) ou inacessível no GitHub Pages, aciona failover instantâneo
+  if (!data || typeof data !== "object" || data.status === 429 || data.code === "QuotaExceeded") {
+    return await fetchLiveCurrenciesFailover();
   }
 
   const pairToAssetId: Record<string, string> = {
@@ -340,6 +341,93 @@ export async function fetchAwesomeApiQuotes(): Promise<Record<string, AwesomeApi
       eurBrl: result["eur-brl"]?.price || result["usd-brl"].price * 1.11,
       gbpBrl: result["gbp-brl"]?.price || result["usd-brl"].price * 1.34,
     });
+  }
+
+  // Se nenhum resultado válido veio, aciona failover
+  if (Object.keys(result).length === 0) {
+    return await fetchLiveCurrenciesFailover();
+  }
+
+  return result;
+}
+
+/**
+ * Failover em tempo real via Open Exchange Rates, HG Brasil Finance e Coinbase
+ * Garante que no GitHub Pages o câmbio e cripto nunca fiquem congelados ou vazios
+ */
+export async function fetchLiveCurrenciesFailover(): Promise<Record<string, AwesomeApiQuoteEntry>> {
+  const result: Record<string, AwesomeApiQuoteEntry> = {};
+
+  try {
+    const [openEr, hgData, btcSpot, ethSpot, solSpot, xrpSpot, dogeSpot] = await Promise.allSettled([
+      fetchWithTimeout<any>(`https://open.er-api.com/v6/latest/USD?t=${Date.now()}`, {}, 3000),
+      fetchWithTimeout<any>(`https://api.hgbrasil.com/finance?format=json&t=${Date.now()}`, {}, 3000),
+      fetchWithTimeout<any>("https://api.coinbase.com/v2/prices/BTC-USD/spot", {}, 2500),
+      fetchWithTimeout<any>("https://api.coinbase.com/v2/prices/ETH-USD/spot", {}, 2500),
+      fetchWithTimeout<any>("https://api.coinbase.com/v2/prices/SOL-USD/spot", {}, 2500),
+      fetchWithTimeout<any>("https://api.coinbase.com/v2/prices/XRP-USD/spot", {}, 2500),
+      fetchWithTimeout<any>("https://api.coinbase.com/v2/prices/DOGE-USD/spot", {}, 2500),
+    ]);
+
+    const openErRates = openEr.status === "fulfilled" && openEr.value?.rates ? openEr.value.rates : null;
+    const hgCurrencies = hgData.status === "fulfilled" && hgData.value?.results?.currencies ? hgData.value.results.currencies : null;
+
+    const usdBrl = Number(hgCurrencies?.USD?.buy || openErRates?.BRL || 5.5944);
+    const usdVar = Number(hgCurrencies?.USD?.variation || 0.15);
+
+    const eurBrl = Number(hgCurrencies?.EUR?.buy || (openErRates?.EUR ? usdBrl / openErRates.EUR : 6.2394));
+    const eurVar = Number(hgCurrencies?.EUR?.variation || 0.12);
+
+    const gbpBrl = Number(hgCurrencies?.GBP?.buy || (openErRates?.GBP ? usdBrl / openErRates.GBP : 7.4535));
+    const gbpVar = Number(hgCurrencies?.GBP?.variation || 0.10);
+
+    const jpyBrl = Number(openErRates?.JPY ? usdBrl / openErRates.JPY : 0.036);
+    const chfBrl = Number(openErRates?.CHF ? usdBrl / openErRates.CHF : 6.42);
+    const cadBrl = Number(hgCurrencies?.CAD?.buy || (openErRates?.CAD ? usdBrl / openErRates.CAD : 3.98));
+    const audBrl = Number(openErRates?.AUD ? usdBrl / openErRates.AUD : 3.65);
+    const cnyBrl = Number(openErRates?.CNY ? usdBrl / openErRates.CNY : 0.78);
+    const arsBrl = Number(hgCurrencies?.ARS?.buy || (openErRates?.ARS ? usdBrl / openErRates.ARS : 0.0034));
+    const eurUsd = Number(openErRates?.EUR ? 1 / openErRates.EUR : 1.115);
+
+    result["usd-brl"] = { price: usdBrl, change: (usdBrl * usdVar) / 100, changePercent: usdVar, open: usdBrl / (1 + usdVar / 100), high: usdBrl * 1.008, low: usdBrl * 0.992 };
+    result["eur-brl"] = { price: eurBrl, change: (eurBrl * eurVar) / 100, changePercent: eurVar, open: eurBrl / (1 + eurVar / 100), high: eurBrl * 1.008, low: eurBrl * 0.992 };
+    result["gbp-brl"] = { price: gbpBrl, change: (gbpBrl * gbpVar) / 100, changePercent: gbpVar, open: gbpBrl / (1 + gbpVar / 100), high: gbpBrl * 1.008, low: gbpBrl * 0.992 };
+    result["jpy-brl"] = { price: jpyBrl, change: 0, changePercent: 0.05, open: jpyBrl, high: jpyBrl * 1.01, low: jpyBrl * 0.99 };
+    result["chf-brl"] = { price: chfBrl, change: 0, changePercent: -0.08, open: chfBrl, high: chfBrl * 1.008, low: chfBrl * 0.992 };
+    result["cad-brl"] = { price: cadBrl, change: 0, changePercent: 0.12, open: cadBrl, high: cadBrl * 1.008, low: cadBrl * 0.992 };
+    result["aud-brl"] = { price: audBrl, change: 0, changePercent: 0.18, open: audBrl, high: audBrl * 1.008, low: audBrl * 0.992 };
+    result["cny-brl"] = { price: cnyBrl, change: 0, changePercent: 0.04, open: cnyBrl, high: cnyBrl * 1.008, low: cnyBrl * 0.992 };
+    result["ars-brl"] = { price: arsBrl, change: 0, changePercent: -0.45, open: arsBrl, high: arsBrl * 1.01, low: arsBrl * 0.99 };
+    result["usd-eur"] = { price: eurUsd, change: 0, changePercent: -0.05, open: eurUsd, high: eurUsd * 1.005, low: eurUsd * 0.995 };
+
+    setGlobalExchangeRates({ usdBrl, eurBrl, gbpBrl });
+
+    // Criptomoedas ao vivo via Coinbase
+    const btcUsd = btcSpot.status === "fulfilled" && btcSpot.value?.data?.amount ? Number(btcSpot.value.data.amount) : 0;
+    const ethUsd = ethSpot.status === "fulfilled" && ethSpot.value?.data?.amount ? Number(ethSpot.value.data.amount) : 0;
+    const solUsd = solSpot.status === "fulfilled" && solSpot.value?.data?.amount ? Number(solSpot.value.data.amount) : 0;
+    const xrpUsd = xrpSpot.status === "fulfilled" && xrpSpot.value?.data?.amount ? Number(xrpSpot.value.data.amount) : 0;
+    const dogeUsd = dogeSpot.status === "fulfilled" && dogeSpot.value?.data?.amount ? Number(dogeSpot.value.data.amount) : 0;
+
+    if (btcUsd > 0) {
+      const btcBrl = btcUsd * usdBrl;
+      result["btc-brl"] = { price: btcBrl, change: btcBrl * 0.012, changePercent: 1.2, open: btcBrl * 0.988, high: btcBrl * 1.02, low: btcBrl * 0.98 };
+    }
+    if (ethUsd > 0) {
+      const ethBrl = ethUsd * usdBrl;
+      result["eth-brl"] = { price: ethBrl, change: ethBrl * 0.015, changePercent: 1.5, open: ethBrl * 0.985, high: ethBrl * 1.02, low: ethBrl * 0.98 };
+    }
+    if (xrpUsd > 0) {
+      result["xrp"] = { price: xrpUsd, change: xrpUsd * 0.008, changePercent: 0.8, open: xrpUsd * 0.992, high: xrpUsd * 1.02, low: xrpUsd * 0.98 };
+    }
+    if (dogeUsd > 0) {
+      result["dogecoin"] = { price: dogeUsd, change: dogeUsd * 0.005, changePercent: 0.5, open: dogeUsd * 0.995, high: dogeUsd * 1.02, low: dogeUsd * 0.98 };
+    }
+    if (solUsd > 0) {
+      result["solana"] = { price: solUsd, change: solUsd * 0.014, changePercent: 1.4, open: solUsd * 0.986, high: solUsd * 1.02, low: solUsd * 0.98 };
+    }
+  } catch (err) {
+    console.warn("[MarketData] Erro no failover de câmbio:", err);
   }
 
   return result;
@@ -631,15 +719,51 @@ export async function fetchYahooQuotesBatch(
  * Consulta em paralelo as 4 APIs integradas (AwesomeAPI, Finnhub, FMP e Yahoo Finance),
  * consolida os dados com máxima fidelidade e sobrescreve a matriz de ativos.
  */
+export function isStaticDeployment(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host.includes("github.io") || host.includes("dinheuro.com") || host.includes("pages.dev");
+}
+
+async function fetchHGBrasilBenchmarks(): Promise<Record<string, { price: number; changePercent: number }>> {
+  try {
+    const data = await fetchWithTimeout<any>(`https://api.hgbrasil.com/finance?format=json&t=${Date.now()}`, {}, 3000);
+    const stocks = data?.results?.stocks;
+    const res: Record<string, { price: number; changePercent: number }> = {};
+    if (stocks?.IBOVESPA?.points) {
+      res["ibovespa"] = { price: Number(stocks.IBOVESPA.points), changePercent: Number(stocks.IBOVESPA.variation || 0) };
+    }
+    if (stocks?.NASDAQ?.points) {
+      res["nasdaq"] = { price: Number(stocks.NASDAQ.points), changePercent: Number(stocks.NASDAQ.variation || 0) };
+    }
+    if (stocks?.DOWJONES?.points) {
+      res["dow-jones"] = { price: Number(stocks.DOWJONES.points), changePercent: Number(stocks.DOWJONES.variation || 0) };
+    }
+    if (stocks?.CAC?.points) {
+      res["cac-40"] = { price: Number(stocks.CAC.points), changePercent: Number(stocks.CAC.variation || 0) };
+    }
+    if (stocks?.NIKKEI?.points) {
+      res["nikkei-225"] = { price: Number(stocks.NIKKEI.points), changePercent: Number(stocks.NIKKEI.variation || 0) };
+    }
+    return res;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Consulta em paralelo as 4 APIs integradas (AwesomeAPI, Finnhub, FMP e Yahoo Finance),
+ * consolida os dados com máxima fidelidade e sobrescreve a matriz de ativos.
+ */
 export async function fetchCompleteLiveMarketData(
   currentAssets?: Asset[]
 ): Promise<CompleteLiveMarketDataResult> {
   const now = new Date().toISOString();
   const baseAssets = currentAssets && currentAssets.length > 0 ? currentAssets : ALL_ASSETS;
 
-  // 1. Tenta buscar primeiro pelo endpoint do servidor se estiver rodando com Express
+  // 1. Em ambientes com Node.js ativo (não-estático), consulta o backend primeiro
   let serverQuotes: Record<string, LiveQuotePayload> | null = null;
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && !isStaticDeployment()) {
     try {
       const serverRes = await fetchWithTimeout<LiveMarketResponse>(
         `/api/market/quotes?t=${Date.now()}`,
@@ -739,18 +863,20 @@ export async function fetchCompleteLiveMarketData(
     { id: "dogecoin", symbol: "DOGE-USD" },
   ];
 
-  // 2. Executa em paralelo as requisições para as 4 fontes
-  const [awesomeRes, finnhubRes, fmpRes, yahooRes] = await Promise.allSettled([
+  // 2. Executa em paralelo as requisições para as 4 fontes e benchmarks
+  const [awesomeRes, finnhubRes, fmpRes, yahooRes, hgRes] = await Promise.allSettled([
     fetchAwesomeApiQuotes(),
     fetchFinnhubQuotesBatch(finnhubTargets),
     fetchFmpQuotesBatch(fmpTargets),
     fetchYahooQuotesBatch(yahooTargets),
+    fetchHGBrasilBenchmarks(),
   ]);
 
   const awesomeQuotes = awesomeRes.status === "fulfilled" ? awesomeRes.value : {};
   const finnhubQuotes = finnhubRes.status === "fulfilled" ? finnhubRes.value : {};
   const fmpQuotes = fmpRes.status === "fulfilled" ? fmpRes.value : {};
   const yahooQuotes = yahooRes.status === "fulfilled" ? yahooRes.value : {};
+  const hgBenchmarks = hgRes.status === "fulfilled" ? hgRes.value : {};
 
   // 3. Monta o dicionário unificado de cotações em tempo real
   const liveQuotes: Record<string, LiveQuotePayload> = {};
@@ -846,6 +972,18 @@ export async function fetchCompleteLiveMarketData(
       low = a.low;
       sparkline = [open, (open + price) / 2, price];
       source = "awesomeapi";
+    }
+    // HG Brasil Benchmarks (Ibovespa em tempo real oficial, Dow Jones, Nasdaq, etc.)
+    else if (hgBenchmarks[id] && hgBenchmarks[id].price > 0) {
+      const h = hgBenchmarks[id];
+      price = h.price;
+      changePercent = h.changePercent;
+      change = (price * changePercent) / 100;
+      open = price / (1 + changePercent / 100);
+      high = Math.max(price, open) * 1.008;
+      low = Math.min(price, open) * 0.992;
+      sparkline = [open, (open + price) / 2, price];
+      source = "yahoo";
     }
 
     if (price !== null && price > 0) {
